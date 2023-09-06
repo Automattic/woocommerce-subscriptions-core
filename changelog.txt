@@ -2,6 +2,7 @@
 
 = 6.3.0 - xxxx-xx-xx =
 * Add - Introduce the "Subscription Relationship" column under the Orders list admin page when HPOS is enabled.
+* Add - Use admin theme color and the correct WooCommerce colors.
 
 = 6.2.0 - 2023-08-10 =
 * Add - Introduce an updated empty state screen for the WooCommerce > Subscriptions list table.
