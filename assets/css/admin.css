@@ -2,19 +2,6 @@
 .woocommerce-subscriptions-activated p a.button-primary {
 	display: inline-block;
 }
-.woocommerce-subscriptions-activated a.button-primary:hover {
-	background: #bb77ae;
-	border-color: #aa559a;
-	-webkit-box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
-		0 1px 0 rgba( 0, 0, 0, 0.15 );
-	box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
-		0 1px 0 rgba( 0, 0, 0, 0.15 );
-}
-.woocommerce-subscriptions-activated a.button-primary:active,
-.woocommerce-subscriptions-activated a.button-primary:active {
-	background: #aa559a;
-	border-color: #aa559a;
-}
 
 /* Subscriptions Admin Page */
 .woocommerce_page_wc-orders--shop_subscription .tablenav input,
