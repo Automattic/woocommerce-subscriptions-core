@@ -317,13 +317,13 @@ class WC_Subscriptions_Admin {
 			<span class="wrap">
 				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_price wc_input_subscription_price" placeholder="<?php echo esc_attr_x( 'e.g. 5.90', 'example price', 'woocommerce-subscriptions' ); ?>" step="any" min="0" value="<?php echo esc_attr( wc_format_localized_price( $chosen_price ) ); ?>" />
 				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription interval', 'woocommerce-subscriptions' ); ?></label>
-				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval">
+				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval wc-enhanced-select">
 				<?php foreach ( wcs_get_subscription_period_interval_strings() as $value => $label ) { ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_interval, true ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php } ?>
 				</select>
 				<label for="_subscription_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription period', 'woocommerce-subscriptions' ); ?></label>
-				<select id="_subscription_period" name="_subscription_period" class="wc_input_subscription_period last" >
+				<select id="_subscription_period" name="_subscription_period" class="wc_input_subscription_period last wc-enhanced-select" >
 				<?php foreach ( wcs_get_subscription_period_strings() as $value => $label ) { ?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_period, true ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php } ?>
@@ -337,7 +337,7 @@ class WC_Subscriptions_Admin {
 		woocommerce_wp_select(
 			array(
 				'id'          => '_subscription_length',
-				'class'       => 'wc_input_subscription_length select short',
+				'class'       => 'wc_input_subscription_length select short wc-enhanced-select',
 				'label'       => __( 'Expire after', 'woocommerce-subscriptions' ),
 				'options'     => wcs_get_subscription_ranges( $chosen_period ),
 				'desc_tip'    => true,
@@ -372,7 +372,7 @@ class WC_Subscriptions_Admin {
 			<span class="wrap">
 				<input type="text" id="_subscription_trial_length" name="_subscription_trial_length" class="wc_input_subscription_trial_length" value="<?php echo esc_attr( $chosen_trial_length ); ?>" />
 				<label for="_subscription_trial_period" class="wcs_hidden_label"><?php esc_html_e( 'Subscription Trial Period', 'woocommerce-subscriptions' ); ?></label>
-				<select id="_subscription_trial_period" name="_subscription_trial_period" class="wc_input_subscription_trial_period last" >
+				<select id="_subscription_trial_period" name="_subscription_trial_period" class="wc_input_subscription_trial_period last wc-enhanced-select" >
 					<?php foreach ( wcs_get_available_time_periods() as $value => $label ) { ?>
 						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $chosen_trial_period, true ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php } ?>

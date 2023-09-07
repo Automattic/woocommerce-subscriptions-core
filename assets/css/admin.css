@@ -301,6 +301,23 @@ a.close-subscriptions-search {
 	width: auto !important;
 }
 
+.wc_input_subscription_payment_sync +.select2,
+.wc_input_subscription_length +.select2 {
+	min-width: 180px;
+	width: 80% !important;
+}
+
+.wc_input_subscription_period + .select2,
+.wc_input_subscription_trial_period + .select2 {
+	width: 30.75% !important;
+	margin-top: 0;
+}
+
+.wc_input_subscription_period_interval + .select2 {
+	margin-right: 3.8%;
+	width: 30.75% !important;
+}
+
 .variable_subscription_sync p._subscription_payment_sync_field {
 	padding-left: 0 !important;
 }
@@ -347,7 +364,32 @@ a.close-subscriptions-search {
 	.wc_input_subscription_period_interval {
 	max-width: 33%;
 	float: left;
+	margin-right: 2px;
 }
+
+#variable_product_options .select2 {
+	margin: 2px 2px 0 0;
+}
+
+#variable_product_options
+	.select2-container 
+	.select2-selection--single {
+	min-height: 40px;
+}
+
+#variable_product_options 
+	.select2-container 
+	.select2-selection--single 
+	.select2-selection__rendered {
+	line-height: 36px;
+}
+#variable_product_options 
+	.select2-container 
+	.select2-selection--single 
+	.select2-selection__arrow {
+	height: 36px;
+}
+
 .variable_subscription_pricing_2_3 .wc_input_subscription_price {
 	clear: left;
 }

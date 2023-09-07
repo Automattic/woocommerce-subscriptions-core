@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		// Subscription Period Interval
 		woocommerce_wp_select( array(
 			'id'            => 'variable_subscription_period_interval[' . $loop . ']',
-			'class'         => 'wc_input_subscription_period_interval',
+			'class'         => 'wc_input_subscription_period_interval wc-enhanced-select',
 			'wrapper_class' => '_subscription_period_interval_field',
 			'label'         => __( 'Subscription Periods', 'woocommerce-subscriptions' ),
 			'options'       => wcs_get_subscription_period_interval_strings(),
