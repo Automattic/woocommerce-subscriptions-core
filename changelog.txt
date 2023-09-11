@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 6.3.0 - xxxx-xx-xx =
+* Fix - When HPOS is enabled, make the orders_by_type_query filter box work in the WooCommerce orders screen.
 * Add - Introduce the "Subscription Relationship" column under the Orders list admin page when HPOS is enabled.
 
 = 6.2.0 - 2023-08-10 =
