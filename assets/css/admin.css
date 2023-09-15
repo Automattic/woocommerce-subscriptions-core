@@ -302,9 +302,11 @@ a.close-subscriptions-search {
 }
 
 .wc_input_subscription_payment_sync +.select2,
-.wc_input_subscription_length +.select2 {
+.wc_input_subscription_length +.select2,
+#_subscription_limit +.select2 {
 	min-width: 180px;
 	width: 80% !important;
+	margin-bottom: 4px;
 }
 
 .wc_input_subscription_period + .select2,
