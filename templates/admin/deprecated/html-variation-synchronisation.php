@@ -17,7 +17,7 @@ global $wp_locale;
 	<td colspan="1" class="subscription_sync_week_month"<?php echo esc_attr( $display_week_month_select ); ?>>
 		<?php woocommerce_wp_select( array(
 			'id'            => 'variable' . WC_Subscriptions_Synchroniser::$post_meta_key . '[' . $loop . ']',
-			'class'         => 'wc_input_subscription_payment_sync',
+			'class'         => 'wc_input_subscription_payment_sync wc-enhanced-select',
 			'wrapper_class' => '_subscription_payment_sync_field',
 			'label'         => WC_Subscriptions_Synchroniser::$sync_field_label,
 			'options'       => WC_Subscriptions_Synchroniser::get_billing_period_ranges( $subscription_period ),
