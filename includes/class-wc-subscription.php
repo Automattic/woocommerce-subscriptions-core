@@ -270,9 +270,10 @@ class WC_Subscription extends WC_Order {
 		if ( parent::needs_payment() ) {
 			$needs_payment = true;
 		} elseif ( $parent_order && ( $parent_order->needs_payment() || $parent_order->has_status( array( 'on-hold', 'cancelled' ) ) ) ) {
+			// If the subscription has an unpaid parent order, it needs payment.
 			$needs_payment = true;
 		} else {
-			// Lastly check if last (non-early) renewal order needs payment.
+			// Lastly, check if the last non-early renewal order needs payment.
 			$order = wcs_get_last_non_early_renewal_order( $this );
 
 			if ( $order && ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) ) {
