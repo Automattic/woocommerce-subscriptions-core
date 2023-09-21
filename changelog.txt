@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 6.3.0 - 2023-xx-xx =
+* Fix - Resolved an issue that caused subscriptions with an unpaid early renewal order to be incorrectly considered as needing payment.
+
 = 6.2.0 - 2023-08-10 =
 * Add - Introduce an updated empty state screen for the WooCommerce > Subscriptions list table.
 * Fix - Ensure subscription checkout and cart block integrations are loaded on store environments where WooPayments is not enabled.
