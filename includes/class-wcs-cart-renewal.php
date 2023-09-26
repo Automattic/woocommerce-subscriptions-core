@@ -967,7 +967,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function product_addons_adjust_price( $adjust_price, $cart_item ) {
 
-		if ( true === $adjust_price && isset( $cart_item[ $this->cart_item_key ] ) ) {
+		if ( true === $adjust_price && isset( $cart_item[ $this->cart_item_key ] ) && $this->should_honor_subscription_prices( $cart_item ) ) {
 			$adjust_price = false;
 		}
 
@@ -1516,7 +1516,7 @@ class WCS_Cart_Renewal {
 
 
 	/**
-	 * Deteremines if the cart should honor the granfathered subscription/order line item total.
+	 * Determines if the cart should honor the grandfathered subscription/order line item total.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.10
 	 *
