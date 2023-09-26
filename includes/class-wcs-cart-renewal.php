@@ -1000,10 +1000,19 @@ class WCS_Cart_Renewal {
 	 * order items haven't changed by checking for a cart hash on the order, so we need to set
 	 * that here. @see WC_Checkout::create_order()
 	 *
+	 * @param WC_Order|int $order The order object or order ID.
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.14
 	 */
-	protected function set_cart_hash( $order_id ) {
-		$order = wc_get_order( $order_id );
+	protected function set_cart_hash( $order ) {
+
+		if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+			$order = wc_get_order( $order );
+
+			if ( ! $order ) {
+				return;
+			}
+		}
 
 		// Use cart hash generator introduced in WooCommerce 3.6
 		if ( is_callable( array( WC()->cart, 'get_cart_hash' ) ) ) {
@@ -1651,7 +1660,8 @@ class WCS_Cart_Renewal {
 			$cart_order = $this->get_order();
 
 			if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
-				$this->set_cart_hash( $order->get_id() );
+				// Set the cart hash so that the order can be resumed. Pass the order object so the instance WooCommerce uses will have the updated hash.
+				$this->set_cart_hash( $order );
 			}
 		}
 
