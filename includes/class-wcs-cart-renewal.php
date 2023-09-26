@@ -420,7 +420,7 @@ class WCS_Cart_Renewal {
 	 *
 	 * @param array  $cart_item_session_data Cart item session data.
 	 * @param array  $cart_item              Cart item data.
-	 * @param string $key                   Cart item key.
+	 * @param string $key                    Cart item key.
 	 */
 	public function get_cart_item_from_session( $cart_item_session_data, $cart_item, $key ) {
 
