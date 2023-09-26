@@ -1638,6 +1638,7 @@ class WCS_Cart_Renewal {
 	 * @return bool Whether the order has the status. Unchanged by this function.
 	 */
 	public function set_renewal_order_cart_hash_on_block_checkout( $has_status, $order, $status ) {
+		// If the order already has the checkout-draft status, then we don't need to update the cart hash.
 		if ( $has_status ) {
 			return $has_status;
 		}
