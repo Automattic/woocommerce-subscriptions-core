@@ -40,7 +40,7 @@ class WCS_Cart_Renewal {
 
 		// When a failed/pending renewal order is paid for via checkout, ensure a new order isn't created due to mismatched cart hashes
 		add_filter( 'woocommerce_create_order', array( &$this, 'update_cart_hash' ), 10, 1 );
-		add_filter( 'woocommerce_order_has_status', array( &$this, 'override_order_status_for_checkout_block' ), 10, 3 );
+		add_filter( 'woocommerce_order_has_status', array( &$this, 'set_renewal_order_cart_hash_on_block_checkout' ), 10, 3 );
 
 		// When a user is prevented from paying for a failed/pending renewal order because they aren't logged in, redirect them back after login
 		add_filter( 'woocommerce_login_redirect', array( &$this, 'maybe_redirect_after_login' ), 10, 2 );
@@ -1613,20 +1613,22 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Overrides the order has_status check used in the Store API Checkout Block to determine if an existing order can be resumed.
+	 * Sets the order cart hash when paying for a renewal order via the Block Checkout.
 	 *
-	 * This hacky overriding of the default logic is only applied during REST API requests, only applies to the 'checkout-draft' status
-	 * and to renewal orders that are currently being paid for in the cart. All other order statuses checks remain unaffected by this function.
+	 * This function is hooked onto the 'woocommerce_order_has_status' filter, is only applied during REST API requests, only applies to the
+	 * 'checkout-draft' status (which only Block Checkout orders use) and to renewal orders that are currently being paid for in the cart.
+	 * All other order statuses, orders and scenarios remain unaffected by this function.
 	 *
 	 * This function is necessary to override the default logic in @see DraftOrderTrait::is_valid_draft_order().
+	 * This function behaves similarly to @see WCS_Cart_Renewal::update_cart_hash() for the standard checkout and is hooked onto the 'woocommerce_create_order' filter.
 	 *
 	 * @param bool     $has_status Whether the order has the status.
 	 * @param WC_Order $order      The order.
 	 * @param string   $status     The status to check.
 	 *
-	 * @return bool Whether the order has the status.
+	 * @return bool Whether the order has the status. Unchanged by this function.
 	 */
-	public function override_order_status_for_checkout_block( $has_status, $order, $status ) {
+	public function set_renewal_order_cart_hash_on_block_checkout( $has_status, $order, $status ) {
 		if ( $has_status ) {
 			return $has_status;
 		}
