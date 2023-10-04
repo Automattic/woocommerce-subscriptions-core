@@ -44,7 +44,7 @@ class WCS_Array_Property_Post_Meta_Black_Magic implements ArrayAccess {
 	 * @param string $key
 	 * @return mixed
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetGet( $key ) {
 		return get_post_meta( $this->product_id, $this->maybe_prefix_meta_key( $key ) );
 	}
