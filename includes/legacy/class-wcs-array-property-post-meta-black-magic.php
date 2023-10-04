@@ -72,7 +72,7 @@ class WCS_Array_Property_Post_Meta_Black_Magic implements ArrayAccess {
 	/**
 	 * Nothing to do here as we access post meta directly.
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetUnset( $key ) {
 	}
 
