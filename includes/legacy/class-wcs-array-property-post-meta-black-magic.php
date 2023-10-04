@@ -64,7 +64,7 @@ class WCS_Array_Property_Post_Meta_Black_Magic implements ArrayAccess {
 	 * @param string $key
 	 * @return bool
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetExists( $key ) {
 		return metadata_exists( 'post', $this->product_id, $this->maybe_prefix_meta_key( $key ) );
 	}
