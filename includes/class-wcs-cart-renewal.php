@@ -1755,7 +1755,9 @@ class WCS_Cart_Renewal {
 			// Guard against infinite loops in WC 3.0+ where default order staus is set in WC_Abstract_Order::__construct()
 			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
 
-			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
+			$order = $order_id > 0 ? wc_get_order( $order_id ) : null;
+
+			if ( $order && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
 				$order_status = 'failed';
 			}
 
