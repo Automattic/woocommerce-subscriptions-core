@@ -9,6 +9,7 @@
 * Fix - Ensure the order needs processing transient is deleted when a subscription order (eg renewal) is created. Fixes issues with renewal orders going straight to a completed status.
 * Fix - Store the correct subscription start date in postmeta and ordermeta when HPOS and data syncing is being used.
 * Fix - When HPOS is enabled, deleting a customer will now delete their subscriptions.
+* Fix - Missing styles on the Edit Subscription page when HPOS is enabled.
 
 = 6.2.0 - 2023-08-10 =
 * Add - Introduce an updated empty state screen for the WooCommerce > Subscriptions list table.
