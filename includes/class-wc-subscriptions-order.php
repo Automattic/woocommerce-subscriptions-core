@@ -48,8 +48,13 @@ class WC_Subscriptions_Order {
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
 
+		// For HPOS - Add dropdown to admin orders screen to filter on order type.
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', __CLASS__ . '::restrict_manage_subscriptions_hpos' );
+
 		// Add filter to queries on admin orders screen to filter on order type. To avoid WC overriding our query args, we need to hook on after them on 10.
 		add_filter( 'request', __CLASS__ . '::orders_by_type_query', 11 );
+		// HPOS - Add filter to queries on admin orders screen to filter on order type. Only triggered for the shop_order order type.
+		add_filter( 'woocommerce_shop_order_list_table_prepare_items_query_args', __CLASS__ . '::maybe_modify_orders_by_type_query_from_request', 11 );
 
 		// Don't display migrated order item meta on the Edit Order screen
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_order_itemmeta' );
@@ -722,33 +727,26 @@ class WC_Subscriptions_Order {
 	public static function restrict_manage_subscriptions() {
 		global $typenow;
 
-		if ( 'shop_order' != $typenow ) {
+		if ( 'shop_order' !== $typenow ) {
 			return;
-		}?>
-		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
-			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
-			<?php
-			$order_types = apply_filters( 'woocommerce_subscriptions_order_type_dropdown', array(
-				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
-				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
-				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
-				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
-				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
-				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
-			) );
+		}
 
-			foreach ( $order_types as $order_type_key => $order_type_description ) {
-				echo '<option value="' . esc_attr( $order_type_key ) . '"';
+		self::render_restrict_manage_subscriptions_dropdown();
+	}
 
-				if ( isset( $_GET['shop_order_subtype'] ) && $_GET['shop_order_subtype'] ) {
-					selected( $order_type_key, $_GET['shop_order_subtype'] );
-				}
+	/**
+	 * When HPOS is active, adds admin dropdown for order types to Woocommerce -> Orders screen
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param string $order_type The order type.
+	 */
+	public static function restrict_manage_subscriptions_hpos( string $order_type ) {
+		if ( 'shop_order' !== $order_type ) {
+			return;
+		}
 
-				echo '>' . esc_html( $order_type_description ) . '</option>';
-			}
-			?>
-			</select>
-		<?php
+		self::render_restrict_manage_subscriptions_dropdown();
 	}
 
 	/**
@@ -760,62 +758,84 @@ class WC_Subscriptions_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
 	 */
 	public static function orders_by_type_query( $vars ) {
-		global $typenow, $wpdb;
+		global $typenow;
 
-		if ( 'shop_order' == $typenow && ! empty( $_GET['shop_order_subtype'] ) ) {
-
-			if ( 'original' == $_GET['shop_order_subtype'] || 'regular' == $_GET['shop_order_subtype'] ) {
-
-				$vars['meta_query']['relation'] = 'AND';
-
-				$vars['meta_query'][] = array(
-					'key'     => '_subscription_renewal',
-					'compare' => 'NOT EXISTS',
-				);
-
-				$vars['meta_query'][] = array(
-					'key'     => '_subscription_switch',
-					'compare' => 'NOT EXISTS',
-				);
-
-			} elseif ( 'parent' == $_GET['shop_order_subtype'] ) {
-
-				$vars['post__in'] = wcs_get_subscription_orders();
-
-			} else {
-
-				switch ( $_GET['shop_order_subtype'] ) {
-					case 'renewal':
-						$meta_key = '_subscription_renewal';
-						break;
-					case 'resubscribe':
-						$meta_key = '_subscription_resubscribe';
-						break;
-					case 'switch':
-						$meta_key = '_subscription_switch';
-						break;
-					default:
-						$meta_key = '';
-						break;
-				}
-
-				$meta_key = apply_filters( 'woocommerce_subscriptions_admin_order_type_filter_meta_key', $meta_key, $_GET['shop_order_subtype'] );
-
-				if ( ! empty( $meta_key ) ) {
-					$vars['meta_query'][] = array(
-						'key'     => $meta_key,
-						'compare' => 'EXISTS',
-					);
-				}
-			}
-
-			// Also exclude parent orders from non-subscription query
-			if ( 'regular' == $_GET['shop_order_subtype'] ) {
-				$vars['post__not_in'] = wcs_get_subscription_orders();
-			}
+		if ( 'shop_order' === $typenow ) {
+			return self::maybe_modify_orders_by_type_query_from_request( $vars );
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Filters the arguments to be pased to `wc_get_orders()` under the Woocommerce -> Orders screen.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param array $order_query_args Arguments to be passed to `wc_get_orders()`.
+	 *
+	 * @return array
+	 */
+	public static function maybe_modify_orders_by_type_query_from_request( array $order_query_args ): array {
+		// The order subtype selected by the user in the dropdown.
+		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		// Don't modify the query args if no order subtype was selected.
+		if ( empty( $selected_shop_order_subtype ) ) {
+			return $order_query_args;
+		}
+
+		if ( 'original' === $selected_shop_order_subtype || 'regular' === $selected_shop_order_subtype ) {
+
+			$order_query_args['meta_query']['relation'] = 'AND';
+
+			$order_query_args['meta_query'][] = array(
+				'key'     => '_subscription_renewal',
+				'compare' => 'NOT EXISTS',
+			);
+
+			$order_query_args['meta_query'][] = array(
+				'key'     => '_subscription_switch',
+				'compare' => 'NOT EXISTS',
+			);
+
+		} elseif ( 'parent' === $selected_shop_order_subtype ) {
+
+			$order_query_args['post__in'] = wcs_get_subscription_orders();
+
+		} else {
+
+			switch ( $selected_shop_order_subtype ) {
+				case 'renewal':
+					$meta_key = '_subscription_renewal';
+					break;
+				case 'resubscribe':
+					$meta_key = '_subscription_resubscribe';
+					break;
+				case 'switch':
+					$meta_key = '_subscription_switch';
+					break;
+				default:
+					$meta_key = '';
+					break;
+			}
+
+			$meta_key = apply_filters( 'woocommerce_subscriptions_admin_order_type_filter_meta_key', $meta_key, $selected_shop_order_subtype );
+
+			if ( ! empty( $meta_key ) ) {
+				$order_query_args['meta_query'][] = array(
+					'key'     => $meta_key,
+					'compare' => 'EXISTS',
+				);
+			}
+		}
+
+		// Also exclude parent orders from non-subscription query
+		if ( 'regular' === $selected_shop_order_subtype ) {
+			$order_query_args['post__not_in'] = wcs_get_subscription_orders();
+		}
+
+		return $order_query_args;
 	}
 
 	/**
@@ -2293,6 +2313,44 @@ class WC_Subscriptions_Order {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * Prints the HTML for the admin dropdown for order types to Woocommerce -> Orders screen.
+	 *
+	 * @since 6.3.0
+	 */
+	private static function render_restrict_manage_subscriptions_dropdown() {
+		$order_types = apply_filters(
+			'woocommerce_subscriptions_order_type_dropdown',
+			array(
+				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
+				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
+			)
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : '';
+
+		?>
+		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
+			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
+
+			<?php foreach ( $order_types as $order_type_key => $order_type_description ) : ?>
+				<option
+					value="<?php echo esc_attr( $order_type_key ); ?>"
+					<?php selected( $selected_shop_order_subtype, $order_type_key ); ?>
+				>
+					<?php echo esc_html( $order_type_description ); ?>
+				</option>
+			<?php endforeach; ?>
+
+		</select>
+		<?php
 	}
 
 	/**

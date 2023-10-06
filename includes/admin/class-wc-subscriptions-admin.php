@@ -943,7 +943,7 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( $is_woocommerce_screen || 'edit-product' == $screen->id || ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-reports' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) ) {
-			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', array(), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
+			wp_enqueue_style( 'woocommerce_admin_styles', WC()->plugin_url() . '/assets/css/admin.css', [ 'wc-components' ], WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
 			wp_enqueue_style( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/admin.css' ), array( 'woocommerce_admin_styles' ), WC_Subscriptions_Core_Plugin::instance()->get_library_version() );
 		}
 	}
