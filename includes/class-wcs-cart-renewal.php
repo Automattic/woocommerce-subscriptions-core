@@ -35,9 +35,6 @@ class WCS_Cart_Renewal {
 		// Remove order action buttons from the My Account page
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( &$this, 'filter_my_account_my_orders_actions' ), 10, 2 );
 
-		// When a failed renewal order is paid for via checkout, make sure WC_Checkout::create_order() preserves its "failed" status until it is paid
-		add_filter( 'woocommerce_default_order_status', array( &$this, 'maybe_preserve_order_status' ) );
-
 		// When a failed/pending renewal order is paid for via checkout, ensure a new order isn't created due to mismatched cart hashes
 		add_filter( 'woocommerce_create_order', array( &$this, 'update_cart_hash' ), 10, 1 );
 		add_filter( 'woocommerce_order_has_status', array( &$this, 'set_renewal_order_cart_hash_on_block_checkout' ), 10, 3 );
@@ -654,33 +651,6 @@ class WCS_Cart_Renewal {
 		}
 
 		return $actions;
-	}
-
-	/**
-	 * When a failed renewal order is being paid for via checkout, make sure WC_Checkout::create_order() preserves its
-	 * status as 'failed' until it is paid. By default, it will always set it to 'pending', but we need it left as 'failed'
-	 * so that we can correctly identify the status change in @see self::maybe_change_subscription_status().
-	 *
-	 * @param string Default order status for orders paid for via checkout. Default 'pending'
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
-	 */
-	public function maybe_preserve_order_status( $order_status ) {
-
-		if ( null !== WC()->session && 'failed' !== $order_status ) {
-
-			$order_id = absint( WC()->session->order_awaiting_payment );
-
-			// Guard against infinite loops in WC 3.0+ where default order staus is set in WC_Abstract_Order::__construct()
-			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
-
-			if ( $order_id > 0 && ( $order = wc_get_order( $order_id ) ) && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
-				$order_status = 'failed';
-			}
-
-			add_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ) );
-		}
-
-		return $order_status;
 	}
 
 	/**
@@ -1842,5 +1812,36 @@ class WCS_Cart_Renewal {
 				}
 			}
 		}
+	}
+
+	/**
+	 * When a failed renewal order is being paid for via checkout, make sure WC_Checkout::create_order() preserves its
+	 * status as 'failed' until it is paid. By default, it will always set it to 'pending', but we need it left as 'failed'
+	 * so that we can correctly identify the status change in @see self::maybe_change_subscription_status().
+	 *
+	 * @param string Default order status for orders paid for via checkout. Default 'pending'
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @deprecated 6.3.0
+	 */
+	public function maybe_preserve_order_status( $order_status ) {
+		wcs_deprecated_function( __METHOD__, '6.3.0' );
+		if ( null !== WC()->session && 'failed' !== $order_status ) {
+
+			$order_id = absint( WC()->session->order_awaiting_payment );
+
+			// Guard against infinite loops in WC 3.0+ where default order staus is set in WC_Abstract_Order::__construct()
+			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
+
+			$order = $order_id > 0 ? wc_get_order( $order_id ) : null;
+
+			if ( $order && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
+				$order_status = 'failed';
+			}
+
+			add_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ) );
+		}
+
+		return $order_status;
 	}
 }
