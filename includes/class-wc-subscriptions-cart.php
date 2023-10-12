@@ -1027,7 +1027,7 @@ class WC_Subscriptions_Cart {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_recurring_cart_key( $cart_item, $renewal_time = '' ) {
-		return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', wcs_get_subscription_grouping_key( $cart_item, $renewal_time ), $cart_item );
+		return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', wcs_get_subscription_grouping_key( $cart_item['data'], $renewal_time ), $cart_item );
 	}
 
 	/**
