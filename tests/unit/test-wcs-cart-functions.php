@@ -328,12 +328,18 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		$this->assertSame( '2028_03_12_monthly_for_12_months', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
 
 		// Filter.
-		add_action( 'woocommerce_subscriptions_recurring_cart_key', function( $key, $filter_cart_item ) use ( $cart_item ) {
-			$this->assertSame( $filter_cart_item, $cart_item );
-			return $key . '_filtered';
-		}, 10, 2 );
+		add_action(
+			'woocommerce_subscriptions_recurring_cart_key',
+			function( $key, $filter_cart_item ) use ( $cart_item ) {
+				$this->assertSame( $filter_cart_item, $cart_item );
+				return $key . '_filtered';
+			},
+			10,
+			2
+		);
 
 		$this->assertSame( '2028_03_12_monthly_for_12_months_filtered', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
 	}
+
 }
 
