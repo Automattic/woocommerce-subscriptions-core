@@ -1595,11 +1595,11 @@ class WC_Subscriptions_Synchroniser {
 	/**
 	 * If the cart item is synced, add a '_synced' string to the recurring cart key.
 	 *
-	 * @deprecated 6.3.0
+	 * @deprecated 6.4.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
-		wcs_deprecated_function( __METHOD__, '6.3.0', 'WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key' );
+		wcs_deprecated_function( __METHOD__, '6.4.0', 'WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key' );
 		return self::add_to_recurring_product_grouping_key( $cart_key, $cart_item['data'] );
 	}
 }
