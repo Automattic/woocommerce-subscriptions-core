@@ -498,5 +498,5 @@ function wcs_get_subscription_grouping_key( $product, $renewal_time = 0 ) {
 		$key .= sprintf( '_after_a_%d_%s_trial', $trial_length, $trial_period );
 	}
 
-	return $key;
+	return apply_filters( 'wcs_subscription_product_grouping_key', $key, $product, $renewal_time );
 }
