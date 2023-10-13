@@ -2,6 +2,7 @@
 
 = 6.4.0 - xxxx-xx-xx =
 * Add - Use admin theme color and the correct WooCommerce colors.
+* Dev - Update the Checkout Blocks hooks used from `woocommerce_blocks_checkout_` to `woocommerce_store_api_checkout`.
 * Dev - PHP 8.2: Fix "Creation of dynamic property" warnings.
 
 = 6.3.0 - 2023-10-06 =
