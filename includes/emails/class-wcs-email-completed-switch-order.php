@@ -17,6 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order {
 
 	/**
+	 * @var array Subscriptions linked to the switch order.
+	 */
+	public $subscriptions;
+
+	/**
 	 * Constructor
 	 */
 	function __construct() {
