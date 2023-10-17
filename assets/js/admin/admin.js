@@ -60,14 +60,7 @@ jQuery( function ( $ ) {
 					.addClass( 'form-row-full' )
 					.removeClass( 'form-row-last' );
 			} else {
-				if ( 'variable' === $( 'select#product-type' ).val() ) {
-					$( '.show_if_variable-subscription' ).hide();
-					$( '.show_if_variable' ).show();
-					$( '.hide_if_variable' ).hide();
-					$.showOrHideStockFields();
-				}
-
-				if ( 'subscription' === $( 'select#product-type' ).val() ) {
+				if ( 'subscription' === product_type ) {
 					$( '.show_if_subscription' ).show();
 					$( '.hide_if_subscription' ).hide();
 				}
