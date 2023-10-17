@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 global $wp_locale;
 
 ?>
-<div class="variable_subscription_sync show_if_variable-subscription variable_subscription_pricing_2_3">
+<div class="variable_subscription_sync show_if_variable-subscription variable_subscription_pricing_2_3" style="display: none">
 	<div class="form-row form-row-full">
 		<div class="subscription_sync_week_month" style="<?php echo esc_attr( $display_week_month_select ); ?>">
 			<label for="variable_subscription_payment_sync_date[<?php echo esc_attr( $loop ); ?>]">
