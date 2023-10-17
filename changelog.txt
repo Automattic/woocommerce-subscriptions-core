@@ -2,6 +2,7 @@
 
 = 6.4.0 - xxxx-xx-xx =
 * Add - Use admin theme color and the correct WooCommerce colors.
+* Fix - Allow gateways to execute action on payment method deletion before updating the subscription.
 * Fix - Ensure subscriptions have a date created that correctly accounts for the site's timezone. Fixes issues with subscriptions having a date created double the site's UTC offset.
 * Dev - Updated the hooks for Checkout Blocks, replacing the deprecated `woocommerce_blocks_checkout_` prefixed hooks with `woocommerce_store_api_checkout`.
 * Dev - PHP 8.2: Fix "Creation of dynamic property" warnings.
