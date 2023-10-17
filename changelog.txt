@@ -2,6 +2,7 @@
 
 = 6.4.0 - xxxx-xx-xx =
 * Add - Use admin theme color and the correct WooCommerce colors.
+* Fix - Resolve an issue that would cause 3rd party plugin edit product fields with the show_if_variable-subscription class to be incorrectly hidden.
 * Dev - Updated the hooks for Checkout Blocks, replacing the deprecated `woocommerce_blocks_checkout_` prefixed hooks with `woocommerce_store_api_checkout`.
 
 = 6.3.0 - 2023-10-06 =
