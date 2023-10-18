@@ -5,7 +5,7 @@
 * Fix - Resolve an issue that would cause 3rd party plugin edit product fields with the show_if_variable-subscription class to be incorrectly hidden.
 * Fix - Allow gateways to execute action on payment method deletion before updating the subscription.
 * Fix - Ensure subscriptions have a date created that correctly accounts for the site's timezone. Fixes issues with subscriptions having a date created double the site's UTC offset.
-* Fix - When HPOS is enabled, fix quick editing the subscription statuses on the subscriptions list table.
+* Fix - When HPOS is enabled, fix quick-editing the subscription statuses on the admin list table.
 * Dev - Updated the hooks for Checkout Blocks, replacing the deprecated `woocommerce_blocks_checkout_` prefixed hooks with `woocommerce_store_api_checkout`.
 * Dev - PHP 8.2: Fix "Creation of dynamic property" warnings.
 
