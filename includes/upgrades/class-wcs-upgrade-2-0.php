@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+/**
+ * @deprecated
+ */
 class WCS_Upgrade_2_0 {
 
 	/* Cache of order item meta keys that were used to store subscription data in v1.5 */

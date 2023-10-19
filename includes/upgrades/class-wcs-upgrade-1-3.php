@@ -14,10 +14,13 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
-
+/**
+ * @deprecated x.x.x
+ */
 class WCS_Upgrade_1_3 {
 
 	public static function init() {
+		wcs_deprecated_function( __METHOD__, 'x.x.x' );
 		global $wpdb;
 
 		// Change transient timeout entries to be a vanilla option

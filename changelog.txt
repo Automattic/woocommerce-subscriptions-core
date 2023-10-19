@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 6.5.0 - xxxx-xx-xx =
+* Fix: Deprecate upgrading from versions of WooCommerce Subscriptions prior to 3.0.0.
+
 = 6.4.0 - 2023-10-18 =
 * Add - Use admin theme color and the correct WooCommerce colors.
 * Fix - Resolve an issue that would cause 3rd party plugin edit product fields with the show_if_variable-subscription class to be incorrectly hidden.
