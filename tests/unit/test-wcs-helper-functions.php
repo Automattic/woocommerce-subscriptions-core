@@ -107,6 +107,7 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 				'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 weeks' ) ),
 			)
 		);
+		$subscription->save();
 
 		// Validate WP_Error.
 		$this->assertWPError( wcs_trial_has_passed( 'INVALID_SUBSCRIPTION' ) );
@@ -117,10 +118,33 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 
 		// Trial finished yesterday.
 		$subscription->update_dates( array( 'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '-1 day' ) ) ) );
+		$subscription->save();
 		$this->assertTrue( wcs_trial_has_passed( $subscription ) );
 
 		// Subscription with no trial.
 		$subscription->update_dates( array( 'trial_end' => 0 ) );
+		$subscription->save();
 		$this->assertFalse( wcs_trial_has_passed( $subscription ) );
+	}
+
+	public function test_wcs_compare_order_billing_shipping_address() {
+		// Create an order with the same billing and shipping address.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_first_name( $order->get_billing_first_name() );
+		$order->set_shipping_last_name( $order->get_billing_last_name() );
+		$order->set_shipping_company( $order->get_billing_company() );
+		$order->set_shipping_address_1( $order->get_billing_address_1() );
+		$order->set_shipping_address_2( $order->get_billing_address_2() );
+		$order->set_shipping_city( $order->get_billing_city() );
+		$order->set_shipping_state( $order->get_billing_state() );
+		$order->set_shipping_postcode( $order->get_billing_postcode() );
+		$order->set_shipping_country( $order->get_billing_country() );
+
+		$this->assertTrue( wcs_compare_order_billing_shipping_address( $order ) );
+
+		// Adjust the shipping address to create a mismatch.
+		$order->set_shipping_address_1( $order->get_billing_address_1() . ' different' );
+
+		$this->assertFalse( wcs_compare_order_billing_shipping_address( $order ) );
 	}
 }

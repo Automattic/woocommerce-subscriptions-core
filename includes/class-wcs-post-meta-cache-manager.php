@@ -2,13 +2,14 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
 /**
- * Class for managing caches of post meta
+ * Class for managing caches of post meta.
  *
- * @version  2.3.0
+ * This class is intended to be used on stores using WP post architecture.
+ * Post related APIs and references in this class are expected, and shouldn't be replaced with CRUD equivalents.
+ *
+ * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
  * @category Class
- * @author   Prospress
  */
 class WCS_Post_Meta_Cache_Manager {
 
@@ -168,7 +169,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 * When a post object is restored from the trash, check if this class instance cares about updating its cache
 	 * to reflect the change.
 	 *
-	 * @param int $post_id The post being restroed.
+	 * @param int $post_id The post being restored.
 	 */
 	public function post_untrashed( $post_id ) {
 		$this->maybe_update_for_post_change( 'add', $post_id );
@@ -178,7 +179,7 @@ class WCS_Post_Meta_Cache_Manager {
 	 * When a post object is deleted or trashed, check if this class instance cares about updating its cache
 	 * to reflect the change.
 	 *
-	 * @param int $post_id The post being restroed.
+	 * @param int $post_id The post being restored.
 	 */
 	public function post_deleted( $post_id ) {
 		$this->maybe_update_for_post_change( 'delete', $post_id );
@@ -199,8 +200,12 @@ class WCS_Post_Meta_Cache_Manager {
 			throw new InvalidArgumentException( sprintf( __( 'Invalid update type: %s. Post update types supported are "add" or "delete". Updates are done on post meta directly.', 'woocommerce-subscriptions' ), $update_type ) );
 		}
 
+		$object = ( 'shop_order' === $this->post_type ) ? wc_get_order( $post_id ) : get_post( $post_id );
+
 		foreach ( $this->meta_keys as $meta_key => $value ) {
-			$meta_value = ( 'add' === $update_type ) ? get_post_meta( $post_id, $meta_key, true ) : '';
+			$property   = preg_replace( '/^_/', '', $meta_key );
+			$meta_value = ( 'add' === $update_type ) ? wcs_get_objects_property( $object, $property ) : '';
+
 			$this->maybe_trigger_update_cache_hook( $update_type, $post_id, $meta_key, $meta_value );
 		}
 	}

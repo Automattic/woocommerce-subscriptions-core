@@ -10,7 +10,7 @@
  * @subpackage  Gateways/PayPal
  * @category    Class
  * @author      Prospress
- * @since       2.0
+ * @since       1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,7 +22,7 @@ class WCS_PayPal_Standard_Switcher {
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function init() {
 
@@ -52,7 +52,7 @@ class WCS_PayPal_Standard_Switcher {
 	 * profile ID for PayPal Standard. However, PayPal Reference Transactions do allow these to be updated and because switching uses the checkout
 	 * process, we can migrate a subscription from PayPal Standard to Reference Transactions when the customer switches, so we will allow that.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function can_item_be_switched( $item_can_be_switch, $item, $subscription ) {
 
@@ -152,24 +152,29 @@ class WCS_PayPal_Standard_Switcher {
 	 *
 	 * @param int $order_id
 	 * @param array $posted
-	 * @since 2.0.15
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.15
 	 */
 	public static function save_old_paypal_meta( $order_id, $posted ) {
+		$order = wc_get_order( $order_id );
 
-		if ( wcs_order_contains_switch( $order_id ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'switch' ) );
+		if ( ! wcs_is_order( $order ) || ! wcs_order_contains_switch( $order ) ) {
+			return;
+		}
 
-			foreach ( $subscriptions as $subscription ) {
+		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'switch' ) );
 
-				if ( 'paypal' === $subscription->get_payment_method() ) {
+		foreach ( $subscriptions as $subscription ) {
 
-					$paypal_id = wcs_get_paypal_id( $subscription->get_id() );
+			if ( 'paypal' === $subscription->get_payment_method() ) {
 
-					if ( ! wcs_is_paypal_profile_a( $paypal_id, 'billing_agreement' ) ) {
-						update_post_meta( $order_id, '_old_payment_method', 'paypal_standard' );
-						update_post_meta( $order_id, '_old_paypal_subscription_id', $paypal_id );
-						update_post_meta( $subscription->get_id(), '_switched_paypal_subscription_id', $paypal_id );
-					}
+				$paypal_id = wcs_get_paypal_id( $subscription->get_id() );
+
+				if ( ! wcs_is_paypal_profile_a( $paypal_id, 'billing_agreement' ) ) {
+					$order->update_meta_data( '_old_payment_method', 'paypal_standard' );
+					$order->update_meta_data( '_old_paypal_subscription_id', $paypal_id );
+					$order->save();
+
+					update_post_meta( $subscription->get_id(), '_switched_paypal_subscription_id', $paypal_id );
 				}
 			}
 		}
@@ -179,7 +184,7 @@ class WCS_PayPal_Standard_Switcher {
 	 * Cancel subscriptions with PayPal Standard after the order has been successfully switched.
 	 *
 	 * @param WC_Order $order
-	 * @since 2.1
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	 */
 	public static function cancel_paypal_standard_after_switch( $order ) {
 
@@ -217,7 +222,7 @@ class WCS_PayPal_Standard_Switcher {
 	/**
 	 * Do not allow subscriptions to be switched using PayPal Standard as the payment method
 	 *
-	 * @since 2.0.16
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.16
 	 */
 	public static function get_available_payment_gateways( $available_gateways ) {
 
@@ -240,7 +245,7 @@ class WCS_PayPal_Standard_Switcher {
 	 * @param int $order_id
 	 * @param string $old_status
 	 * @param string $new_status
-	 * @since 2.0.15
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.15
 	 */
 	public static function maybe_cancel_paypal_after_switch( $order_id, $old_status, $new_status ) {
 
@@ -259,7 +264,7 @@ class WCS_PayPal_Standard_Switcher {
 	 *
 	 * Hooked onto 'wc_subscriptions_paypal_standard_suspension_note'. @see WCS_PayPal_Standard_Switcher::cancel_paypal_standard_after_switch()
 	 *
-	 * @since 3.1.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
 	 * @return string The note added to a subscription when the payment method changes from PayPal Standard to PayPal RT.
 	 */
 	public static function filter_suspended_switch_note() {

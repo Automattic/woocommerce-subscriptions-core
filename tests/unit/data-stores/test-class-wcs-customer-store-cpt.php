@@ -42,4 +42,5 @@ class WCS_Customer_Store_CPT_Test extends WCS_Base_Customer_Store_Test_Case {
 
 		$this->assertEquals( $subscription_ids, self::$store->get_users_subscription_ids( $this->customer_id ) );
 	}
+
 }

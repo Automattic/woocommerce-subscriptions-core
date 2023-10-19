@@ -5,7 +5,7 @@
  * @author      Prospress
  * @category    Admin
  * @package     WooCommerce Subscriptions/Admin/Upgrades
- * @version     2.0
+ * @version     1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,7 +21,7 @@ class WCS_Upgrade_1_5 {
 	 * previously it was possible only to buy a subscription product in a single quantity.
 	 *
 	 * @deprecated
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function upgrade_products() {
 		global $wpdb;
@@ -56,7 +56,7 @@ class WCS_Upgrade_1_5 {
 	 * Update subscription WP-Cron tasks to Action Scheduler.
 	 *
 	 * @deprecated
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function upgrade_hooks( $number_hooks_to_upgrade ) {
 

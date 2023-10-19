@@ -36,12 +36,21 @@ new WC_Subscriptions_Core_Plugin();
 
 ## Development
 
-This repository can also be loaded as standalone plugin, for development purposes only.
+This repository can also be loaded as WordPress plugin alongside WC Subscriptions or WCPay. **This is for development purposes only**.
+
+> **Warning**
+> `subscriptions-core` as a standalone plugin will not initialize itself, it requies a client product plugin - ie WooCommerce Payments, or WooCommerce Subscription to be active.
+
+### Prerequisites
+- [Node](https://nodejs.org/en/) LTS v16.x.x
+- [Composer](https://getcomposer.org/doc/00-intro.md) LTS v2.2.x
+- [NVM](https://github.com/nvm-sh/nvm#installing-and-updating): We recommend using NVM to ensure you’re aligned with the expected Node version. This repository contains [an `.nvmrc` file](.nvmrc) which helps ensure you are using the correct version of Node.
 
 After cloning the repo, install dependencies and build:
 
 ```
-npm install && composer install
+nvm use
+npm install
 npm run build
 ```
 

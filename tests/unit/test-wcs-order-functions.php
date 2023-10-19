@@ -35,15 +35,9 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		// test get subscriptions given a parent order
 		$subscription = WCS_Helper_Subscription::create_subscription();
-		wp_update_post(
-			array(
-				'ID'          => $subscription->get_id(),
-				'post_parent' => wcs_get_objects_property(
-					$order,
-					'id'
-				),
-			)
-		);
+		$subscription->set_parent_id( $order->get_id() );
+		$subscription->save();
+
 		$subscription = wcs_get_subscription( $subscription );
 
 		$tests = array(
@@ -89,5 +83,227 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( array(), wcs_get_subscriptions_for_order( wcs_get_objects_property( $renewal, 'id' ) ) );
 		$this->assertEquals( array(), wcs_get_subscriptions_for_order( wcs_get_objects_property( $renewal, 'id' ), array( 'order_type' => array( 'switch' ) ) ) );
 		$this->assertEquals( array(), wcs_get_subscriptions_for_order( wcs_get_objects_property( $renewal, 'id' ), array( 'order_type' => array( 'parent', 'switch' ) ) ) );
+	}
+
+	/**
+	 * Tests for wcs_get_subscription_orders()
+	 */
+	public function test_wcs_get_subscription_orders() {
+		$subscription   = WCS_Helper_Subscription::create_subscription();
+		$subscription_2 = WCS_Helper_Subscription::create_subscription();
+
+		// Create some orders related to the subscription and not.
+		$parent_order  = WCS_Helper_Subscription::create_parent_order( $subscription );
+		$renewal_order = WCS_Helper_Subscription::create_renewal_order( $subscription );
+		$switch_order  = WCS_Helper_Subscription::create_switch_order( $subscription );
+
+		$parent_order_2  = WCS_Helper_Subscription::create_parent_order( $subscription_2 );
+		$renewal_order_2 = WCS_Helper_Subscription::create_renewal_order( $subscription_2 );
+		$renewal_order_3 = WCS_Helper_Subscription::create_renewal_order( $subscription_2 );
+
+		// This order should never be returned.
+		$order = wc_create_order(); // no subscription relation (just a standard order) to test the negative case.
+
+		$parent_orders = wcs_get_subscription_orders( 'ids', 'parent' );
+
+		$this->assertEquals( 2, count( $parent_orders ) );
+		$this->assertArrayHasKey( $parent_order->get_id(), $parent_orders );
+		$this->assertArrayHasKey( $parent_order_2->get_id(), $parent_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $parent_orders );
+
+		$renewal_orders = wcs_get_subscription_orders( 'ids', 'renewal' );
+
+		$this->assertEquals( 3, count( $renewal_orders ) );
+		$this->assertArrayHasKey( $renewal_order->get_id(), $renewal_orders );
+		$this->assertArrayHasKey( $renewal_order_2->get_id(), $renewal_orders );
+		$this->assertArrayHasKey( $renewal_order_3->get_id(), $renewal_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $renewal_orders );
+
+		$switch_orders = wcs_get_subscription_orders( 'ids', 'switch' );
+
+		$this->assertEquals( 1, count( $switch_orders ) );
+		$this->assertArrayHasKey( $switch_order->get_id(), $switch_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $switch_orders );
+
+		$all_orders = wcs_get_subscription_orders( 'ids', 'any' );
+
+		$this->assertEquals( 6, count( $all_orders ) );
+		$this->assertArrayHasKey( $parent_order->get_id(), $all_orders );
+		$this->assertArrayHasKey( $parent_order_2->get_id(), $all_orders );
+		$this->assertArrayHasKey( $renewal_order->get_id(), $all_orders );
+		$this->assertArrayHasKey( $renewal_order_2->get_id(), $all_orders );
+		$this->assertArrayHasKey( $renewal_order_3->get_id(), $all_orders );
+		$this->assertArrayHasKey( $switch_order->get_id(), $all_orders );
+		$this->assertArrayNotHasKey( $order->get_id(), $all_orders );
+	}
+
+	/**
+	 * Test the wcs_get_orders_with_meta_query behavior.
+	 */
+	public function test_wcs_get_orders_with_meta_query() {
+
+		$subscription_on_hold = WCS_Helper_Subscription::create_subscription(
+			array(
+				'status' => 'on-hold',
+			)
+		);
+
+		$subscription_active = WCS_Helper_Subscription::create_subscription(
+			array(
+				'status' => 'active',
+			)
+		);
+
+		$order_pending = wc_create_order(
+			array(
+				'status' => 'pending',
+			)
+		);
+
+		$order_on_hold = wc_create_order(
+			array(
+				'status' => 'on-hold',
+			)
+		);
+
+		$order_complete = wc_create_order(
+			array(
+				'status' => 'complete',
+			)
+		);
+
+		// On-hold - a status used by both Orders and Subscriptions
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'on-hold',
+			)
+		);
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( [ $subscription_on_hold->get_id() ], $subscriptions );
+
+		// Active - a subscriptions only status.
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'wc-active',
+			)
+		);
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals( [ $subscription_active->get_id() ], $subscriptions );
+
+		// Any status with type set to shop_subscription should return all subscriptions with all statuses.
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'any',
+			)
+		);
+
+		$this->assertIsArray( $subscriptions );
+		sort( $subscriptions );
+		$this->assertEquals(
+			[
+				$subscription_on_hold->get_id(),
+				$subscription_active->get_id(),
+			],
+			$subscriptions
+		);
+
+		// Verify that we aren't modifying queries without type set, which should only return orders with any order statuses.
+		$orders = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'status' => 'any',
+			)
+		);
+
+		$this->assertIsArray( $orders );
+		sort( $orders );
+		$this->assertEquals(
+			[
+				$order_pending->get_id(),
+				$order_on_hold->get_id(),
+				$order_complete->get_id(),
+			],
+			$orders
+		);
+
+		$is_hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
+
+		// An invalid status
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => 'rubbish',
+			)
+		);
+
+		if ( $is_hpos_enabled ) {
+			// No subscriptions should match the invalid status.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEmpty( $subscriptions );
+		} else {
+			// In non-HPOS environments, WP_Query simply ignores invalid post_stati, so no clause would be applied.
+			$this->assertIsArray( $subscriptions );
+			sort( $subscriptions );
+			$this->assertEquals(
+				[
+					$subscription_on_hold->get_id(),
+					$subscription_active->get_id(),
+				],
+				$subscriptions
+			);
+		}
+
+		// An invalid status is ignored and does not apply as a clause to the query, while the valid, active status still applies.
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => [ 'rubbish', 'wc-active' ],
+			)
+		);
+
+		$this->assertIsArray( $subscriptions );
+		$this->assertEquals(
+			[
+				$subscription_active->get_id(),
+			],
+			$subscriptions
+		);
+
+		// An empty status
+		$subscriptions = wcs_get_orders_with_meta_query(
+			array(
+				'return' => 'ids',
+				'type'   => 'shop_subscription',
+				'status' => '',
+			)
+		);
+
+		if ( $is_hpos_enabled ) {
+			// In HPOS environments, WooCommerce core will convert an empty `status` to all valid statuses, the equivalent of
+			// setting status = 'any'
+			$this->assertIsArray( $subscriptions );
+			sort( $subscriptions );
+			$this->assertEquals(
+				[
+					$subscription_on_hold->get_id(),
+					$subscription_active->get_id(),
+				],
+				$subscriptions
+			);
+		} else {
+			// In non-HPOS environments, WP_Query will set an empty post_status argument to `publish`.
+			$this->assertIsArray( $subscriptions );
+			$this->assertEmpty( $subscriptions );
+		}
+
 	}
 }

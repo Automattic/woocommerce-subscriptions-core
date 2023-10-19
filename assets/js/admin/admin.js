@@ -40,21 +40,14 @@ jQuery( function ( $ ) {
 				'hide_if_variable-subscription'
 			);
 
-			/**
-			 * WC core will hide and show product specific fields in show_and_hide_panels(), however that function only runs on specific events, but not
-			 * when variations are added or loaded. To make sure our subscription-related fields aren't shown by default when a variation is added, we set
-			 * subscription pricing elements "base" cases here.
-			 *
-			 * Note: show() being called on the 'hide_if_' fields and vice versa is intentional. All fields are set in their inverse state first, and
-			 * then shown/hidden by product type afterwards.
-			 */
-			$( '.hide_if_variable-subscription' ).show();
-			$( '.show_if_variable-subscription' ).hide();
+			var product_type = $( 'select#product-type' ).val();
 
-			if ( $( 'select#product-type' ).val() == 'variable-subscription' ) {
+			if ( 'variable-subscription' === product_type ) {
+				// Hide and show subscription fields when variable subscription is selected
 				$( 'input#_downloadable' ).prop( 'checked', false );
 				$( 'input#_virtual' ).prop( 'checked', false );
 
+				// Variable subscriptions inherit fields from variable products.
 				$( '.show_if_variable' ).show();
 				$( '.hide_if_variable' ).hide();
 				$( '.show_if_variable-subscription' ).show();
@@ -67,14 +60,7 @@ jQuery( function ( $ ) {
 					.addClass( 'form-row-full' )
 					.removeClass( 'form-row-last' );
 			} else {
-				if ( 'variable' === $( 'select#product-type' ).val() ) {
-					$( '.show_if_variable-subscription' ).hide();
-					$( '.show_if_variable' ).show();
-					$( '.hide_if_variable' ).hide();
-					$.showOrHideStockFields();
-				}
-
-				if ( 'subscription' === $( 'select#product-type' ).val() ) {
+				if ( 'subscription' === product_type ) {
 					$( '.show_if_subscription' ).show();
 					$( '.hide_if_subscription' ).hide();
 				}
@@ -84,6 +70,26 @@ jQuery( function ( $ ) {
 					.prev( '.form-row' )
 					.removeClass( 'form-row-full' )
 					.addClass( 'form-row-last' );
+			}
+		},
+		enableSubscriptionProductFields: function () {
+			product_type = $( 'select#product-type' ).val();
+			enable_type  = '';
+
+			// Variable subscriptions need to enable variable product fields and subscriptions products need to enable simple product fields.
+			if ( 'variable-subscription' === product_type ) {
+				enable_type = 'variable'
+			} else if ( 'subscription' === product_type ) {
+				enable_type = 'simple';
+			}
+
+			if ( enable_type ) {
+				$( `.enable_if_${ enable_type }` ).each( function () {
+					$( this ).removeClass( 'disabled' );
+					if ( $( this ).is( 'input' ) ) {
+						$( this ).prop( 'disabled', false );
+					}
+				} );
 			}
 		},
 		showOrHideStockFields: function () {
@@ -647,6 +653,7 @@ jQuery( function ( $ ) {
 	if ( $( '.options_group.pricing' ).length > 0 ) {
 		$.setSalePeriod();
 		$.showHideSubscriptionMeta();
+		$.enableSubscriptionProductFields();
 		$.showHideVariableSubscriptionMeta();
 		$.setSubscriptionLengths();
 		$.setTrialPeriods();
@@ -718,9 +725,34 @@ jQuery( function ( $ ) {
 	$( 'body' ).on( 'woocommerce-product-type-change', function () {
 		$.showHideSubscriptionMeta();
 		$.showHideVariableSubscriptionMeta();
+		$.enableSubscriptionProductFields();
 		$.showHideSyncOptions();
 		$.showHideSubscriptionsPanels();
 	} );
+
+	// WC Core enable/disable product fields when saving attributes. We need to make sure we re-enable our fields.
+	$( document.body ).on( 'woocommerce_attributes_saved', function () {
+		$.enableSubscriptionProductFields();
+	} );
+
+	/**
+	 * This function is called after WC Core fetches new attribute HTML and appends the elements asynchronously.
+	 * It triggers relevant functions to hide/show and enable/disable fields.
+	 *
+	 * @see add_attribute_to_list() in assets/js/admin/meta-boxes-product.js
+	 *
+	 * Since there is no specific event to hook into when the async call is resolved, we rely on WC clicking
+	 * the attribute metabox heading after fetching the HTML but before disabling the product fields.
+	 * We take advantage of this by attaching a click event listener to the '.woocommerce_attribute.wc-metabox h3'
+	 * element and waiting a short time before re-enabling the product fields.
+	 */
+	$( document ).on( 'click', '.woocommerce_attribute.wc-metabox h3', function() {
+		setTimeout( function() {
+			$.showHideSubscriptionMeta();
+			$.showHideVariableSubscriptionMeta();
+			$.enableSubscriptionProductFields();
+		}, 100 );
+	});
 
 	$( 'input#_downloadable, input#_virtual' ).on( 'change', function () {
 		$.showHideSubscriptionMeta();
@@ -1370,4 +1402,21 @@ jQuery( function ( $ ) {
 		},
 	};
 	wcs_accounts_and_privacy_settings.init();
+
+	$( '#wpbody' ).on( 'click', '#doaction, #doaction2', function () {
+		var action = $( this ).is( '#doaction' )
+			? $( '#bulk-action-selector-top' ).val()
+			: $( '#bulk-action-selector-bottom' ).val();
+
+		if ( 'wcs_remove_personal_data' === action ) {
+			return window.confirm(
+				WCSubscriptions.i18n_remove_personal_data_notice
+			);
+		}
+	} );
+
+	// On the subscriptions list table empty state screen, add the is-busy class to the button when clicked.
+	$( '.woo_subscriptions_empty_state__button_container a' ).on( 'click', function ( e ) {
+		$( this ).addClass( 'is-busy' );
+	} );
 } );

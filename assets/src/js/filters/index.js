@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { __experimentalRegisterCheckoutFilters } from '@woocommerce/blocks-checkout';
+import { registerCheckoutFilters } from '@woocommerce/blocks-checkout';
 
 /**
  * Internal dependencies
@@ -25,7 +25,7 @@ import {
  * If an error is thrown, it would be visible for store managers only.
  */
 export const registerFilters = () => {
-	__experimentalRegisterCheckoutFilters( 'woocommerce-subscriptions', {
+	registerCheckoutFilters( 'woocommerce-subscriptions', {
 		// subscriptions data here comes from register_endpoint_data /cart registration.
 		totalLabel: ( label, { subscriptions } ) => {
 			if ( 0 < subscriptions?.length ) {

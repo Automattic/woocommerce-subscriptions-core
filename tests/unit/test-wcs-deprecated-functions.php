@@ -10,21 +10,6 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 		add_filter( 'woocommerce_order_item_get_subtotal', array( $this, 'return_0_if_empty' ) );
 	}
 
-	public function tear_down() {
-		global $wpdb;
-
-		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription' );
-		_delete_all_posts();
-
-		// Delete line items
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}woocommerce_order_items" );
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}woocommerce_order_itemmeta" );
-
-		$this->commit_transaction();
-		parent::tear_down();
-		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
-	}
-
 	/**
 	 * includes/wcs-deprecated-functions.php
 	 */
@@ -61,6 +46,9 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 	 * includes/wcs_deprecated-functions.php
 	 */
 	public function test_wcs_get_subscription_id_from_key() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestSkipped( 'Deprecated function wcs_get_subscription_from_key does not work with HPOS enabled.' );
+		}
 		$product = WCS_Helper_Product::create_simple_subscription_product();
 
 		$order = WCS_Helper_Subscription::create_order();
@@ -96,6 +84,9 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 	 * includes/wcs_deprecated-functions.php
 	 */
 	public function test_wcs_get_subscription_from_key() {
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->markTestSkipped( 'Deprecated function wcs_get_subscription_from_key does not work with HPOS enabled.' );
+		}
 		$product = WCS_Helper_Product::create_simple_subscription_product();
 
 		$order = WCS_Helper_Subscription::create_order();

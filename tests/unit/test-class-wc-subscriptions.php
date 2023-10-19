@@ -6,22 +6,23 @@
 class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 	/** An array of basic subscriptions used to test against */
-	public static $subscriptions = [];
+	private $subscriptions = [];
 
 	/**
 	 * Setup the suite for testing the WC_Subscription class
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function set_up_before_class() {
-		self::$subscriptions = WCS_Helper_Subscription::create_subscriptions();
+	public function set_up() {
+		parent::set_up();
+		$this->subscriptions = WCS_Helper_Subscription::create_subscriptions();
 	}
 
 	/**
 	 * Forces WC_Subscription::payment_method_supports( $feature ) to always return false. This is to
 	 * help test more of the logic within WC_Subscription::can_be_updated_to().
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 * @return false
 	 */
 	public function payment_method_supports_false() {
@@ -32,7 +33,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Force WC_Subscription::completed_payment_count() to return 10. This is to test almost every condition
 	 * within WC_Subscription::can_date_be_updated();
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function completed_payment_count_stub() {
 		return 10;
@@ -42,7 +43,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-pending' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_pending() {
 
@@ -56,7 +57,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'pending' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to pending.' );
@@ -69,7 +70,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-active' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_active() {
 
@@ -82,7 +83,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'  => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			if ( ! isset( $expected_results[ $status ] ) ) {
 				continue;
@@ -98,7 +99,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		}
 
 		// Subscriptions pending cancelation can only be reactivated if the subscription's end date is still in the future.
-		$subcription = self::$subscriptions['pending-cancel'];
+		$subcription = $this->subscriptions['pending-cancel'];
 
 		// End date in the future
 		$subcription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
@@ -123,8 +124,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_be_updated_to( 'active' ), '[FAILED]: Should not be able to activate an on-hold subscription if the payment gateway does not support it.' );
-		$this->assertEquals( true, self::$subscriptions['pending']->can_be_updated_to( 'active' ), '[FAILED]: Should be able to update pending status to active if the payment method does not support subscription reactivation.' );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_be_updated_to( 'active' ), '[FAILED]: Should not be able to activate an on-hold subscription if the payment gateway does not support it.' );
+		$this->assertEquals( true, $this->subscriptions['pending']->can_be_updated_to( 'active' ), '[FAILED]: Should be able to update pending status to active if the payment method does not support subscription reactivation.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -132,7 +133,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-on-hold' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_onhold() {
 		$expected_results = [
@@ -145,7 +146,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'on-hold' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to on-hold.' );
@@ -158,8 +159,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should not be able to put subscription on-hold if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['pending']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should be able to update pending status on-hold if the payment method does not support subscription suspension.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should not be able to put subscription on-hold if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['pending']->can_be_updated_to( 'on-hold' ), '[FAILED]: Should be able to update pending status on-hold if the payment method does not support subscription suspension.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -167,7 +168,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-cancelled' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_cancelled() {
 		$expected_results = [
@@ -180,7 +181,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'wc-cancelled' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to wc-cancelled.' );
@@ -193,10 +194,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['pending-cancel']->can_be_updated_to( 'cancelled' ) );
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'cancelled' ) );
-		$this->assertEquals( false, self::$subscriptions['pending']->can_be_updated_to( 'cancelled' ) );
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['pending-cancel']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['pending']->can_be_updated_to( 'cancelled' ) );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_be_updated_to( 'cancelled' ) );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -204,7 +205,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-switched' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_switched() {
 		$expected_results = [
@@ -217,7 +218,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false, // should statuses be able to be udpated to their previous status ?!
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'wc-switched' );
 
@@ -228,7 +229,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-expired' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_expired() {
 		$expected_results = [
@@ -241,7 +242,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'wc-expired' );
 
@@ -252,7 +253,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'wc-pending-cancel' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_pending_cancellation() {
 		$expected_results = [
@@ -265,7 +266,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'pending-cancel' );
 
@@ -275,7 +276,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'pending-cancel' ), '[FAILED]: Active Subscription statuses cannot be updated to pending-cancel if the payment method does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'pending-cancel' ), '[FAILED]: Active Subscription statuses cannot be updated to pending-cancel if the payment method does not support it.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -283,7 +284,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'trash' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_trash() {
 		$expected_results = [
@@ -296,7 +297,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => true,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			// although wc-trash is not a legitimate status, it should still work
 			$actual_result = $subscription->can_be_updated_to( 'wc-trash' );
@@ -307,8 +308,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, self::$subscriptions['active']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to  move active subscription to the trash if the payment method does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['pending']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to move a Pending subscription with a payment method that does not support subscription cancellation to the trash.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to  move active subscription to the trash if the payment method does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['pending']->can_be_updated_to( 'trash' ), '[FAILED]: Should not be able to move a Pending subscription with a payment method that does not support subscription cancellation to the trash.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -316,7 +317,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the logic around the function WC_Subscriptions::can_be_updated_to( 'deleted' );
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_deleted() {
 		$expected_results = [
@@ -329,7 +330,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'deleted' );
@@ -341,7 +342,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test case testing what happens when a unexpected status is entered.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_be_updated_to_other() {
 		$expected_results = [
@@ -354,7 +355,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'fgsdyfg' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: Should not be able to update subscription (' . $status . ') to fgsdyfg.' );
@@ -367,7 +368,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::can_date_be_updated( 'date_created' )
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_start_date_be_updated() {
 		$expected_results = [
@@ -380,7 +381,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_date_be_updated( 'date_created' );
 
@@ -392,7 +393,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::can_date_be_updated( 'trial_end' )
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_date_be_updated() {
 		$expected_results = [
@@ -405,7 +406,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_date_be_updated( 'trial_end' );
@@ -423,9 +424,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( true, self::$subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( true, $this->subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -434,7 +435,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::can_date_be_updated( 'end' ) and
 	 * WC_Subscription::can_date_be_updated( 'next_payment' )
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_can_end_and_next_payment_date_be_updated() {
 		$expected_results = [
@@ -447,7 +448,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'switched'       => false,
 		];
 
-		foreach ( self::$subscriptions as $status => $subscription ) {
+		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_date_be_updated( 'next_payment' );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: Updating next_payment date of subscription (' . $status . ').' );
@@ -460,9 +461,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( true, self::$subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
-		$this->assertEquals( false, self::$subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( true, $this->subscriptions['pending']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should able to update pending subscription even if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['active']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
+		$this->assertEquals( false, $this->subscriptions['on-hold']->can_date_be_updated( 'trial_end' ), '[FAILED]: Should not be able to update an active subscription trial_end date if the payment gateway does not support it.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 	}
@@ -470,18 +471,18 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::calculate_date() when given rubbish.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_date_rubbish() {
 
-		$this->assertEmpty( self::$subscriptions['active']->calculate_date( 'dhfu' ) );
+		$this->assertEmpty( $this->subscriptions['active']->calculate_date( 'dhfu' ) );
 	}
 
 	/**
 	 * Test calculating next payment date
 	 * Could possible remove this test as it's pretty redundant if we're also testing the function: WC_Subscription:calculate_next_payment_date()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_next_payment_date() {
 
@@ -504,7 +505,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Test calculating next payment date
 	 * Could possible remove this test as it's pretty redundant if we're also testing the function: WC_Subscription:calculate_next_payment_date()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_next_payment_date_when_start_time_is_last_payment_time() {
 
@@ -529,7 +530,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test calculating trial_end date.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_trial_end_date() {
 		$now                  = time();
@@ -551,7 +552,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing the logic around calculating the end of prepaid term dates
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_end_of_prepaid_term_date() {
 		// Test with next payment being in the future. If there is a future payment that means the customer has paid up until that payment date.
@@ -596,7 +597,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * dates using the suffix. Fetching dates that already exists.
 	 *
 	 * @expectedDeprecated WC_Subscription::get_date
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_already_set() {
 
@@ -660,7 +661,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test for random cases.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_other() {
 		// set a date for the pending subscription to test against
@@ -682,7 +683,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the get_date() function specifying a date that is not GMT.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_not_gmt() {
 
@@ -702,7 +703,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Tests for WC_Subscription::get_gate( $date, 'gmt' )
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_gmt() {
 
@@ -722,7 +723,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Tests for WC_Subscription::calculate_next_payment_date() on active subscriptions.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_next_payment_date_active() {
 
@@ -812,7 +813,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Tests for WC_Subscription::calculate_next_payment_date() on subscriptions with different statuses
 	 * Overall this a pretty pointless test because there's no checks before calulating the next payment date for status
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_calculate_next_payment_date_per_status() {
 
@@ -841,7 +842,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test WC_Subscripiton::delete_date() throws an exception when trying to delete start date.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_delete_start_date() {
 		// make sure the start date doesn't exist
@@ -860,15 +861,15 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test the exception is thrown when trying to delete the last payment date.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_delete_last_payment_date() {
 		$caught = false;
 
 		try {
-			self::$subscriptions['active']->delete_date( 'last_order_date_created' );
+			$this->subscriptions['active']->delete_date( 'last_order_date_created' );
 		} catch ( Exception $e ) {
-			$caught = 'Subscription #' . self::$subscriptions['active']->get_id() . ': The last_order_date_created date of a subscription can not be deleted. You must delete the order.' === $e->getMessage();
+			$caught = 'Subscription #' . $this->subscriptions['active']->get_id() . ': The last_order_date_created date of a subscription can not be deleted. You must delete the order.' === $e->getMessage();
 		}
 
 		$this->assertTrue( $caught, '[FAILED]: Exception and the correct message should have been caught when trying to delete a subscriptions last payment date.' );
@@ -877,33 +878,33 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Delete a valid date value and check the post meta is updated correctly.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_delete_date_valid() {
-		$old_date = self::$subscriptions['active']->get_date( 'end' );
+		$old_date = $this->subscriptions['active']->get_date( 'end' );
 
-		self::$subscriptions['active']->delete_date( 'end' );
-		$this->assertEquals( 0, self::$subscriptions['active']->get_date( 'end' ) );
-		$this->assertEmpty( get_post_meta( self::$subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), true ) );
+		$this->subscriptions['active']->delete_date( 'end' );
+		$this->assertEquals( 0, $this->subscriptions['active']->get_date( 'end' ) );
+		$this->assertEmpty( get_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), true ) );
 
-		update_post_meta( self::$subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
+		update_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
 	}
 
 	/**
 	 * Try deleting a date that doesn't exist.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_delete_date_other() {
-		self::$subscriptions['pending']->delete_date( 'wcs_rubbish' );
-		$this->assertEquals( 0, self::$subscriptions['pending']->get_date( 'wcs_rubbish' ) );
-		$this->assertEmpty( get_post_meta( self::$subscriptions['pending']->get_id(), wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
+		$this->subscriptions['pending']->delete_date( 'wcs_rubbish' );
+		$this->assertEquals( 0, $this->subscriptions['pending']->get_date( 'wcs_rubbish' ) );
+		$this->assertEmpty( get_post_meta( $this->subscriptions['pending']->get_id(), wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
 	}
 
 	/**
 	 * Test completed payment count for subscription that has no renewal orders.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_one() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
@@ -923,11 +924,11 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Test completed_payment_count() for subscription that have not yet been completed.
 	 * Only tests valid cases.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_none() {
 		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
-			$completed_payments = self::$subscriptions[ $status ]->get_payment_count();
+			$completed_payments = $this->subscriptions[ $status ]->get_payment_count();
 			$this->assertEmpty( $completed_payments );
 		}
 	}
@@ -935,7 +936,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::get_completed_count() where the subscription has many completed payments.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_many() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
@@ -956,7 +957,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::get_completed_count() for those weird cases that we probably don't expect to happen, but potentially could.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_invalid_cases() {
 		// new WP_Post with subscription as parent
@@ -970,45 +971,39 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			]
 		);
 
-		update_post_meta( $post_id, '_subscription_renewal', self::$subscriptions['active']->get_id() );
+		update_post_meta( $post_id, '_subscription_renewal', $this->subscriptions['active']->get_id() );
 
-		$this->assertEmpty( self::$subscriptions['active']->get_payment_count() );
+		$this->assertEmpty( $this->subscriptions['active']->get_payment_count() );
 	}
 
 	/**
 	 * Run a few tests for susbcriptions that have one failed payment.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_failed_payment_count_one() {
-
 		$order = WCS_Helper_Subscription::create_order();
-		wp_update_post(
-			[
-				'ID'          => wcs_get_objects_property( $order, 'id' ),
-				'post_status' => 'wc-failed',
-			]
-		);
+
+		$order->set_status( 'wc-failed' );
+		$order->save();
 
 		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
 
-			WCS_Related_Order_Store::instance()->add_relation( $order, self::$subscriptions[ $status ], 'renewal' );
+			WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 
-			$failed_payments = self::$subscriptions[ $status ]->get_failed_payment_count();
+			$failed_payments = $this->subscriptions[ $status ]->get_failed_payment_count();
 
 			$expected_count = 1;
 
 			$this->assertEquals( $expected_count, $failed_payments );
 		}
-
-		// use this approach if $order->update_status( 'failed' ) creates issues
 	}
 
 	/**
 	 * Tests for WC_Subscription::get_failed_payment_count() for a subscription that has
 	 * many failed payments.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_failed_payment_count_many() {
 		$orders = [];
@@ -1016,12 +1011,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		for ( $i = 0; $i < 20; $i++ ) {
 
 			$order = WCS_Helper_Subscription::create_order();
-			wp_update_post(
-				[
-					'ID'          => wcs_get_objects_property( $order, 'id' ),
-					'post_status' => 'wc-failed',
-				]
-			);
+			$order->update_status( 'wc-failed' );
+			$order->save();
 			$orders[] = $order;
 		}
 
@@ -1030,10 +1021,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$expected_count = 0;
 			foreach ( $orders as $order ) {
 
-				WCS_Related_Order_Store::instance()->add_relation( $order, self::$subscriptions[ $status ], 'renewal' );
+				WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 				$expected_count++;
 
-				$failed_payments = self::$subscriptions[ $status ]->get_failed_payment_count();
+				$failed_payments = $this->subscriptions[ $status ]->get_failed_payment_count();
 
 				$this->assertEquals( $expected_count, $failed_payments );
 			}
@@ -1043,7 +1034,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test getting a single related order for a subscription.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_related_order() {
 		// stub REMOTE_ADDR to run in test conditions @see wc_create_order():L104 - not sure if this value exists in travis so dont override if so.
@@ -1073,7 +1064,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test WC_Subscription::get_related_orders() for more than one related order.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_related_orders() {
 
@@ -1122,7 +1113,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating an active/cancelled subscription to pending cancellation.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_pending_canellation() {
 		$expected_to_pass = [ 'active', 'on-hold', 'cancelled' ];
@@ -1137,15 +1128,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			if ( in_array( $status, $expected_to_pass, true ) ) {
 
 				try {
-
 					$start_date = gmdate( 'Y-m-d H:i:s', strtotime( '-1 month' ) );
-					$subscription->update_dates( [ 'start' => $start_date ] );
 
+					$subscription->update_dates( [ 'start' => $start_date ] );
 					$subscription->update_status( 'pending-cancel' );
 
-					$this->assertEquals( time(), $subscription->get_time( 'end' ), '', 2 );
+					$this->assertEqualsWithDelta( time(), $subscription->get_time( 'end' ), 3 ); // delta set to 3 as a margin of error between the dates, shouldn't be more than 1 but just to be safe.
 				} catch ( Exception $e ) {
-
 					$this->fail( $e->getMessage() );
 				}
 			} else {
@@ -1165,7 +1154,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a subscription status to active.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_active() {
 
@@ -1210,16 +1199,20 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 */
 	public function test_set_suspension_count() {
-		$subscription = WCS_Helper_Subscription::create_subscription();
-		$suspensions  = 10;
+		$subscription         = WCS_Helper_Subscription::create_subscription();
+		$expected_suspensions = 10;
 
-		$this->assertNotEquals( $suspensions, $subscription->get_suspension_count() );
-		$this->assertNotEquals( $suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertNotEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 
-		$subscription->set_suspension_count( $suspensions );
+		$subscription->set_suspension_count( $expected_suspensions );
 		$subscription->save();
-		$this->assertEquals( $suspensions, $subscription->get_suspension_count() );
-		$this->assertEquals( $suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		$this->assertEquals( $expected_suspensions, $subscription->get_suspension_count() );
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->assertEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 	}
 
 	/**
@@ -1230,7 +1223,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Checks the suspension count on the subscription is updated correctly.
 	 *
 	 * @depends test_set_suspension_count
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_onhold() {
 		$expected_to_pass = [ 'pending', 'active' ];
@@ -1272,7 +1265,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Test updating the status of a subscription to expired and making sure the
 	 * correct end date is set correctly.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_expired() {
 		$expected_to_pass = [ 'active', 'pending', 'pending-cancel', 'on-hold' ];
@@ -1321,7 +1314,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a subscription status to cancelled. Potentially look at combining the test function
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_cancelled() {
 		$expected_to_pass = [ 'active', 'pending', 'pending-cancel', 'on-hold' ];
@@ -1367,7 +1360,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a subscription to either expired, cancelled or switched.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_user_inactive_update_status_to_cancelled() {
 		// create a new user with no active subscriptions
@@ -1417,7 +1410,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Test to make sure that a users role is set to inactive when updating an active
 	 * or pending subscription to expired.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_user_inactive_update_status_to_expired() {
 		// create a new user with no active subscriptions
@@ -1464,27 +1457,27 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Check exceptions are thrown correctly when trying to update status from active to pending.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_exception_thrown_one() {
 		$this->setExpectedException( 'Exception', 'Unable to change subscription status to "pending".' );
-		self::$subscriptions['active']->update_status( 'pending' );
+		$this->subscriptions['active']->update_status( 'pending' );
 	}
 
 	/**
 	 * Check exceptions are thrown correctly when trying to update status from pending to pending-cancel.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_exception_thrown_two() {
 		$this->setExpectedException( 'Exception', 'Unable to change subscription status to "pending-cancel".' );
-		self::$subscriptions['pending']->update_status( 'pending-cancel' );
+		$this->subscriptions['pending']->update_status( 'pending-cancel' );
 	}
 
 	/**
 	 * Test $subscription->set_parent_id()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_set_parent_id_valid() {
 
@@ -1509,7 +1502,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Test $subscription->set_parent_id()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_set_parent_valid() {
 
@@ -1534,7 +1527,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Test $subscription->needs_payment() if subscription is pending or failed or $0
 	 *
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_needs_payment_pending_failed( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1555,7 +1548,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 * @depends test_needs_payment_pending_failed
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_needs_payment_parent_order( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1580,14 +1573,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 * @depends test_needs_payment_parent_order
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_needs_payment_renewal_orders( $status ) {
 
 		// For pending status, the renewal order checks are by passed anyway as parent::needs_payment() evaluates true
 		if ( 'pending' === $status ) {
 			$this->markTestSkipped( 'Test not required' );
-			return;
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1622,7 +1614,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Tests for has_ended within the WC_Subscription
 	 *
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_has_ended_statuses( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1653,7 +1645,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing $subscription->get_status()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_status() {
 		$subscriptions = WCS_Helper_Subscription::create_subscriptions();
@@ -1661,24 +1653,24 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		foreach ( $subscriptions as $status => $subscription ) {
 			$this->assertEquals( $status, $subscription->get_status() );
 		}
+	}
 
+	/**
+	 * Tests that subscriptions loaded from the database with draft or auto-draft status are treated as pending.
+	 */
+	public function test_draft_subscription_statuses() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
-		wp_update_post(
-			[
-				'ID'          => $subscription->get_id(),
-				'post_status' => 'draft',
-			]
-		);
-		$this->assertEquals( 'pending', $subscription->get_status() );
+		$subscription->set_status( 'draft' );
+		$subscription->save();
 
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
-		wp_update_post(
-			[
-				'ID'          => $subscription->get_id(),
-				'post_status' => 'auto-draft',
-			]
-		);
-		$this->assertEquals( 'pending', $subscription->get_status() );
+		// Confirm that a draft subscription when loaded has a pending status.
+		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
+
+		$subscription->set_status( 'auto-draft' );
+		$subscription->save();
+
+		// Confirm that a draft subscription when loaded has a pending status.
+		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
 	}
 
 	/**
@@ -1707,7 +1699,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::test_get_total_initial_payment()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_total_initial_payment() {
 		$subscription = WCS_Helper_Subscription::create_subscription();
@@ -1792,7 +1784,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing $subscription->get_time()
 	 *
 	 * @dataProvider get_time_data
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_time( $date_type, $date_to_set, $expected ) {
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -1814,7 +1806,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing $subscription get_last_payment_date function
 	 *
 	 * @expectedDeprecated WC_Subscription::get_last_payment_date
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_last_payment_date() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
@@ -1823,12 +1815,16 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$initial_order = WCS_Helper_Subscription::create_order();
 		$initial_order = self::set_paid_dates_on_order( $initial_order, '2014-07-07 10:10:10' );
+		$initial_order->save();
+
 		$subscription->set_parent_id( wcs_get_objects_property( $initial_order, 'id' ) );
+		$subscription->save();
 
 		$this->assertEquals( '2014-07-07 10:10:10', PHPUnit_Utils::call_method( $subscription, 'get_last_payment_date' ) );
 
 		$renewal_order = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_order = self::set_paid_dates_on_order( $renewal_order, '2015-07-07 12:12:12' );
+		$renewal_order->save();
 
 		$this->assertEquals( '2015-07-07 12:12:12', PHPUnit_Utils::call_method( $subscription, 'get_last_payment_date' ) );
 	}
@@ -1836,12 +1832,12 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Set the created/paid dates on an order in a version independent way
 	 *
-	 * @since 2.2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public static function set_paid_dates_on_order( $order, $paid_date ) {
 
-		if ( is_callable( [ $order, 'set_date_create' ] ) ) {
-			$order->set_date_create( wcs_date_to_time( $paid_date ) );
+		if ( is_callable( [ $order, 'set_date_created' ] ) ) {
+			$order->set_date_created( wcs_date_to_time( $paid_date ) );
 		} else {
 			wp_update_post(
 				[
@@ -1865,7 +1861,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing $subscription update_last_payment_date function
 	 *
 	 * @expectedDeprecated WC_Subscription::update_last_payment_date
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_last_payment_date() {
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -1903,7 +1899,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing the protected $subscription->get_price_string_details method
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_price_string_details() {
 		$subscription   = WCS_Helper_Subscription::create_subscription();
@@ -1946,10 +1942,11 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Tests $subscription->cancel_order
 	 *
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_cancel_order_data_provider( $status ) {
 		if ( in_array( $status, [ 'cancelled', 'expired' ], true ) ) {
+			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
 
@@ -1968,7 +1965,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Another set of tests for cancel_order() to check if subscriptions are being set to pending-cancelled correctly.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_cancel_order_extra() {
 		// create an active subscription with a valid next payment date to test it being updated to pending-cancel
@@ -2050,7 +2047,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing $subscription->get_last_order
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_last_order() {
 		$subscription = WCS_Helper_Subscription::create_subscription();
@@ -2078,7 +2075,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::get_view_order_url()
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_view_order_url() {
 		$subscription = WCS_Helper_Subscription::create_subscription();
@@ -2093,7 +2090,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::is_download_permitted
 	 *
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_is_download_permitted( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -2133,7 +2130,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::has_product
 	 *
 	 * @dataProvider has_product_data
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_has_product( $add_product, $add_variation, $input_id, $expected_outcome ) {
 		$subscription = WCS_Helper_Subscription::create_subscription();
@@ -2187,7 +2184,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::get_sign_up_fee() and takes the data from get_sign_up_fee_data
 	 *
 	 * @dataProvider get_sign_up_fee_data
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_sign_up_fee( $add_product, $product_signup, $add_variation, $variation_signup, $expected_result ) {
 		$subscription = WCS_Helper_Subscription::create_subscription();
@@ -2337,7 +2334,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::get_items_sign_up_fee
 	 *
 	 * @dataProvider get_items_sign_up_fee_data
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_items_sign_up_fee( $has_parent, $has_item, $args, $expected ) {
 		$subscription = WCS_Helper_Subscription::create_subscription();
@@ -2412,11 +2409,12 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Test payment_failed is correctly setting all basic subscriptions to on-hold
 	 *
 	 * @dataProvider subscription_status_data_provider
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_payment_failed_statuses( $status ) {
 
 		if ( in_array( $status, [ 'expired', 'pending-cancel', 'cancelled' ], true ) ) {
+			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
 
@@ -2429,7 +2427,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing payment_failed is settings the last orders as failed.
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_payment_failed() {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
@@ -2474,9 +2472,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * A basic WC_Subscription::payment_complete() test case.  These tests do not include checking the correct order notes are added
 	 *
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_payment_complete() {
+		$hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
 
 		$subscription = WCS_Helper_Subscription::create_subscription();
 		$order        = WCS_Helper_Subscription::create_order();
@@ -2487,7 +2486,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->set_suspension_count( 3 );
 		$subscription->save();
 		$this->assertEquals( 3, $subscription->get_suspension_count() );
-		$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 
 		$subscription->payment_complete();
 		$subscription->save();
@@ -2495,7 +2496,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'active', $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
-		$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		if ( ! $hpos_enabled ) {
+			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+		}
 		$this->assertThat(
 			$order->get_status(),
 			$this->logicalOr(
@@ -2567,7 +2570,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::update_dates()
 	 *
 	 * @dataProvider update_dates_data
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_date( $dates_to_set, $input, $expected_outcome ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
@@ -2720,7 +2723,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Testing WC_Subscription::update_dates()
 	 *
 	 * @dataProvider update_dates_data_exceptions
-	 * @since 2.0
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_date_exceptions( $dates_to_set, $input, $expected_outcome ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
