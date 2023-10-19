@@ -1,4 +1,6 @@
 <?php
+use Automattic\WooCommerce\StoreApi\Exceptions\RouteException;
+
 /**
  * Handles the change address via checkout flow.
  *
@@ -18,7 +20,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		add_action( 'woocommerce_checkout_before_customer_details', array( __CLASS__, 'maybe_add_hidden_input_for_address_change' ) );
 		add_filter( 'woocommerce_update_order_review_fragments', array( __CLASS__, 'maybe_modify_checkout_template_for_address_change' ) );
 		add_action( 'woocommerce_checkout_process', array( __CLASS__, 'process_address_change' ) );
-		add_action( 'wp_loaded', array( __CLASS__, 'maybe_navigated_away_from_change_address_page' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_navigated_away_from_change_address_page' ) );
 		add_filter( 'woocommerce_cart_needs_payment', array( __CLASS__, 'cart_requires_payment' ) );
 		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'validate_add_to_cart' ), 10, 1 );
 
@@ -27,11 +29,12 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		}
 
 		// BLOCK CHECKOUT SUPPORT
-		add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'maybe_update_subscription_addresses_from_rest_api' ), 10, 2 );
+		add_action( 'woocommerce_store_api_checkout_update_order_meta', array( __CLASS__, 'maybe_update_subscription_addresses_from_rest_api' ), 10, 2 );
 		add_action( 'woocommerce_order_needs_payment', array( __CLASS__, 'order_does_not_need_payment' ), 10, 2 );
-		///woocommerce_get_checkout_order_received_url --- change the order's redirect URL to send the customer back to the subscription page.
-		// To filter the block checkout we need to use JS hook/filters. See examples here:
-		//https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-block/available-filters.md#changing-the-wording-and-the-link-on-the-proceed-to-checkout-button-when-a-specific-item-is-in-the-cart
+		add_action( 'woocommerce_get_checkout_order_received_url', array( __CLASS__, 'change_order_received_url' ), 10, 2 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'process_request' ) );
+		//woocommerce_order_item_quantity -- dont reserve stock for this order.
+		//woocommerce_get_checkout_order_received_url --- change the order's redirect URL to send the customer back to the subscription page.
 	}
 
 	/**
@@ -324,7 +327,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 			return;
 		}
 
-		if ( ! is_admin() && ! isset( $_GET['update_subscription_address'] ) && ! is_ajax() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['update_subscription_address'] ) && ! is_admin() && ! is_ajax() && ! WC()->is_rest_api_request() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			WC()->cart->empty_cart( true );
 		}
 	}
@@ -341,7 +344,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	/**
 	 * Gets the subscription being changed from the cart, otherwise returns false.
 	 *
-	 * @return bool|WC_Subscription The subscription being changed, or false if none.
+	 * @return WC_Subscription|bool The subscription being changed, or false if none.
 	 */
 	public static function get_subscription_from_cart() {
 		if ( ! function_exists( 'WC' ) || ! isset( WC()->cart ) ) {
@@ -414,6 +417,8 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	public static function maybe_update_subscription_addresses_from_rest_api( $order ) {
 		$subscription = self::get_subscription_from_cart();
 
+		$e = new Exception();
+
 		if ( ! $subscription ) {
 			return;
 		}
@@ -423,5 +428,61 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 
 		// Update the subscription from the order.
 		// Set order meta so this order can be tied up later.
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @param string $url
+	 * @param [type] $order
+	 * @return void
+	 */
+	public static function change_order_received_url( $url, $order ) {
+		if ( ! $order->meta_exists( '_subscription_address_change' ) ) {
+			return $url;
+		}
+
+		$subscription = wcs_get_subscription( $order->get_meta( '_subscription_address_change' ) );
+
+		return $subscription->get_view_order_url();
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @param [type] $order
+	 * @return void
+	 */
+	public static function process_request( $order ) {
+		if ( ! $order->meta_exists( '_subscription_address_change' ) ) {
+			return;
+		}
+
+		$subscription = wcs_get_subscription( $order->get_meta( '_subscription_address_change' ) );
+
+		wcs_copy_order_address( $order, $subscription );
+
+		// Remove existing subscription shipping items before updating.
+		foreach ( (array) $subscription->get_items( 'shipping' ) as $item_id => $item ) {
+			$subscription->remove_item( $item_id );
+		}
+
+		// Update the subscription from the cart.
+		$cart = WC()->cart;
+
+		WC()->checkout->create_order_tax_lines( $subscription, $cart );
+
+		// Update the subscription shipping items.
+		WC_Subscriptions_Checkout::add_shipping( $subscription, $cart );
+
+		$subscription->set_shipping_total( $cart->shipping_total );
+		$subscription->set_cart_tax( $cart->tax_total );
+		$subscription->set_shipping_tax( $cart->shipping_tax_total );
+		$subscription->set_total( $cart->total );
+		$subscription->save();
+
+		if ( count( WC()->cart->get_cart() ) > 0 ) {
+			WC()->cart->empty_cart();
+		}
 	}
 }
