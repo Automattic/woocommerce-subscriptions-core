@@ -56,17 +56,27 @@ class WC_Subscriptions_Addresses {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
 	 */
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
-		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
-			// If WC Blocks is used for checkout or the subscription doesn't support amount changes use the existing edit-address url.
-			$edit_address_url = ! $subscription->payment_method_supports( 'subscription_amount_changes' )
-				? add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) )
-				: add_query_arg( array( 'update_subscription_address' => $subscription->get_id() ), wc_get_checkout_url() );
-
-			$actions['change_address'] = array(
-				'url'  => esc_url( $edit_address_url ),
-				'name' => __( 'Change address', 'woocommerce-subscriptions' ),
-			);
+		// You can only change the address of active or on-hold subscriptions that need shipping.
+		if ( ! $subscription->needs_shipping_address() || ! $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+			return $actions;
 		}
+
+		// Subscriptions that support amount changes can be changed via the checkout.
+		if ( $subscription->payment_method_supports( 'subscription_amount_changes' ) ) {
+			$edit_address_url = add_query_arg(
+				array(
+					'update_subscription_address' => $subscription->get_id(),
+					'wcs_nonce'                   => wp_create_nonce( 'wcs_edit_address_' . $subscription->get_id() ),
+				),
+				wc_get_checkout_url() );
+		} else {
+			$edit_address_url = add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) );
+		}
+
+		$actions['change_address'] = array(
+			'url'  => esc_url( $edit_address_url ),
+			'name' => __( 'Change address', 'woocommerce-subscriptions' ),
+		);
 
 		return $actions;
 	}
