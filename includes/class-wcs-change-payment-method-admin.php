@@ -94,7 +94,7 @@ class WCS_Change_Payment_Method_Admin {
 		}
 
 		// If the subscription has a payment method but has turned off auto-renewal, display a checkbox so automatic renewals can be resumed.
-		if ( $subscription->get_requires_manual_renewal() && ! empty( $payment_method ) ) {
+		if ( $subscription->get_requires_manual_renewal() && ! empty( $payment_method ) && ! wcs_is_manual_renewal_required() ) {
 			echo '<p class="form-field form-field-wide">';
 			woocommerce_form_field(
 				'wc-subscription-auto-renew',
