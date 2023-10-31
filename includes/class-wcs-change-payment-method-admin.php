@@ -100,7 +100,7 @@ class WCS_Change_Payment_Method_Admin {
 				'wc-subscription-auto-renew',
 				[
 					'type'    => 'checkbox',
-					'label'   => esc_html__( 'Auto renew', 'woocommerce-subscriptions' ) . wcs_help_tip( __( "This subscription has automatic renewals turned off. Use this option to turn them on.", 'woocommerce-subscriptions' ) ),
+					'label'   => esc_html__( 'Auto renew', 'woocommerce-subscriptions' ) . wcs_help_tip( __( 'This subscription has automatic renewals turned off. Use this option to turn them on.', 'woocommerce-subscriptions' ) ),
 					'default' => false,
 				]
 			);
