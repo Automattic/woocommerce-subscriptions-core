@@ -150,7 +150,8 @@ class WCS_Change_Payment_Method_Admin {
 
 		$payment_gateway = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
 
-		if ( isset( $_POST['wc-subscription-auto-renew'] ) && $_POST['wc-subscription-auto-renew'] ) {
+		// If the auto renewal toggle is checked. Enable auto renewals. We don't need to handle unchecked values as that's the default.
+		if ( isset( $_POST['wc-subscription-auto-renew'] ) && (bool) $_POST['wc-subscription-auto-renew'] ) {
 			$subscription->set_requires_manual_renewal( false );
 			$subscription->add_order_note( __( 'Admin turned on automatic renewals via the Edit Subscription screen.', 'woocommerce-subscriptions' ), false, true );
 		}
