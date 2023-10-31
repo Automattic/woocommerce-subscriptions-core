@@ -112,7 +112,8 @@ class WC_Subscriptions_Synchroniser {
 		// If it's an initial sync order and the total is zero, and nothing needs to be shipped, do not reduce stock
 		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
 
-		add_filter( 'wcs_subscription_product_grouping_key', __CLASS__ . '::add_to_recurring_product_grouping_key', 10, 2 );
+		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
+		add_filter( 'woocommerce_subscriptions_item_grouping_key', __CLASS__ . '::add_to_subscription_item_grouping_key', 10, 2 );
 
 		// Add defaults for our options.
 		add_filter( 'default_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'option_default' ), 10, 3 );
@@ -1207,14 +1208,42 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
-	 * Alters the default subscription grouping key to ensure synced products are grouped separately.
+	 * Alters the recurring cart item key to ensure synced products are grouped separately.
+	 *
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param string $cart_key  The recurring cart item key.
+	 * @param array  $cart_item The cart item's data.
+	 *
+	 * @return string The cart item recurring cart key with a synced product flag if the product is synced.
+	 */
+	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
+		return self::add_to_recurring_product_grouping_key( $cart_key, $cart_item['data'] );
+	}
+
+	/**
+	 * Alters the subscription grouping key to ensure synced products are grouped separately.
+	 *
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @param string                $key        The subscription grouping key.
+	 * @param WC_Order_Item_Product $order_item The order item that the key is being generated for.
+	 *
+	 * @return string The subscription product grouping key with a synced product flag if the product is synced.
+	 */
+	public static function add_to_subscription_item_grouping_key( $key, $order_item ) {
+		return self::add_to_recurring_product_grouping_key( $key, $order_item->get_product() );
+	}
+
+	/**
+	 * Alters the subscription grouping key to ensure synced products are grouped separately.
 	 *
 	 * @param string     $key     The subscription product grouping key.
 	 * @param WC_Product $product The subscription product
 	 *
 	 * @return string The subscription product grouping key with a synced product flag if the product is synced.
 	 */
-	public static function add_to_recurring_product_grouping_key( $key, $product ) {
+	private static function add_to_recurring_product_grouping_key( $key, $product ) {
 		if ( false === strpos( $key, '_synced' ) && self::is_product_synced( $product ) ) {
 			$key .= '_synced';
 		}
@@ -1590,16 +1619,5 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $end_date;
-	}
-
-	/**
-	 * If the cart item is synced, add a '_synced' string to the recurring cart key.
-	 *
-	 * @deprecated 6.4.0
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
-	 */
-	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
-		wcs_deprecated_function( __METHOD__, '6.4.0', 'WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key' );
-		return self::add_to_recurring_product_grouping_key( $cart_key, $cart_item['data'] );
 	}
 }

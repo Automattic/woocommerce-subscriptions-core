@@ -979,3 +979,17 @@ function wcs_order_contains_early_renewal( $order ) {
 	 */
 	return apply_filters( 'woocommerce_subscriptions_is_early_renewal_order', $is_early_renewal, $order );
 }
+
+/**
+ * Construct a cart key based on the billing schedule of a subscription product.
+ *
+ * Subscriptions groups products by billing schedule when calculating cart totals, so that shipping and other "per order" amounts
+ * can be calculated for each group of items for each renewal. This method constructs a cart key based on the billing schedule
+ * to allow products on the same billing schedule to be grouped together - free trials and synchronisation is accounted for by
+ * using the first renewal date (if any) for the subscription.
+ *
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+ */
+function wcs_get_subscription_item_grouping_key( $item, $renewal_time = '' ) {
+	return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', wcs_get_subscription_grouping_key( $item->get_product(), $renewal_time ), $item );
+}
