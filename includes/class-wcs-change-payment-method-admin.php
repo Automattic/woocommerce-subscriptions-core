@@ -18,7 +18,6 @@ class WCS_Change_Payment_Method_Admin {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function display_fields( $subscription ) {
-
 		$payment_method        = $subscription->get_payment_method();
 		$valid_payment_methods = self::get_valid_payment_methods( $subscription );
 
@@ -36,7 +35,7 @@ class WCS_Change_Payment_Method_Admin {
 		if ( count( $valid_payment_methods ) > 1 ) {
 
 			$found_method = false;
-			echo '<label>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</label>';
+			echo '<label>' . esc_html__( 'Payment method', 'woocommerce-subscriptions' ) . '</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
 			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
@@ -49,7 +48,7 @@ class WCS_Change_Payment_Method_Admin {
 			echo '</select>';
 
 		} elseif ( count( $valid_payment_methods ) == 1 ) {
-			echo '<strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong><br/>' . esc_html( current( $valid_payment_methods ) );
+			echo '<strong>' . esc_html__( 'Payment method', 'woocommerce-subscriptions' ) . '</strong><br/>' . esc_html( current( $valid_payment_methods ) );
 			// translators: %s: gateway ID.
 			echo wcs_help_tip( sprintf( _x( 'Gateway ID: [%s]', 'The gateway ID displayed on the Edit Subscriptions screen when editing payment method.', 'woocommerce-subscriptions' ), key( $valid_payment_methods ) ) );
 			echo '<input type="hidden" value="' . esc_attr( key( $valid_payment_methods ) ) . '" id="_payment_method" name="_payment_method">';
