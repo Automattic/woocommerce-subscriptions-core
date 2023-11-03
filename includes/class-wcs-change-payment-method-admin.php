@@ -142,6 +142,13 @@ class WCS_Change_Payment_Method_Admin {
 
 		// Update the payment method for manual only if it has changed.
 		if ( ! $subscription->is_manual() || 'manual' !== $payment_method ) {
+			// If the subscription is being changed away from manual and it is flagged as requiring manual payments turn on automatic renewals.
+			if ( 'manual' !== $payment_method && $subscription->get_requires_manual_renewal() && ! wcs_is_manual_renewal_required() && $payment_gateway->supports( 'subscriptions' ) ) {
+				$subscription->set_requires_manual_renewal( false );
+				// Translators: Placeholder is the payment gateway title.
+				$subscription->add_order_note( sprintf( __( 'Admin turned on automatic renewals by changing payment method to "%s" via the Edit Subscription screen.', 'woocommerce-subscriptions' ), $payment_gateway->get_title() ), false, true );
+			}
+
 			$subscription->set_payment_method( $payment_gateway, $payment_method_meta );
 			$subscription->save();
 		}
