@@ -33,17 +33,13 @@ class WCS_Change_Payment_Method_Admin {
 		echo '<p class="form-field form-field-wide">';
 
 		if ( count( $valid_payment_methods ) > 1 ) {
-
-			$found_method = false;
 			echo '<label>' . esc_html__( 'Payment method', 'woocommerce-subscriptions' ) . '</label>';
 			echo '<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">';
 
-			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
+			$selected_payment_method = $subscription->get_requires_manual_renewal() ? 'manual' : $subscription->get_payment_method();
 
-				echo '<option value="' . esc_attr( $gateway_id ) . '" ' . selected( $payment_method, $gateway_id, false ) . '>' . esc_html( $gateway_title ) . '</option>';
-				if ( $payment_method == $gateway_id ) {
-					$found_method = true;
-				}
+			foreach ( $valid_payment_methods as $gateway_id => $gateway_title ) {
+				echo '<option value="' . esc_attr( $gateway_id ) . '" ' . selected( $selected_payment_method, $gateway_id, false ) . '>' . esc_html( $gateway_title ) . '</option>';
 			}
 			echo '</select>';
 
