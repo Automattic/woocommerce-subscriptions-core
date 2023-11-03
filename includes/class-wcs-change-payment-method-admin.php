@@ -89,20 +89,6 @@ class WCS_Change_Payment_Method_Admin {
 			}
 		}
 
-		// If the subscription has a payment method but has turned off auto-renewal, display a checkbox so automatic renewals can be resumed.
-		if ( $subscription->get_requires_manual_renewal() && ! empty( $payment_method ) && ! wcs_is_manual_renewal_required() ) {
-			echo '<p class="form-field form-field-wide">';
-			woocommerce_form_field(
-				'wc-subscription-auto-renew',
-				[
-					'type'    => 'checkbox',
-					'label'   => esc_html__( 'Auto renew', 'woocommerce-subscriptions' ) . wcs_help_tip( __( 'This subscription has automatic renewals turned off. Use this option to turn them on.', 'woocommerce-subscriptions' ) ),
-					'default' => false,
-				]
-			);
-			echo '</p>';
-		}
-
 		wp_nonce_field( 'wcs_change_payment_method_admin', '_wcsnonce' );
 	}
 
@@ -145,12 +131,6 @@ class WCS_Change_Payment_Method_Admin {
 		}
 
 		$payment_gateway = ( 'manual' != $payment_method ) ? $payment_gateways[ $payment_method ] : '';
-
-		// If the auto renewal toggle is checked. Enable auto renewals. We don't need to handle unchecked values as that's the default.
-		if ( isset( $_POST['wc-subscription-auto-renew'] ) && (bool) $_POST['wc-subscription-auto-renew'] ) {
-			$subscription->set_requires_manual_renewal( false );
-			$subscription->add_order_note( __( 'Admin turned on automatic renewals via the Edit Subscription screen.', 'woocommerce-subscriptions' ), false, true );
-		}
 
 		if ( ! $subscription->is_manual() && ( '' == $payment_gateway || $subscription->get_payment_method() != $payment_gateway->id ) ) {
 			// Before updating to a new payment gateway make sure the subscription status is updated with the current gateway
