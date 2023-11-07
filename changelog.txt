@@ -3,6 +3,7 @@
 = 6.5.0 - xxxx-xx-xx =
 * Add - When a customer toggles automatic renewals on or off via their My Account page, add a note to the subscription to record that event.
 * Fix - When a subscription is flagged as requiring manual payments, allow admin users to turn on automatic payments for a subscription via the Edit Subscription page by selecting a new payment method.
+* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatibile way.
 
 = 6.4.0 - 2023-10-18 =
 * Add - Use admin theme color and the correct WooCommerce colors.
