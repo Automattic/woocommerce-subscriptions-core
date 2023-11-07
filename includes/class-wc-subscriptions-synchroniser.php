@@ -1605,7 +1605,7 @@ class WC_Subscriptions_Synchroniser {
 	 * Alters the recurring cart item key to ensure synced products are grouped separately.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
-	 * @deprecated 6.6.0
+	 * @deprecated 6.5.0
 	 *
 	 * @param string $cart_key  The recurring cart item key.
 	 * @param array  $cart_item The cart item's data.
@@ -1613,7 +1613,7 @@ class WC_Subscriptions_Synchroniser {
 	 * @return string The cart item recurring cart key with a synced product flag if the product is synced.
 	 */
 	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
-		wcs_deprecated_function( __METHOD__, '6.6.0', __CLASS__ . '::add_to_recurring_product_grouping_key' );
+		wcs_deprecated_function( __METHOD__, '6.5.0', __CLASS__ . '::add_to_recurring_product_grouping_key' );
 		return self::add_to_recurring_product_grouping_key( $cart_key, $cart_item );
 	}
 }
