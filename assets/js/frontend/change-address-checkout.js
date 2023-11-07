@@ -26,7 +26,7 @@ jQuery( function ( $ ) {
 			$( document ).on( 'click', '.wc-block-components-checkout-place-order-button', this.submit_change_address );
 
 			this.trigger_event_on_loading_complete();
-			//this.track_place_order_button_status();
+			this.track_place_order_button_status();
 		},
 
 		/**
@@ -46,12 +46,7 @@ jQuery( function ( $ ) {
 		 * Replace the default Place Order button with a button that will process an address change instead of submit the checkout for payment.
 		 */
 		replace_order_button: function () {
-			//return;
 			var order_button = $( '.wc-block-components-checkout-place-order-button' );
-
-			order_button.unbind( 'click' );
-			return;
-			//order_button.addAttr( 'onclick', wcs_change_subscription_shipping_data.change_address_submit );
 
 			// The submit change address button is a clone of the order button.
 			var submit_button = order_button.clone();
@@ -63,8 +58,10 @@ jQuery( function ( $ ) {
 			submit_button.find( 'span' ).text( wcs_change_subscription_shipping_data.strings.change_address_submit );
 			submit_button.addClass( wc_subscription_change_address_checkout.change_address_button_submit );
 			submit_button.addClass( 'wc-block-components-button--loading' );
-			submit_button.prop( 'disabled', true );
-			submit_button.html( '<span className="wc-block-components-spinner" aria-hidden="true" />' );
+
+			// Looking into adding loading graphic to button when it's clicked. May need to use a react component.
+			//submit_button.prop( 'disabled', true );
+			//submit_button.html( '<span className="wc-block-components-spinner" aria-hidden="true" />' );
 
 			// Insert the Change Address button into the DOM.
 			submit_button.appendTo( '.wc-block-checkout__actions_row' );
