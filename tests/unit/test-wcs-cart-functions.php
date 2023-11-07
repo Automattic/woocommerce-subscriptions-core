@@ -283,5 +283,63 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		// Reset cart
 		WC()->cart = $wc_cart;
 	}
+
+	/**
+	 * Tests WC_Subscriptions_Cart::get_recurring_cart_key()
+	 */
+	public function test_get_recurring_cart_key() {
+		$cart_item = array( 'data' => WCS_Helper_Product::create_simple_subscription_product() );
+
+		// The default monthly product should have a key the matches the format: YYYY_MM_DD_monthly. Later tests will test specific payment dates.
+		$this->assertMatchesRegularExpression( '/^\d{4}_[0-9]{2}_[0-9]{2}_monthly$/', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item ) );
+
+		// Period and interval.
+		$next_payment_time = '2027-11-24 09:33:12';
+		$cart_item['data']->update_meta_data( '_subscription_period_interval', 3 );
+		$cart_item['data']->update_meta_data( '_subscription_period', 'year' );
+
+		$this->assertSame( '2027_11_24_every_3rd_year', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
+
+		// Synced product.
+		update_option( WC_Subscriptions_Synchroniser::$setting_id, 'yes' ); // Enable syncing.
+		$next_payment_time = '2024-05-14 03:00:00';
+		$cart_item['data']->update_meta_data( '_subscription_period_interval', 2 );
+		$cart_item['data']->update_meta_data( '_subscription_period', 'weekly' );
+		$cart_item['data']->update_meta_data( '_subscription_payment_sync_date', '4' );
+
+		$this->assertSame( '2024_05_14_every_2nd_weekly_synced', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
+
+		// Trial with end date.
+		$next_payment_time = '2024-05-14 14:29:42';
+		$cart_item['data']->update_meta_data( '_subscription_trial_length', 2 );
+		$cart_item['data']->update_meta_data( '_subscription_trial_period', 'day' );
+		$cart_item['data']->update_meta_data( '_subscription_period', 'month' );
+		$cart_item['data']->update_meta_data( '_subscription_period_interval', 1 );
+
+		$this->assertSame( '2024_05_14_monthly_after_a_2_day_trial_synced', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
+
+		// End date.
+		$next_payment_time = '2028-03-12 14:29:42';
+		$cart_item['data']->update_meta_data( '_subscription_length', 12 );
+		$cart_item['data']->delete_meta_data( '_subscription_trial_length' );
+		$cart_item['data']->delete_meta_data( '_subscription_trial_period' );
+		$cart_item['data']->delete_meta_data( '_subscription_payment_sync_date' );
+
+		$this->assertSame( '2028_03_12_monthly_for_12_months', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
+
+		// Filter.
+		add_action(
+			'woocommerce_subscriptions_recurring_cart_key',
+			function( $key, $filter_cart_item ) use ( $cart_item ) {
+				$this->assertSame( $filter_cart_item, $cart_item );
+				return $key . '_filtered';
+			},
+			10,
+			2
+		);
+
+		$this->assertSame( '2028_03_12_monthly_for_12_months_filtered', WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, wcs_date_to_time( $next_payment_time ) ) );
+	}
+
 }
 
