@@ -720,7 +720,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param array           $resubscribe_order_ids
 	 */
 	public function set_resubscribe_order_ids_cache( $subscription, $resubscribe_order_ids ) {
 		update_post_meta( $subscription->get_id(), '_subscription_resubscribe_order_ids_cache', $resubscribe_order_ids );
