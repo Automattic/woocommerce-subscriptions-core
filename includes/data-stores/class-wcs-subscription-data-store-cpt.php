@@ -710,6 +710,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param DateTime|string $date
 	 */
 	public function set_renewal_order_ids_cache( $subscription, $renewal_order_ids ) {
+		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'renewal' );
 		update_post_meta( $subscription->get_id(), '_subscription_renewal_order_ids_cache', $renewal_order_ids );
 	}
 
@@ -723,6 +724,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param DateTime|string $date
 	 */
 	public function set_resubscribe_order_ids_cache( $subscription, $resubscribe_order_ids ) {
+		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'resubscribe' );
 		update_post_meta( $subscription->get_id(), '_subscription_resubscribe_order_ids_cache', $resubscribe_order_ids );
 	}
 
@@ -736,6 +738,25 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param DateTime|string $date
 	 */
 	public function set_switch_order_ids_cache( $subscription, $switch_order_ids ) {
+		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'switch' );
 		update_post_meta( $subscription->get_id(), '_subscription_switch_order_ids_cache', $switch_order_ids );
+	}
+
+	/**
+	 * Deletes a subscription's related order cache - including any duplicates.
+	 *
+	 * WC core between v8.2 and v8.4 would duplicate related order cache meta when backfilling the post record. This method deletes all
+	 * instances of a order type cache (duplicates included). It is intended to be called before setting the cache manually.
+	 *
+	 * @see https://github.com/woocommerce/woocommerce/pull/41281
+	 * @see https://github.com/Automattic/woocommerce-subscriptions-core/pull/538
+	 *
+	 * @param WC_Subscription $subscription      The Subscription.
+	 * @param string          $relationship_type The type of subscription related order relationship to delete. One of: 'renewal', 'resubscribe', 'switch'.
+	 */
+	private function cleanup_backfill_related_order_cache_duplicates( $subscription, $relationship_type ) {
+		if ( ! wcs_is_woocommerce_pre( '8.2' ) && wcs_is_woocommerce_pre( '8.4' ) ) {
+			delete_post_meta( $subscription->get_id(), "_subscription_{$relationship_type}_order_ids_cache" );
+		}
 	}
 }
