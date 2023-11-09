@@ -889,7 +889,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return DateTime|null
+	 * @return string
 	 */
 	public function get_schedule_start( $subscription ) {
 		return $subscription->get_date( 'start' );
@@ -901,7 +901,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return DateTime|null
+	 * @return string
 	 */
 	public function get_schedule_trial_end( $subscription ) {
 		return $subscription->get_date( 'trial_end' );
@@ -913,7 +913,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return DateTime|null
+	 * @return string
 	 */
 	public function get_schedule_next_payment( $subscription ) {
 		return $subscription->get_date( 'next_payment' );
@@ -925,7 +925,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return DateTime|null
+	 * @return string
 	 */
 	public function get_schedule_cancelled( $subscription ) {
 		return $subscription->get_date( 'cancelled' );
@@ -937,7 +937,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return DateTime|null
+	 * @return string
 	 */
 	public function get_schedule_end( $subscription ) {
 		return $subscription->get_date( 'end' );
@@ -949,7 +949,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 	 *
 	 * @param \WC_Subscription $subscription Subscription object.
 	 *
-	 * @return DateTime|null
+	 * @return string
 	 */
 	public function get_schedule_payment_retry( $subscription ) {
 		return $subscription->get_date( 'payment_retry' );

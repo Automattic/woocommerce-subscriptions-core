@@ -629,7 +629,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param string $date
 	 */
 	public function set_schedule_start( $subscription, $date ) {
 		update_post_meta( $subscription->get_id(), '_schedule_start', $date );
@@ -642,7 +642,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param string $date
 	 */
 	public function set_schedule_trial_end( $subscription, $date ) {
 		update_post_meta( $subscription->get_id(), '_schedule_trial_end', $date );
@@ -655,7 +655,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param string $date
 	 */
 	public function set_schedule_next_payment( $subscription, $date ) {
 		update_post_meta( $subscription->get_id(), '_schedule_next_payment', $date );
@@ -668,7 +668,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param string $date
 	 */
 	public function set_schedule_cancelled( $subscription, $date ) {
 		update_post_meta( $subscription->get_id(), '_schedule_cancelled', $date );
@@ -681,7 +681,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param string $date
 	 */
 	public function set_schedule_end( $subscription, $date ) {
 		update_post_meta( $subscription->get_id(), '_schedule_end', $date );
@@ -694,7 +694,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param string $date
 	 */
 	public function set_schedule_payment_retry( $subscription, $date ) {
 		update_post_meta( $subscription->get_id(), '_schedule_payment_retry', $date );
@@ -707,7 +707,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param array           $renewal_order_ids
 	 */
 	public function set_renewal_order_ids_cache( $subscription, $renewal_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'renewal' );
@@ -721,7 +721,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param array           $resubscribe_order_ids
 	 */
 	public function set_resubscribe_order_ids_cache( $subscription, $resubscribe_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'resubscribe' );
@@ -735,7 +735,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * when backfilling subscription data to the WP_Post database.
 	 *
 	 * @param WC_Subscription $subscription
-	 * @param DateTime|string $date
+	 * @param array           $switch_order_ids
 	 */
 	public function set_switch_order_ids_cache( $subscription, $switch_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'switch' );
