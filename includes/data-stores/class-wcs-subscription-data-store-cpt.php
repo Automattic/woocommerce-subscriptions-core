@@ -745,8 +745,11 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	/**
 	 * Deletes a subscription's related order cache - including any duplicates.
 	 *
-	 * WC core between v8.2 and v8.4 would duplicate related order cache meta when backfilling the post record. This method deletes all
+	 * WC core between v8.1 and v8.4 would duplicate related order cache meta when backfilling the post record. This method deletes all
 	 * instances of a order type cache (duplicates included). It is intended to be called before setting the cache manually.
+	 *
+	 * Note: this function assumes that the fix to WC (listed below) will be included in 8.4. If it's pushed back, this function will need to be updated,
+	 * if it's brought forward to 8.3, it can be updated but is not strictly required.
 	 *
 	 * @see https://github.com/woocommerce/woocommerce/pull/41281
 	 * @see https://github.com/Automattic/woocommerce-subscriptions-core/pull/538
@@ -755,7 +758,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string          $relationship_type The type of subscription related order relationship to delete. One of: 'renewal', 'resubscribe', 'switch'.
 	 */
 	private function cleanup_backfill_related_order_cache_duplicates( $subscription, $relationship_type ) {
-		if ( ! wcs_is_woocommerce_pre( '8.2' ) && wcs_is_woocommerce_pre( '8.4' ) ) {
+		// Delete the related order cache on versions of WC after 8.1 but before 8.4.
+		if ( ! wcs_is_woocommerce_pre( '8.1' ) && wcs_is_woocommerce_pre( '8.4' ) ) {
 			delete_post_meta( $subscription->get_id(), "_subscription_{$relationship_type}_order_ids_cache" );
 		}
 	}
