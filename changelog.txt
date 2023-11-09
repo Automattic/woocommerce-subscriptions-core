@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.5.0 - xxxx-xx-xx =
+= 6.5.0 - 2023-11-09 =
 * Add - When a customer toggles automatic renewals on or off via their My Account page, add a note to the subscription to record that event.
 * Fix - When a subscription is flagged as requiring manual payments, allow admin users to turn on automatic payments for a subscription via the Edit Subscription page by selecting a new payment method.
 * Fix - When processing an early renewal order, make sure the suspension count is reset back to 0 on payment complete.
