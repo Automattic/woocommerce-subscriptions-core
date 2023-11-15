@@ -1609,26 +1609,16 @@ class WCS_Cart_Renewal {
 		 * this is the status check in DraftOrderTrait::is_valid_draft_order()) and the order doesn't have that status. Orders
 		 * which already have the checkout-draft status don't need to be updated to bypass the checkout block logic.
 		 */
-		if ( $has_status || 'checkout-draft' !== $status ) {
+		if ( $has_status || ! $order || 'checkout-draft' !== $status ) {
 			return $has_status;
 		}
 
-		/**
-		 * This function is only concerned with updating the order cart hash during REST API requests - which is the request
-		 * context where the Store API Checkout Block validates the order for payment resumption.
-		 */
-		if ( ! WC()->is_rest_api_request() ) {
-			return $has_status;
-		}
+		$cart_order = $this->get_order();
 
 		// If the order being validated is the order in the cart, then we need to update the cart hash so it can be resumed.
-		if ( $order && $order->get_id() === WC()->session->get( 'store_api_draft_order', 0 ) ) {
-			$cart_order = $this->get_order();
-
-			if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
-				// Note: We need to pass the order object so the order instance WooCommerce uses will have the updated hash.
-				$this->set_cart_hash( $order );
-			}
+		if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
+			// Note: We need to pass the order object so the order instance WooCommerce uses will have the updated hash.
+			$this->set_cart_hash( $order );
 		}
 
 		return $has_status;
