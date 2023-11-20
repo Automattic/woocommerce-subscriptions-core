@@ -427,6 +427,7 @@ class WCS_Cart_Renewal {
 
 			if ( $subscription ) {
 				$subscription_items = $subscription->get_items();
+				$item_to_renew      = [];
 
 				/**
 				 * Find the subscription or order line item that represents this cart item.
@@ -444,6 +445,11 @@ class WCS_Cart_Renewal {
 						}
 					}
 				}
+
+				// If we can't find the item to renew, return the cart item session data as is.
+				// if ( empty( $item_to_renew ) ) {
+				// 	return $cart_item_session_data;
+				// }
 
 				$price = $item_to_renew['line_subtotal'];
 
