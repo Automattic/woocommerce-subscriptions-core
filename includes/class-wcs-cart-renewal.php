@@ -1619,16 +1619,8 @@ class WCS_Cart_Renewal {
 			return $has_status;
 		}
 
-		/**
-		 * This function is only concerned with updating the order cart hash during REST API requests - which is the request
-		 * context where the Store API Checkout Block validates the order for payment resumption.
-		 */
-		if ( ! WC()->is_rest_api_request() ) {
-			return $has_status;
-		}
-
 		// If the order being validated is the order in the cart, then we need to update the cart hash so it can be resumed.
-		if ( $order && $order->get_id() === WC()->session->get( 'store_api_draft_order', 0 ) ) {
+		if ( $order && $order->get_id() === (int) WC()->session->get( 'store_api_draft_order', 0 ) ) {
 			$cart_order = $this->get_order();
 
 			if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
