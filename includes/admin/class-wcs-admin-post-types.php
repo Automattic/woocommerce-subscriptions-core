@@ -1043,7 +1043,7 @@ class WCS_Admin_Post_Types {
 			case 'trial_end_date':
 			case 'next_payment_date':
 			case 'end_date':
-				$request_query['meta_key'] = sprintf( '_schedule_%s', str_replace( '_date', '', $request_query['orderby'] ) );
+				$request_query['meta_key'] = sprintf( '_schedule_%s', str_replace( '_date', '', $request_query['orderby'] ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				$request_query['orderby']  = 'meta_value';
 				break;
 		}
@@ -1800,7 +1800,7 @@ class WCS_Admin_Post_Types {
 	 */
 	public function orders_table_query_clauses( $pieces, $query, $args ) {
 
-		if ( ! is_admin() || ! isset( $args['type'] ) || 'shop_subscription' !== $args['type']  ) {
+		if ( ! is_admin() || ! isset( $args['type'] ) || 'shop_subscription' !== $args['type'] ) {
 			return $pieces;
 		}
 
@@ -1866,14 +1866,20 @@ class WCS_Admin_Post_Types {
 		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
 
 		// Create a temporary table, drop the previous one.
-		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
+		$wpdb->query( $wpdb->prepare( "DROP TEMPORARY TABLE IF EXISTS %s", $table_name ) );
 
 		$wpdb->query(
-			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
-			 SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment FROM {$meta_table} order_meta
-			 LEFT JOIN {$order_table} as orders ON orders.id = order_meta.order_id
-			 WHERE order_meta.meta_key = '_subscription_renewal'
-			 GROUP BY order_meta.meta_value" );
+			$wpdb->prepare(
+				"CREATE TEMPORARY TABLE %s (id INT PRIMARY KEY, last_payment DATETIME) AS
+				SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment FROM %s order_meta
+				LEFT JOIN %s as orders ON orders.id = order_meta.order_id
+				WHERE order_meta.meta_key = '_subscription_renewal'
+				GROUP BY order_meta.meta_value"
+			),
+			$table_name,
+			$meta_table,
+			$order_table
+		);
 
 		$pieces['join'] .= "LEFT JOIN {$table_name} lp
 			ON {$order_table}.id = lp.id
