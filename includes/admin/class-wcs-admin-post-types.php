@@ -1866,7 +1866,7 @@ class WCS_Admin_Post_Types {
 		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
 
 		// Create a temporary table, drop the previous one.
-		$wpdb->query( $wpdb->prepare( "DROP TEMPORARY TABLE IF EXISTS %s", $table_name ) );
+		$wpdb->query( $wpdb->prepare( 'DROP TEMPORARY TABLE IF EXISTS %s', $table_name ) );
 
 		$wpdb->query(
 			$wpdb->prepare(
@@ -1874,11 +1874,11 @@ class WCS_Admin_Post_Types {
 				SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment FROM %s order_meta
 				LEFT JOIN %s as orders ON orders.id = order_meta.order_id
 				WHERE order_meta.meta_key = '_subscription_renewal'
-				GROUP BY order_meta.meta_value"
-			),
-			$table_name,
-			$meta_table,
-			$order_table
+				GROUP BY order_meta.meta_value",
+				$table_name,
+				$meta_table,
+				$order_table
+			)
 		);
 
 		$pieces['join'] .= "LEFT JOIN {$table_name} lp
