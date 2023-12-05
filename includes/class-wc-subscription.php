@@ -948,6 +948,66 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Set schedule trial end date.
+	 *
+	 * This function should not be used. It only exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * @param string $schedule_trial_end
+	 */
+	public function set_trial_end_date( $schedule_trial_end ) {
+		$this->set_prop( 'schedule_trial_end', $schedule_trial_end );
+	}
+
+	/**
+	 * Set schedule next payment date.
+	 *
+	 * This function should not be used. It only exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * @param string $schedule_next_payment
+	 */
+	public function set_next_payment_date( $schedule_next_payment ) {
+		$this->set_prop( 'schedule_next_payment', $schedule_next_payment );
+	}
+
+	/**
+	 * Set schedule cancelled date.
+	 *
+	 * This function should not be used. It only exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * @param string $schedule_cancelled
+	 */
+	public function set_cancelled_date( $schedule_cancelled ) {
+		$this->set_prop( 'schedule_cancelled', $schedule_cancelled );
+	}
+
+	/**
+	 * Set schedule end date.
+	 *
+	 * This function should not be used. It only exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * @param string $schedule_end
+	 */
+	public function set_end_date( $schedule_end ) {
+		$this->set_prop( 'schedule_end', $schedule_end );
+	}
+
+	/**
+	 * Set schedule payment retry date.
+	 *
+	 * This function should not be used. It only exists to support setting the start date on subscription creation without
+	 * having to call update_dates() which results in a save.
+	 *
+	 * @param string $schedule_payment_retry
+	 */
+	public function set_payment_retry_date( $schedule_payment_retry ) {
+		$this->set_prop( 'schedule_payment_retry', $schedule_payment_retry );
+	}
+
+	/**
 	 * Set parent order ID. We don't use WC_Abstract_Order::set_parent_id() because we want to allow false
 	 * parent IDs, like 0.
 	 *
