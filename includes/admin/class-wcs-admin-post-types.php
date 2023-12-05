@@ -1790,8 +1790,6 @@ class WCS_Admin_Post_Types {
 	 *  - High performance: This method uses a temporary table to store the last payment date for each subscription.
 	 *  - Low performance: This method uses a subquery to get the last payment date for each subscription.
 	 *
-	 * This function is the lower performance method and is a HPOS version of @see self::posts_clauses_low_performance().
-	 *
 	 * @param string[]         $pieces Associative array of the clauses for the query.
 	 * @param OrdersTableQuery $query  The query object.
 	 * @param array            $args   Query args.
