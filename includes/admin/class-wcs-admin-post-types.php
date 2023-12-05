@@ -1821,12 +1821,13 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Adds Order table query clauses to order the subscriptions list table by last payment date.
+	 * Adds order table query clauses to sort the subscriptions list table by last payment date.
 	 *
-	 * This function is the lower performance method and is a HPOS version of @see self::posts_clauses_low_performance().
+	 * This function provides a lower performance method using a subquery to sort by last payment date.
+	 * It is a HPOS version of @see self::posts_clauses_low_performance().
 	 *
 	 * @param string[] $pieces Associative array of the clauses for the query.
-	 * @return string[] $pieces
+	 * @return string[] $pieces Updated associative array of clauses for the query.
 	 */
 	private function orders_table_clauses_low_performance( $pieces ) {
 		$order_datastore = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class );
@@ -1848,12 +1849,13 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
-	 * Adds Order table query clauses to order the subscriptions list table by last payment date.
+	 * Adds order table query clauses to sort the subscriptions list table by last payment date.
 	 *
-	 * This function is the high performance method and is a HPOS version of @see self::posts_clauses_high_performance().
+	 * This function provides a higher performance method using a temporary table to sort by last payment date.
+	 * It is a HPOS version of @see self::posts_clauses_high_performance().
 	 *
 	 * @param string[] $pieces Associative array of the clauses for the query.
-	 * @return string[] $pieces
+	 * @return string[] $pieces Updated associative array of clauses for the query.
 	 */
 	private function orders_table_clauses_high_performance( $pieces ) {
 		global $wpdb;
