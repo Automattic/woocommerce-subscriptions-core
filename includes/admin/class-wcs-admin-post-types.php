@@ -1850,7 +1850,7 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Adds Order table query clauses to order the subscriptions list table by last payment date.
 	 *
-	 * This function is the high performance method and is a HPOS version of @see self::orders_table_clauses_high_performance().
+	 * This function is the high performance method and is a HPOS version of @see self::posts_clauses_high_performance().
 	 *
 	 * @param string[] $pieces Associative array of the clauses for the query.
 	 * @return string[] $pieces
