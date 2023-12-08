@@ -950,7 +950,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set schedule trial end date.
 	 *
-	 * This function should not be used. It only exists to support setting the trial end date prop from the data store.
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the trial end date prop from the data store.
+	 * Calling this function does not automatically schedule the trial end date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
 	 *
 	 * @param string $schedule_trial_end
 	 */
@@ -961,7 +965,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set schedule next payment date.
 	 *
-	 * This function should not be used. It only exists to support setting the next payment date prop from the data store.
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the next payment date prop from the data store.
+	 * Calling this function does not automatically schedule the next payment date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
 	 *
 	 * @param string $schedule_next_payment
 	 */
@@ -972,7 +980,10 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set schedule cancelled date.
 	 *
-	 * This function should not be used. It only exists to support setting the cancelled end date prop from the data store.
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the cancelled date prop from the data store.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
 	 *
 	 * @param string $schedule_cancelled
 	 */
@@ -983,7 +994,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set schedule end date.
 	 *
-	 * This function should not be used. It only exists to support setting the end end date prop from the data store.
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the end date prop from the data store.
+	 * Calling this function does not automatically schedule the end date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
 	 *
 	 * @param string $schedule_end
 	 */
@@ -994,7 +1009,11 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Set schedule payment retry date.
 	 *
-	 * This function should not be used. It only exists to support setting the payment retry date prop from the data store.
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the payment retry date prop from the data store.
+	 * Calling this function does not automatically schedule the payment retry date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
 	 *
 	 * @param string $schedule_payment_retry
 	 */
