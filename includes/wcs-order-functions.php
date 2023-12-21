@@ -218,6 +218,10 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		// Delete the transient that caches whether the order needs processing. Because we've added line items, the order may now need processing.
 		delete_transient( 'wc_order_' . $new_order->get_id() . '_needs_processing' );
 
+		/*
+		 * Fetch a fresh instance of the order because the current order instance has an empty line item cache generated before we had copied the line items.
+		 * Fetching a new instance will ensure the line items are available via $new_order->get_items().
+		 */
 		$order = wc_get_order( $new_order->get_id() );
 
 		if ( ! $order ) {
@@ -227,9 +231,6 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 
 		/**
 		 * Filters the new order created from the subscription.
-		 *
-		 * Fetches a fresh instance of the order because the current order instance has an empty line item cache generated before we had copied the line items.
-		 * Fetching a new instance will ensure the line items are available via $new_order->get_items().
 		 *
 		 * @param WC_Order        $new_order    The new order created from the subscription.
 		 * @param WC_Subscription $subscription The subscription the order was created from.
