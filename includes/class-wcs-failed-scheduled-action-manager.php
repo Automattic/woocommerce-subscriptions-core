@@ -159,11 +159,11 @@ class WCS_Failed_Scheduled_Action_Manager {
 	/**
 	 * Clears the list of exceptions caught by WC and detaches the listener.
 	 *
-	 * This function is attached to an action that runs after a scheduled action has finished being executed.
+	 * This function is called directly and attached to an action that runs after a scheduled action has finished being executed.
 	 */
 	public function clear_exceptions_and_detach_listener() {
 		$this->exceptions = [];
-		remove_action( 'action_scheduler_after_execute', [ $this, 'handle_exception' ] );
+		remove_action( 'woocommerce_caught_exception', [ $this, 'handle_exception' ] );
 	}
 
 	/**
