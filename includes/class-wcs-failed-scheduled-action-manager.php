@@ -124,7 +124,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 			}
 
 			// Now that we've logged the exceptions, we can detach the exception listener.
-			$this->clear_exceptions();
+			$this->clear_exceptions_and_detach_listener();
 		}
 	}
 
@@ -140,8 +140,10 @@ class WCS_Failed_Scheduled_Action_Manager {
 			return;
 		}
 
-		// Add an action to detach the exception listener after the scheduled action has been executed.
-		add_action( 'action_scheduler_after_execute', [ $this, 'clear_exceptions' ] );
+		// Add an action to detach the exception listener and clear the caught exceptions after the scheduled action has been executed.
+		add_action( 'action_scheduler_after_execute', [ $this, 'clear_exceptions_and_detach_listener' ] );
+
+		// Attach the exception listener.
 		add_action( 'woocommerce_caught_exception', [ $this, 'handle_exception' ] );
 	}
 
@@ -155,12 +157,13 @@ class WCS_Failed_Scheduled_Action_Manager {
 	}
 
 	/**
-	 * Decommissions the current exception listener.
+	 * Clears the list of exceptions caught by WC and detaches the listener.
 	 *
 	 * This function is attached to an action that runs after a scheduled action has finished being executed.
 	 */
-	public function clear_exceptions() {
+	public function clear_exceptions_and_detach_listener() {
 		$this->exceptions = [];
+		remove_action( 'action_scheduler_after_execute', [ $this, 'handle_exception' ] );
 	}
 
 	/**
