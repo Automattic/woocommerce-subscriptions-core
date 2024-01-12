@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 6.8.0 - 2024-xx-xx =
-* Fix - Resolved an issue that would cause discounts when reapplied to subscription orders on the checkout to incorrectly account for inclusive tax.
+* Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
 
 = 6.7.0 - 2024-01-11 =
 * Update - Changed the edit subscription product "Expire after" (Subscription length) so it more clearly describes when a subscription will automatically stop renewing.
