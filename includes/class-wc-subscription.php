@@ -2516,6 +2516,7 @@ class WC_Subscription extends WC_Order {
 						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the cancellation date.', 'woocommerce-subscriptions' ), $date_type );
 					}
+					break;
 
 				case 'cancelled':
 					if ( array_key_exists( 'last_order_date_created', $timestamps ) && $timestamp < $timestamps['last_order_date_created'] ) {
@@ -2527,17 +2528,22 @@ class WC_Subscription extends WC_Order {
 						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the next payment date.', 'woocommerce-subscriptions' ), $date_type );
 					}
+					break;
+
 				case 'next_payment':
 					// Guarantees that end is strictly after trial_end, because if next_payment and end can't be at same time
 					if ( array_key_exists( 'trial_end', $timestamps ) && $timestamp < $timestamps['trial_end'] ) {
 						// translators: %s: date type (e.g. "end").
 						$messages[] = sprintf( __( 'The %s date must occur after the trial end date.', 'woocommerce-subscriptions' ), $date_type );
 					}
+					break;
+
 				case 'trial_end':
 					if ( ! in_array( $date_type, array( 'end', 'cancelled' ) ) && $timestamp <= $timestamps['start'] ) {
 						// translators: %s: date type (e.g. "next_payment").
 						$messages[] = sprintf( __( 'The %s date must occur after the start date.', 'woocommerce-subscriptions' ), $date_type );
 					}
+					break;
 			}
 
 			$dates[ $date_type ] = gmdate( 'Y-m-d H:i:s', $timestamp );
