@@ -1419,4 +1419,17 @@ jQuery( function ( $ ) {
 	$( '.woo_subscriptions_empty_state__button_container a' ).on( 'click', function ( e ) {
 		$( this ).addClass( 'is-busy' );
 	} );
+
+	if ( window.wp.hooks && wp.data ) {
+		window.wp.hooks.addFilter( 'woocommerce_save_product_data', 'woocommerce-subscriptions', ( data, productId ) => {
+			const product = wp.data.select( 'core' ).getEditedEntityRecord( 'postType', 'product', productId );
+			if ( data.type === 'variable' && product.is_subscribable ) {
+				return {
+					...data,
+					type: 'variable-subscription'
+				}
+			}
+			return data;
+		} );
+	}
 } );
