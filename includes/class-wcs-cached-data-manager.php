@@ -166,7 +166,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * truncated to 0 bytes.
 	 */
 	public static function cleanup_logs() {
-		wcs_deprecated_function( __METHOD__, '6.0.0', );
+		wcs_deprecated_function( __METHOD__, '6.0.0' );
 		$file = wc_get_log_file_path( 'wcs-cache' );
 		$max_cache_size = apply_filters( 'wcs_max_log_size', 50 * 1024 * 1024 );
 
