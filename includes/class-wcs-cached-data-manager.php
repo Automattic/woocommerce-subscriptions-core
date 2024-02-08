@@ -198,7 +198,7 @@ class WCS_Cached_Data_Manager extends WCS_Cache_Manager {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.9
 	 */
 	public function initialize_cron_check_size() {
-		wcs_deprecated_function( __METHOD__, '6.0.0', );
+		wcs_deprecated_function( __METHOD__, '6.0.0' );
 
 		$hook = 'wcs_cleanup_big_logs';
 
