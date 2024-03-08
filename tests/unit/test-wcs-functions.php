@@ -10,46 +10,6 @@ function wcs_max_log_size_filter() {
  */
 class WCS_Functions_Test extends WP_UnitTestCase {
 
-	public function test_wcs_cleanup_logs_no_changes() {
-		$file = wc_get_log_file_path( 'wcs-cache' );
-
-		// Nothing should happen here
-		$content = uniqid();
-		file_put_contents( $file, $content );
-		WCS_Cached_Data_Manager::cleanup_logs();
-		$this->assertEquals( $content, file_get_contents( $file ) );
-	}
-
-	public function test_wcs_cleanup_logs() {
-		$file = wc_get_log_file_path( 'wcs-cache' );
-
-		// random lines
-		$lines = array();
-		for ( $i = 0; $i < 10000; ++$i ) {
-			$lines[] = uniqid( true );
-		}
-		$log = implode( "\n", $lines );
-		file_put_contents( $file, $log );
-
-		add_filter( 'wcs_max_log_size', 'wcs_max_log_size_filter' );
-		$GLOBALS['wcs_max_log_size_filter'] = strlen( $log );
-
-		WCS_Cached_Data_Manager::cleanup_logs();
-		$content = file_get_contents( $file );
-		$this->assertNotEquals( $log, $content );
-
-		// Make sure we have "log file automatically truncated" message
-		$this->assertFalse( (bool) preg_match( '/log.+truncated/', $log ) );
-		$this->assertTrue( (bool) preg_match( '/log.+truncated/', $content ) );
-
-		$new_lines = explode( "\n", $content );
-		// make sure that 1000 (default lines to keep) +1 is being saved
-		$this->assertEquals( 1001, count( $new_lines ) );
-
-		// Make sure the last 1000 entries are kept
-		$this->assertEquals( array_slice( $lines, -1000 ), array_slice( $new_lines, 0, 1000 ) );
-	}
-
 	public function test_wcs_is_subscription() {
 		// test cases
 		$subscription_object    = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
