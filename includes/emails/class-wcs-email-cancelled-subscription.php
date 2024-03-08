@@ -100,6 +100,7 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 			$this->template_html,
 			array(
 				'subscription'       => $this->object,
+				'order'              => $this->object,
 				'email_heading'      => $this->get_heading(),
 				'additional_content' => is_callable( array( $this, 'get_additional_content' ) ) ? $this->get_additional_content() : '', // WC 3.7 introduced an additional content field for all emails.
 				'sent_to_admin'      => true,
@@ -122,6 +123,7 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 			$this->template_plain,
 			array(
 				'subscription'       => $this->object,
+				'order'              => $this->object,
 				'email_heading'      => $this->get_heading(),
 				'additional_content' => is_callable( array( $this, 'get_additional_content' ) ) ? $this->get_additional_content() : '', // WC 3.7 introduced an additional content field for all emails.
 				'sent_to_admin'      => true,
