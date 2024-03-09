@@ -722,6 +722,7 @@ jQuery( function ( $ ) {
 					$syncDayOfMonthInput.prop( 'disabled', false );
 				} else {
 					$syncDayOfMonthInput.val( 0 ).trigger( 'change' );
+					$syncDayOfMonthInput.prop( 'disabled', true );
 				}
 			}
 		);

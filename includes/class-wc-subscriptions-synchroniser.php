@@ -313,9 +313,11 @@ class WC_Subscriptions_Synchroniser {
 
 					<?php $days_in_month = $payment_month ? gmdate( 't', wc_string_to_timestamp( "2001-{$payment_month}-01" ) ) : 0; ?>
 					<select id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync wc-enhanced-select" <?php disabled( 0, $payment_month, true ); ?> />
-						<?php foreach ( range( 1, $days_in_month ) as $day ) {
+					<?php
+						foreach ( range( 1, $days_in_month ) as $day ) {
 							echo '<option value="' . esc_attr( $day ) . '"' . selected( $day, $payment_day, false ) . '>' . esc_html( $day ) . '</option>';
-						} ?>
+						}
+					?>
 					</select>
 				</span>
 				<?php echo wcs_help_tip( self::$sync_description_year ); ?>

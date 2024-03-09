@@ -77,8 +77,16 @@ a.close-subscriptions-search {
 	display: block;
 	width: 50%;
 }
-.subscription_sync_annual > .select2-container {
+/* Variation Subscription Product Sync Settings */
+.variable_subscription_sync .subscription_sync_annual > .select2-container {
 	max-width: 49.5%;
+}
+/* Simple Subscription Product Sync Settings */
+#general_product_data .subscription_sync_annual .select2-container {
+	max-width: 45%;
+}
+#general_product_data .subscription_sync_annual .select2-container:not(:last-child) {
+	margin-right: 3.8%;
 }
 @media only screen and ( max-width: 1280px ) {
 	.woocommerce_options_panel ._subscription_price_fields .wrap,
