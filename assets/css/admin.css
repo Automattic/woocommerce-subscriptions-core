@@ -77,6 +77,9 @@ a.close-subscriptions-search {
 	display: block;
 	width: 50%;
 }
+.subscription_sync_annual > .select2-container {
+	max-width: 49.5%;
+}
 @media only screen and ( max-width: 1280px ) {
 	.woocommerce_options_panel ._subscription_price_fields .wrap,
 	.woocommerce_options_panel ._subscription_trial_length_field .wrap,
