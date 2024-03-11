@@ -501,8 +501,24 @@ class WC_Subscriptions_Order {
 				$subscription->update_dates( array( 'cancelled' => $cancelled_date ) );
 			}
 
+			$activate_subscription = $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' );
+
+			/**
+			 * Filters whether to activate a subscription when an order is paid for.
+			 *
+			 * @since x.x.x
+			 *
+			 * @param bool            $activate_subscription Whether to activate the subscription. Defaults to true if new status is a
+			 *                                           paid status and the old status is an unpaid status. False otherwise.
+			 * @param int             $order_id              The order ID.
+			 * @param WC_Subscription $subscription      The subscription.
+			 * @param string          $new_order_status      The new order status.
+			 * @param string          $old_order_status      The old order status.
+			 */
+			$activate_subscription = apply_filters( 'wcs_activate_subscription_on_payment', $activate_subscription, $order_id, $subscription, $new_order_status, $old_order_status );
+
 			// Do we need to activate a subscription?
-			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
+			if ( $activate_subscription ) {
 
 				$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
 
