@@ -38,7 +38,7 @@ global $wp_locale;
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $payment_month ); ?>><?php echo esc_html( $value ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<?php $daysInMonth = $payment_month ? gmdate( 't', wc_string_to_timestamp( "2001-{$payment_month}-01" ) ) : 0; ?>
+			<?php $days_in_month = $payment_month ? gmdate( 't', wc_string_to_timestamp( "2001-{$payment_month}-01" ) ) : 0; ?>
 			<select name="variable_subscription_payment_sync_date_day[<?php echo esc_attr( $loop ); ?>]" class="wc_input_subscription_payment_sync wc_input_subscription_payment_sync_day wc-enhanced-select form-row form-row-first" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>" <?php disabled( 0, $payment_month, true ); ?> />
 				<?php foreach ( range( 1, $days_in_month ) as $day ) {
 					echo '<option value="' . esc_attr( $day ) . '"' . selected( $day, $payment_day, false ) . '>' . esc_html( $day ) . '</option>';
