@@ -3,6 +3,7 @@
 = 6.9.0 - xxxx-xx-xx =
 * Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
 * Fix - Resolved an issue that could cause an empty error notice to appear on the My Account > Payment methods page when a customer attempted to delete a token used by subscriptions.
+* Fix - Make sure we always clear the subscription object from cache after updating dates.
 * Fix - Use block theme styles for the 'Add to Cart' button on subscription product pages.
 * Fix - Customer notes not being saved on the Edit Subscription page for stores with HPOS enabled.
 
