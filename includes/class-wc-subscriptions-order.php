@@ -481,6 +481,23 @@ class WC_Subscriptions_Order {
 		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order );
 		$order_completed = in_array( $new_order_status, $paid_statuses, true ) && in_array( $old_order_status, $unpaid_statuses, true );
 
+		/**
+		 * Filter whether the subscription order is considered completed.
+		 *
+		 * Allow third party extensions to modify whether the order is considered
+		 * completed and the subscription should activate. This allows for different
+		 * treatment of orders and subscriptions during the completion flow.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool              $order_completed  Whether the order is considered completed.
+		 * @param string            $new_order_status The new order status.
+		 * @param string            $old_order_status The old order status.
+		 * @param WC_Subscription[] $subscriptions    The subscriptions in the order.
+		 * @param WC_Order          $order            The order object.
+		 */
+		$order_completed = apply_filters( 'wcs_is_subscription_order_completed', $order_completed, $new_order_status, $old_order_status, $subscriptions, $order );
+
 		foreach ( $subscriptions as $subscription ) {
 			// A special case where payment completes after user cancels subscription
 			if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
