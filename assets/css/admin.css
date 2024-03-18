@@ -79,7 +79,10 @@ a.close-subscriptions-search {
 }
 /* Variation Subscription Product Sync Settings */
 .variable_subscription_sync .subscription_sync_annual > .select2-container {
-	max-width: 49.5%;
+	max-width: 48%;
+}
+.variable_subscription_sync .subscription_sync_annual > .select2-container:last-child {
+	float: right;
 }
 /* Simple Subscription Product Sync Settings */
 #general_product_data .subscription_sync_annual .select2-container {
