@@ -85,12 +85,16 @@ a.close-subscriptions-search {
 	float: right;
 }
 /* Simple Subscription Product Sync Settings */
-#general_product_data .subscription_sync_annual .select2-container {
-	max-width: 45%;
+._subscription_trial_length_field .select2-container:last-child,
+#general_product_data .subscription_sync_annual .select2-container:last-child {
+	width: 45% !important;
+	margin-left: 5%;
 }
-#general_product_data .subscription_sync_annual .select2-container:not(:last-child) {
-	margin-right: 3.8%;
+._subscription_trial_length_field .select2-container:not( :last-child ),
+#general_product_data .subscription_sync_annual .select2-container:not( :last-child ) {
+	width: 50% !important;
 }
+
 @media only screen and ( max-width: 1280px ) {
 	.woocommerce_options_panel ._subscription_price_fields .wrap,
 	.woocommerce_options_panel ._subscription_trial_length_field .wrap,
@@ -105,8 +109,6 @@ a.close-subscriptions-search {
 	width: 30.75%;
 	margin-right: 3.8%;
 }
-.woocommerce_options_panel ._subscription_trial_length_field .wrap input,
-.woocommerce_options_panel ._subscription_trial_length_field .wrap select,
 .woocommerce_options_panel
 	._subscription_payment_sync_date_day_field
 	.wrap
@@ -315,17 +317,19 @@ a.close-subscriptions-search {
 	width: auto !important;
 }
 
-.wc_input_subscription_payment_sync +.select2,
 .wc_input_subscription_length +.select2,
+.wc_input_subscription_payment_sync +.select2,
 #_subscription_limit +.select2 {
-	min-width: 180px;
-	width: 80% !important;
+	width: 50% !important;
 	margin-bottom: 4px;
 }
 
-.wc_input_subscription_period + .select2,
-.wc_input_subscription_trial_period + .select2 {
+.wc_input_subscription_period + .select2 {
 	width: 30.75% !important;
+	margin-top: 0;
+}
+.wc_input_subscription_trial_period + .select2 {
+	width: 48% !important;
 	margin-top: 0;
 }
 
@@ -384,20 +388,20 @@ a.close-subscriptions-search {
 }
 
 #variable_product_options
-	.select2-container 
+	.select2-container
 	.select2-selection--single {
 	min-height: 40px;
 }
 
-#variable_product_options 
-	.select2-container 
-	.select2-selection--single 
+#variable_product_options
+	.select2-container
+	.select2-selection--single
 	.select2-selection__rendered {
 	line-height: 36px;
 }
-#variable_product_options 
-	.select2-container 
-	.select2-selection--single 
+#variable_product_options
+	.select2-container
+	.select2-selection--single
 	.select2-selection__arrow {
 	height: 36px;
 }
