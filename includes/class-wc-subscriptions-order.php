@@ -488,7 +488,7 @@ class WC_Subscriptions_Order {
 		 * completed and the subscription should activate. This allows for different
 		 * treatment of orders and subscriptions during the completion flow.
 		 *
-		 * @since x.x.x
+		 * @since 6.9.0
 		 *
 		 * @param bool              $order_completed  Whether the order is considered completed.
 		 * @param string            $new_order_status The new order status.
