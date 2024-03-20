@@ -57,7 +57,7 @@ class WC_Subscription extends WC_Order {
 		'billing_period'          => '',
 		'billing_interval'        => 1,
 		'suspension_count'        => 0,
-		'requires_manual_renewal' => 'true',
+		'requires_manual_renewal' => true,
 		'cancelled_email_sent'    => false,
 		'trial_period'            => '',
 
@@ -941,10 +941,10 @@ class WC_Subscription extends WC_Order {
 	 * The more aptly named set_schedule_start() cannot exist because then WC core thinks the _schedule_start meta is an
 	 * internal meta key and throws errors.
 	 *
-	 * @param string $schedule_start
+	 * @param string $schedule_start The date to set the start date to. Should be in the format 'Y-m-d H:i:s' (UTC).
 	 */
 	public function set_start_date( $schedule_start ) {
-		$this->set_prop( 'schedule_start', $schedule_start );
+		$this->set_date_prop( 'start', wcs_date_to_time( $schedule_start ) );
 	}
 
 	/**
