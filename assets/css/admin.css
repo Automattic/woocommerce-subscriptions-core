@@ -84,6 +84,7 @@ a.close-subscriptions-search {
 .variable_subscription_sync .subscription_sync_annual > .select2-container:last-child {
 	float: right;
 }
+#woocommerce-product-data .variable_subscription_pricing ._subscription_length_field .wc_input_subscription_length + .select2,
 #woocommerce-product-data .variable_subscription_sync .subscription_sync_week_month .wc_input_subscription_payment_sync + .select2 {
 	width: 100% !important;
 }
@@ -332,7 +333,7 @@ a.close-subscriptions-search {
 	margin-top: 0;
 }
 .wc_input_subscription_trial_period + .select2 {
-	width: 48% !important;
+	width: 50% !important;
 	margin-top: 0;
 }
 
@@ -432,13 +433,14 @@ a.close-subscriptions-search {
 }
 #variable_product_options
 	.variable_subscription_pricing_2_3
-	.wc_input_subscription_trial_period,
+	.wc_input_subscription_trial_period + .select2,
 #variable_product_options
 	.variable_subscription_pricing_2_3
 	.wc_input_subscription_trial_length {
-	max-width: 50%;
+	width: 50%;
 }
-.variable_subscription_pricing_2_3 .wc_input_subscription_trial_period {
+.variable_subscription_pricing_2_3 .wc_input_subscription_trial_period + .select2 {
+	margin-top: 2px;
 	float: right;
 }
 .variable_subscription_pricing_2_3 .variable_subscription_length,
