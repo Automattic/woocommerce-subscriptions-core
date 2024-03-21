@@ -442,6 +442,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	public function set_empty_renewal_order_cache( WC_Subscription $subscription ) {
 		$this->update_related_order_id_cache( $subscription, array(), 'renewal' );
+
+		// Set the renewal cache to empty on the subscription in memory too.
+		$subscription->update_meta_data( $this->get_cache_meta_key( 'renewal' ), array() );
 		return $subscription;
 	}
 
