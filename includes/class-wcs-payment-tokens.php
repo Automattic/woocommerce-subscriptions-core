@@ -30,14 +30,12 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 	public static function update_subscription_token( $subscription, $new_token, $old_token ) {
 		$token_payment_gateway = $old_token->get_gateway_id();
 		$payment_meta_table    = self::get_subscription_payment_meta( $subscription, $token_payment_gateway );
-		$updated               = false;
 
 		// Attempt to find the token meta key from the subscription payment meta and the old token.
 		if ( is_array( $payment_meta_table ) ) {
 			foreach ( $payment_meta_table as $meta ) {
 				foreach ( $meta as $meta_key => $meta_data ) {
 					if ( $old_token->get_token() === $meta_data['value'] ) {
-						$updated = true;
 						$subscription->update_meta_data( $meta_key, $new_token->get_token() );
 						$subscription->save();
 						break 2;
@@ -57,12 +55,12 @@ class WCS_Payment_Tokens extends WC_Payment_Tokens {
 		/**
 		 * Enable third-party plugins to run their own updates and filter whether the token was updated or not.
 		 *
-		 * @param bool Whether the token was updated. Default is true if the token meta key was found and updated.
+		 * @param bool Whether the token was updated. Default is true.
 		 * @param WC_Subscription  $subscription
 		 * @param WC_Payment_Token $new_token
 		 * @param WC_Payment_Token $old_token
 		 */
-		$updated = apply_filters( 'woocommerce_subscriptions_update_subscription_token', $updated, $subscription, $new_token, $old_token );
+		$updated = apply_filters( 'woocommerce_subscriptions_update_subscription_token', true, $subscription, $new_token, $old_token );
 
 		if ( $updated ) {
 			do_action( 'woocommerce_subscription_token_changed', $subscription, $new_token, $old_token );
