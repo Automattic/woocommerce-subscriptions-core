@@ -389,7 +389,8 @@ a.close-subscriptions-search {
 #variable_product_options
 	.variable_subscription_pricing_2_3
 	.wc_input_subscription_period_interval + .select2 {
-	width: 33% !important;
+	width: calc( 100% / 3 ) !important;
+	float: left;
 }
 #variable_product_options
 	.variable_subscription_pricing_2_3
@@ -398,6 +399,7 @@ a.close-subscriptions-search {
 	.variable_subscription_pricing_2_3
 	.wc_input_subscription_period_interval + .select2 {
 		padding-bottom: 2px;
+		margin-top: 2px;
 }
 
 #variable_product_options
