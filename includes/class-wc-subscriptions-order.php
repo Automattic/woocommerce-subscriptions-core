@@ -819,7 +819,11 @@ class WC_Subscriptions_Order {
 			);
 
 		} elseif ( 'parent' === $selected_shop_order_subtype ) {
-			$order_query_args['subscription_parent'] = true;
+			if ( wcs_is_custom_order_tables_usage_enabled() ) {
+				$order_query_args['subscription_parent'] = true;
+			} else {
+				$order_query_args['post__in'] = wcs_get_subscription_orders();
+			}
 		} else {
 
 			switch ( $selected_shop_order_subtype ) {
@@ -849,7 +853,11 @@ class WC_Subscriptions_Order {
 
 		// Also exclude parent orders from non-subscription query
 		if ( 'regular' === $selected_shop_order_subtype ) {
-			$order_query_args['subscription_parent'] = false;
+			if ( wcs_is_custom_order_tables_usage_enabled() ) {
+				$order_query_args['subscription_parent'] = false;
+			} else {
+				$order_query_args['post__not_in'] = wcs_get_subscription_orders();
+			}
 		}
 
 		return $order_query_args;
