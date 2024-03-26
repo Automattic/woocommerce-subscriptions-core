@@ -47,6 +47,13 @@ class WC_Subscriptions_Core_Plugin {
 	protected static $instance = null;
 
 	/**
+	 *
+	 *
+	 * @var array
+	 */
+	protected $cart_handlers = [];
+
+	/**
 	 * Initialise class and attach callbacks.
 	 */
 	public function __construct( $autoloader = null ) {
@@ -121,9 +128,9 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_PayPal_Standard_Change_Payment_Method::init();
 		WC_Subscriptions_Tracker::init();
 		WCS_Upgrade_Logger::init();
-		new WCS_Cart_Renewal();
-		new WCS_Cart_Resubscribe();
-		new WCS_Cart_Initial_Payment();
+		$this->cart_handlers['renewal'] = new WCS_Cart_Renewal();
+		$this->cart_handlers['resubscribe'] = new WCS_Cart_Resubscribe();
+		$this->cart_handlers['initial'] = new WCS_Cart_Initial_Payment();
 		WCS_Download_Handler::init();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
@@ -317,6 +324,20 @@ class WC_Subscriptions_Core_Plugin {
 	 */
 	public function get_gateways_handler_class() {
 		return 'WC_Subscriptions_Core_Payment_Gateways';
+	}
+
+	/**
+	 * Gets the cart handler instance.
+	 *
+	 * @param string $type The cart type. Can be 'renewal', 'resubscribe' or 'initial'.
+	 * @return WCS_Cart_Renewal|null
+	 */
+	public function get_cart_handler_instance( $type ) {
+		if ( ! isset( $this->cart_handlers[ $type ] ) ) {
+			return null;
+		}
+
+		return $this->cart_handlers[ $type ];
 	}
 
 	/**
