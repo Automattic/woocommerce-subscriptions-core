@@ -97,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						'type'     => 'checkbox',
 						'class'    => array( 'form-row-wide' ),
 						'label'    => $label,
-						'required' => true, // Making the field required to make this field more prominent on the page.
+						'required' => true, // Making the field required to help make it more prominent on the page.
 						'default'  => apply_filters( 'wcs_update_all_subscriptions_payment_method_checked', true ),
 					)
 				);
