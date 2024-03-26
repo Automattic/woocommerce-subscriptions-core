@@ -1351,7 +1351,7 @@ class WC_Subscriptions_Order {
 			// Limit query to parent orders.
 			$query_clauses['join']  = ( empty( $query_clauses['join'] ) ? '' : $query_clauses['join'] . ' ' );
 			$query_clauses['join'] .= "INNER JOIN {$order_query->get_table_name( 'orders' )} as subscriptions ON subscriptions.parent_order_id = wp_wc_orders.id AND subscriptions.type = 'shop_subscription'";
-		} elseif ( false === $include_parent_orders  ) {
+		} elseif ( false === $include_parent_orders ) {
 			// Exclude parent orders.
 			$query_clauses['where']  = ( empty( $query_clauses['where'] ) ? '1=1 ' : $query_clauses['where'] . ' ' );
 			$query_clauses['where'] .= "AND wp_wc_orders.id NOT IN (SELECT parent_order_id FROM {$order_query->get_table_name( 'orders' )} WHERE type = 'shop_subscription')";
