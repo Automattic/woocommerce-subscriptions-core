@@ -112,7 +112,7 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 		$callbacks = [
 			[ 'WC_Subscriptions_Checkout', 'order_button_text' ],
 			[ \WC_Subscriptions_Core_Plugin::instance()->get_cart_handler_instance( 'renewal' ), 'order_button_text' ],
-			[ \WC_Subscriptions_Core_Plugin::instance()->get_cart_handler_instance( 'switch' ), 'order_button_text' ]
+			[ \WC_Subscriptions_Core_Plugin::instance()->get_cart_handler_instance( 'switch' ), 'order_button_text' ],
 		];
 
 		foreach ( $callbacks as $callback ) {
