@@ -48,8 +48,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$pay_order_button_text = _x( 'Add payment method', 'text on button on checkout page', 'woocommerce-subscriptions' );
 		}
 
-		$pay_order_button_text = apply_filters( 'woocommerce_change_payment_button_text', $pay_order_button_text );
-		$available_gateways    = WC()->payment_gateways->get_available_payment_gateways();
+		$pay_order_button_text     = apply_filters( 'woocommerce_change_payment_button_text', $pay_order_button_text );
+		$customer_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $subscription->get_customer_id() );
+		$payment_gateways_handler  = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
+		$available_gateways        = WC()->payment_gateways->get_available_payment_gateways();
 
 		if ( $available_gateways ) :
 			?>
@@ -83,6 +85,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 
 		<?php if ( $available_gateways ) : ?>
+			<?php if ( count( $customer_subscription_ids ) > 1 && $payment_gateways_handler::one_gateway_supports( 'subscription_payment_method_change_admin' ) ) : ?>
+			<span class="update-all-subscriptions-payment-method-wrap">
+				<?php
+				// translators: $1: opening <strong> tag, $2: closing </strong> tag
+				$label = sprintf( esc_html__( 'Use this payment method for %1$sall%2$s of my current subscriptions', 'woocommerce-subscriptions' ), '<strong>', '</strong>' );
+
+				woocommerce_form_field(
+					'update_all_subscriptions_payment_method',
+					array(
+						'type'     => 'checkbox',
+						'class'    => array( 'form-row-wide' ),
+						'label'    => $label,
+						'required' => true, // Making the field required to make this field more prominent on the page.
+						'default'  => apply_filters( 'wcs_update_all_subscriptions_payment_method_checked', true ),
+					)
+				);
+				?>
+			</span>
+			<?php endif; ?>
 		<div class="form-row">
 			<?php wp_nonce_field( 'wcs_change_payment_method', '_wcsnonce', true, true ); ?>
 
