@@ -1354,7 +1354,7 @@ class WC_Subscriptions_Order {
 		} elseif ( false === $include_parent_orders ) {
 			// Exclude parent orders.
 			$query_clauses['where']  = ( empty( $query_clauses['where'] ) ? '1=1 ' : $query_clauses['where'] . ' ' );
-			$query_clauses['where'] .= "AND wp_wc_orders.id NOT IN (SELECT parent_order_id FROM {$order_query->get_table_name( 'orders' )} WHERE type = 'shop_subscription')";
+			$query_clauses['where'] .= "AND {$order_query->get_table_name( 'orders' )}.id NOT IN (SELECT parent_order_id FROM {$order_query->get_table_name( 'orders' )} WHERE type = 'shop_subscription')";
 		}
 
 		return $query_clauses;
