@@ -72,6 +72,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		// Display a login form if the customer is requesting to change their payment method but aren't logged in.
 		add_filter( 'the_content', array( __CLASS__, 'maybe_request_log_in' ) );
 
+		add_action( 'woocommerce_subscriptions_change_payment_after_submit', __CLASS__ . '::change_payment_for_all_subscriptions_modal' );
 	}
 
 	/**
@@ -826,6 +827,41 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		return $content;
+	}
+
+	/**
+	 * Prints the change payment for all subscriptions modal if eligible.
+	 *
+	 * @since 6.9.0
+	 */
+	public static function change_payment_for_all_subscriptions_modal() {
+		if ( ! isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		$subscription = wcs_get_subscription( absint( $_GET['change_payment_method'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $subscription || ! current_user_can( 'edit_shop_subscription_payment_method', $subscription->get_id() ) ) {
+			return;
+		}
+
+		$available_gateways        = WC()->payment_gateways->get_available_payment_gateways();
+		$customer_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $subscription->get_customer_id() );
+		$payment_gateways_handler  = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
+
+		// Only display the modal if the customer has more than one subscription and at least one gateway supports changing the payment method for all subscriptions.
+		if ( empty( $available_gateways ) || count( $customer_subscription_ids ) < 2 || ! $payment_gateways_handler::one_gateway_supports( 'subscription_payment_method_change_admin' ) ) {
+			return;
+		}
+
+		$modal_args = [
+			'template_name' => 'checkout/modal-update-payment-method-for-all-subscriptions.php',
+			'args'          => [ 'subscription' => $subscription ],
+			'template_path' => WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' ),
+		];
+
+		$modal = new WCS_Modal( $modal_args, '#place_order', 'template', __( 'Update all of your subscriptions?', 'woocommerce-subscriptions' ) );
+		$modal->print_html();
 	}
 
 	/** Deprecated Functions **/
