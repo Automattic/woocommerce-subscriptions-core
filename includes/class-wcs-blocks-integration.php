@@ -105,7 +105,8 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 	 * @return string|null The overridden place order button text or null if it hasn't been overridden.
 	 */
 	protected function get_place_order_button_text_override() {
-		$default = $order_button_text = null;
+		$default           = null;
+		$order_button_text = $default;
 
 		// Check if any of our button text override functions (hooked onto 'woocommerce_order_button_text') change the default text.
 		$callbacks = [
