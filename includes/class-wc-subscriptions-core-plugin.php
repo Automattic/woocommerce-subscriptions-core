@@ -131,9 +131,9 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_PayPal_Standard_Change_Payment_Method::init();
 		WC_Subscriptions_Tracker::init();
 		WCS_Upgrade_Logger::init();
-		$this->cart_handlers['renewal'] = new WCS_Cart_Renewal();
+		$this->cart_handlers['renewal']     = new WCS_Cart_Renewal();
 		$this->cart_handlers['resubscribe'] = new WCS_Cart_Resubscribe();
-		$this->cart_handlers['initial'] = new WCS_Cart_Initial_Payment();
+		$this->cart_handlers['initial']     = new WCS_Cart_Initial_Payment();
 		WCS_Download_Handler::init();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
