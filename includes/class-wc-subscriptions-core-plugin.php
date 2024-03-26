@@ -47,9 +47,12 @@ class WC_Subscriptions_Core_Plugin {
 	protected static $instance = null;
 
 	/**
+	 * An array of cart handler objects.
 	 *
+	 * The key is the cart type ('renewal', 'resubscribe', 'initial', 'switch') and the value is the cart handler instances (WCS_Cart_Renewal, WCS_Cart_Resubscribe and WCS_Cart_Initial_Payment etc).
+	 * Use WC_Subscriptions_Core_Plugin::instance()->get_cart_handler_instance() to get a cart handler instance.
 	 *
-	 * @var array
+	 * @var WCS_Cart_Renewal[]
 	 */
 	protected $cart_handlers = [];
 
