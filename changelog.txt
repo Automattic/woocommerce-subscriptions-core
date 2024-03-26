@@ -6,6 +6,7 @@
 * Fix - Make sure we always clear the subscription object from cache after updating dates.
 * Fix - Use block theme styles for the 'Add to Cart' button on subscription product pages.
 * Fix - Customer notes not being saved on the Edit Subscription page for stores with HPOS enabled.
+* Fix - Resolved an issue that prevented subscription custom place order button labels from working on the block checkout.
 
 = 6.8.0 - 2024-02-08 =
 * Fix - Block the UI after a customer clicks actions on the My Account > Subscriptions page to prevent multiple requests from being sent.
