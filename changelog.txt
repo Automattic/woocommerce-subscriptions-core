@@ -9,7 +9,9 @@
 * Fix - Ensure products that have a yearly billing period can choose a date that the subscription is synchronized to.
 * Fix - Improved alignment of subscription product pricing fields on the edit product screen for consistency with other fields.
 * Fix - Avoid setting empty meta keys on subscriptions when changing the customer's default payment method.
+* Fix - Use a more scalable way to filter the orders admin list table by parent orders on HPOS stores.
 * Fix - Resolved an issue that prevented subscription custom place order button labels from working on the block checkout.
+* Update - Change the update all subscriptions checkbox displayed on the change payment method page to be enabled by default.
 
 = 6.8.0 - 2024-02-08 =
 * Fix - Block the UI after a customer clicks actions on the My Account > Subscriptions page to prevent multiple requests from being sent.
