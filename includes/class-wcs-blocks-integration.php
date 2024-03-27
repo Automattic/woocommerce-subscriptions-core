@@ -113,6 +113,7 @@ class WCS_Blocks_Integration implements IntegrationInterface {
 			[ 'WC_Subscriptions_Checkout', 'order_button_text' ],
 			[ \WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( 'WCS_Cart_Renewal' ), 'order_button_text' ],
 			[ \WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( 'WCS_Cart_Switch' ), 'order_button_text' ],
+			[ \WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( 'WCS_Cart_Resubscribe' ), 'order_button_text' ],
 		];
 
 		foreach ( $callbacks as $callback ) {
