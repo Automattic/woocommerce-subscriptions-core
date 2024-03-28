@@ -11,6 +11,7 @@
 * Fix - Avoid setting empty meta keys on subscriptions when changing the customer's default payment method.
 * Fix - Use a more scalable way to filter the orders admin list table by parent orders on HPOS stores.
 * Fix - Resolved an issue that prevented subscription custom place order button labels from working on the block checkout.
+* Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
 * Update - Change the update all subscriptions checkbox displayed on the change payment method page to be enabled by default.
 
 = 6.8.0 - 2024-02-08 =

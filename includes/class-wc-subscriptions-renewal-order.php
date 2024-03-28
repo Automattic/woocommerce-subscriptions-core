@@ -127,7 +127,7 @@ class WC_Subscriptions_Renewal_Order {
 			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
 				// Included here because calling payment_complete sets the retry status to 'cancelled'
-				$is_failed_renewal_order = 'failed' === $orders_old_status;
+				$is_failed_renewal_order = 'failed' === $orders_old_status || wc_string_to_bool( $order->get_meta( '_was_failed_renewal_order', true ) );
 				$is_failed_renewal_order = apply_filters( 'woocommerce_subscriptions_is_failed_renewal_order', $is_failed_renewal_order, $order_id, $orders_old_status );
 
 				if ( $order_needed_payment ) {
@@ -138,6 +138,11 @@ class WC_Subscriptions_Renewal_Order {
 				if ( $is_failed_renewal_order ) {
 					do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 				}
+			} elseif ( 'pending' === $orders_new_status && 'failed' === $orders_old_status && wcs_is_checkout_blocks_api_request() ) {
+				// The WooCommerce block checkout will update the order status from "failed" to "pending" right before attempting to process the payment.
+				// We need to flag this event so we can still trigger paid-for-failed-renewal-order actions once the order is paid.
+				$order->update_meta_data( '_was_failed_renewal_order', 'true' );
+				$order->save();
 			} elseif ( 'failed' == $orders_new_status ) {
 				$subscription->payment_failed();
 			}
