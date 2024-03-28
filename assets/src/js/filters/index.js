@@ -3,6 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { registerCheckoutFilters } from '@woocommerce/blocks-checkout';
+import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
@@ -119,6 +120,15 @@ export const registerFilters = () => {
 			}
 
 			return pricePlaceholder;
+		},
+		placeOrderButtonLabel: ( label ) => {
+			const subscriptionsData = getSetting( 'subscriptions_data' );
+
+			if ( subscriptionsData?.place_order_override ) {
+				return subscriptionsData?.place_order_override;
+			}
+
+			return label;
 		},
 	} );
 };
