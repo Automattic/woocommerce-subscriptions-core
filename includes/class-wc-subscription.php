@@ -93,6 +93,18 @@ class WC_Subscription extends WC_Order {
 	);
 
 	/**
+	 * The meta key used to flag that the subscription's payment failed.
+	 *
+	 * Stored on the renewal order itself.
+	 *
+	 * Payments via the Block checkout transition the order status from failed to pending and then to processing.
+	 * This makes it impossible for us to know if the order was initially failed. This meta key flags that the order was initially failed.
+	 *
+	 * @var string
+	 */
+	const RENEWAL_FAILED_META_KEY = '_failed_renewal_order';
+
+	/**
 	 * Initializes a specific subscription if the ID is passed, otherwise a new and empty instance of a subscription.
 	 *
 	 * This class should NOT be instantiated, instead the functions wcs_create_subscription() and wcs_get_subscription()
@@ -1862,6 +1874,8 @@ class WC_Subscription extends WC_Order {
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
 		if ( false !== $last_order && wcs_order_contains_renewal( $last_order ) ) {
+			$last_order->delete_meta_data( self::RENEWAL_FAILED_META_KEY );
+			$last_order->save();
 			do_action( 'woocommerce_subscription_renewal_payment_complete', $this, $last_order );
 		}
 	}
@@ -1878,6 +1892,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
 			remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
+			$last_order->update_meta_data( self::RENEWAL_FAILED_META_KEY, 'true' );
 			$last_order->update_status( 'failed' );
 			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
 		}
