@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.0.0 - 2024-xx-xx =
+* Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
+
 = 6.9.0 - 2024-03-28 =
 * Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
 * Fix - Resolved an issue that could cause an empty error notice to appear on the My Account > Payment methods page when a customer attempted to delete a token used by subscriptions.
