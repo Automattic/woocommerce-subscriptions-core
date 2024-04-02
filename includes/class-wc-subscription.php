@@ -1890,11 +1890,17 @@ class WC_Subscription extends WC_Order {
 		// Make sure the last order's status is set to failed
 		$last_order = $this->get_last_order( 'all', 'any' );
 
-		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
-			remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
-			$last_order->update_meta_data( self::RENEWAL_FAILED_META_KEY, 'true' );
-			$last_order->update_status( 'failed' );
-			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
+		if ( false !== $last_order ) {
+			$last_order->update_meta_data( self::RENEWAL_FAILED_META_KEY, wc_bool_to_string( true ) );
+
+			if ( false === $last_order->has_status( 'failed' ) ) {
+				remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
+				$last_order->update_status( 'failed' );
+				add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
+			} else {
+				// If we didn't update the status, save the order to make sure our self::RENEWAL_FAILED_META_KEY meta data is saved.
+				$last_order->save();
+			}
 		}
 
 		// Log payment failure on order
