@@ -58,6 +58,7 @@ export const SubscriptionsRecurringPackages = ( {
 			showItems={ shouldShowItems }
 			noResultsMessage={ noResultsMessage }
 			renderOption={ renderOption }
+			highlightChecked={ true }
 		/>
 	) );
 };
