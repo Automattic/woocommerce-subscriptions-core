@@ -52,6 +52,23 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 			return;
 		}
 
+		/**
+		 * Filter whether to recreate the initial payment order.
+		 *
+		 * Allows developers to prevent the initial payment order from being recreated and
+		 * manage the pending to processing/completed workflow without duplicating the order.
+		 *
+		 * @param bool $recreate_order Whether to recreate the initial payment order. Default true.
+		 * @param WC_Order $order The order object.
+		 * @param string $order_key The order key.
+		 * @param int $order_id The order ID.
+		 */
+		$recreate_order = apply_filters( 'wcs_recreate_initial_payment_order', true, $order, $order_key, $order_id );
+
+		if ( ! $recreate_order ) {
+			return;
+		}
+
 		if ( ! is_user_logged_in() ) {
 			// Allow the customer to login first and then redirect them back.
 			$redirect = add_query_arg(
