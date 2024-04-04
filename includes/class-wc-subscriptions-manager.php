@@ -58,8 +58,6 @@ class WC_Subscriptions_Manager {
 		// Do the same thing for WordPress networks
 		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
 
-		// Callbacks for handling WC's automatic cleanup of unpaid orders. Needs to be hooked in prior to WooCommerce running the cleanup.
-		add_action( 'woocommerce_cancel_unpaid_orders', [ __CLASS__, 'exclude_subscriptions_from_order_cleanup' ], 0 );
 		add_filter( 'woocommerce_cancel_unpaid_order', [ __CLASS__, 'exclude_subscription_from_order_cleanup' ], 10, 2 );
 	}
 
@@ -610,29 +608,6 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
-	 * Attaches the callback needed to prevent WooCommerce from cancelling subscriptions when it cancels unpaid orders.
-	 */
-	public static function exclude_subscriptions_from_order_cleanup() {
-		add_filter( 'wc_order_types', [ __CLASS__, 'remove_subscription_type_from_order_types' ], 10, 1 );
-	}
-
-	/**
-	 * Excludes the shop subscription order type from the order cleanup process.
-	 *
-	 * @param string[] $order_types An array of order types.
-	 * @return string[] An array of order types. The shop_subscription order type is removed when we're in the process of cancelling unpaid orders.
-	 */
-	public static function remove_subscription_type_from_order_types( $order_types ) {
-		$subscription_type_index = array_search( 'shop_subscription', $order_types, true );
-
-		if ( isset( $order_types[ $subscription_type_index ] ) ) {
-			unset( $order_types[ $subscription_type_index ] );
-		}
-
-		return $order_types;
-	}
-
-	/**
 	 * Excludes subscriptions from the order cleanup process.
 	 *
 	 * @param bool     $should_cancel Whether the order should be cancelled.
@@ -641,7 +616,7 @@ class WC_Subscriptions_Manager {
 	 * @return bool Whether the order should be cancelled.
 	 */
 	public static function exclude_subscription_from_order_cleanup( $should_cancel, $order ) {
-		if ( 'shop_subscription' === $order->get_type() ) {
+		if ( $should_cancel && 'shop_subscription' === $order->get_type() ) {
 			$should_cancel = false;
 		}
 
