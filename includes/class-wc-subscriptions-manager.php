@@ -57,6 +57,10 @@ class WC_Subscriptions_Manager {
 
 		// Do the same thing for WordPress networks
 		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
+
+		// Callbacks for handling WC's automatic cleanup of unpaid orders.
+		add_action( 'wc_order_types', [ __CLASS__, 'exclude_subscriptions_from_order_cleanup' ], 10, 1 );
+		add_action( 'woocommerce_cancel_unpaid_order', [ __CLASS__, 'exclude_subscription_from_order_cleanup' ], 10, 2 );
 	}
 
 	/**
@@ -603,6 +607,43 @@ class WC_Subscriptions_Manager {
 		$subscription->add_order_note( __( 'Pending subscription created.', 'woocommerce-subscriptions' ) );
 
 		do_action( 'pending_subscription_created_for_order', $order, $product_id );
+	}
+
+	/**
+	 * Excludes the shop subscription order type from the order cleanup process.
+	 *
+	 * @param string[] $order_types An array of order types.
+	 * @return string[] An array of order types. The shop_subscription order type is removed when we're in the process of cancelling unpaid orders.
+	 */
+	public static function exclude_subscriptions_from_order_cleanup( $order_types ) {
+		// Only exclude the subscription type if we are in the process of cancelling unpaid orders.
+		if ( ! doing_action( 'woocommerce_cancel_unpaid_orders' ) ) {
+			return $order_types;
+		}
+
+		$subscription_type_index = array_search( 'shop_subscription', $order_types, true );
+
+		if ( isset( $order_types[ $subscription_type_index ] ) ) {
+			unset( $order_types[ $subscription_type_index ] );
+		}
+
+		return $order_types;
+	}
+
+	/**
+	 * Excludes subscriptions from the order cleanup process.
+	 *
+	 * @param bool     $should_cancel Whether the order should be cancelled.
+	 * @param WC_Order $order         The order object.
+	 *
+	 * @return bool Whether the order should be cancelled.
+	 */
+	public static function exclude_subscription_from_order_cleanup( $should_cancel, $order ) {
+		if ( 'shop_subscription' === $order->get_type() ) {
+			$should_cancel = false;
+		}
+
+		return $should_cancel;
 	}
 
 	/**
