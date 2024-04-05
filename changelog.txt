@@ -2,6 +2,7 @@
 
 = 7.0.0 - 2024-xx-xx =
 * Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
+* Fix - Resolved an issue that would cause subscriptions to be directly cancelled by the WooCommerce process of automatically cancelling unpaid orders in-line with the hold stock setting.
 
 = 6.9.0 - 2024-03-28 =
 * Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
