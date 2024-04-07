@@ -523,7 +523,7 @@ class WCS_Cart_Renewal {
 			WC()->countries->get_address_fields(
 				$order->get_shipping_country(),
 				'shipping_'
-			),
+			)
 		);
 
 		add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
