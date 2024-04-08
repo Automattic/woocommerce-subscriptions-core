@@ -1811,9 +1811,7 @@ class WCS_Admin_Post_Types {
 
 		$query_order = strtoupper( $args['order'] );
 
-		// fields and order are identical in both cases
-		$pieces['fields'] .= ', COALESCE(lp.last_payment, orders.date_created_gmt, 0) as lp';
-		$pieces['orderby'] = "CAST(lp AS DATETIME) {$query_order}";
+		$pieces['orderby'] = "COALESCE(lp.last_payment, wp_wc_orders.date_created_gmt, 0) {$query_order}";
 
 		return $pieces;
 	}
@@ -1868,22 +1866,19 @@ class WCS_Admin_Post_Types {
 		// Create a temporary table, drop the previous one.
 		$wpdb->query( $wpdb->prepare( 'DROP TEMPORARY TABLE IF EXISTS %s', $table_name ) );
 
+		//phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query(
-			$wpdb->prepare(
-				"CREATE TEMPORARY TABLE %s (id INT PRIMARY KEY, last_payment DATETIME) AS
-				SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment FROM %s order_meta
-				LEFT JOIN %s as orders ON orders.id = order_meta.order_id
-				WHERE order_meta.meta_key = '_subscription_renewal'
-				GROUP BY order_meta.meta_value",
-				$table_name,
-				$meta_table,
-				$order_table
-			)
+			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
+			SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment
+			FROM {$meta_table} as order_meta
+			LEFT JOIN {$order_table} as orders ON orders.id = order_meta.order_id
+			WHERE order_meta.meta_key = '_subscription_renewal'
+			GROUP BY order_meta.meta_value"
 		);
+		//phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		$pieces['join'] .= "LEFT JOIN {$table_name} lp
-			ON {$order_table}.id = lp.id
-			LEFT JOIN {$order_table} orders on {$order_table}.parent_order_id = orders.id";
+		$pieces['join'] .= "LEFT JOIN {$table_name} as lp
+			ON {$order_table}.id = lp.id";
 
 		return $pieces;
 	}
