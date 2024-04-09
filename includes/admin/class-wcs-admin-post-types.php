@@ -1811,7 +1811,7 @@ class WCS_Admin_Post_Types {
 
 		$query_order = strtoupper( $args['order'] );
 
-		$pieces['orderby'] = "COALESCE(lp.last_payment, wp_wc_orders.date_created_gmt, 0) {$query_order}";
+		$pieces['orderby'] = "COALESCE(lp.last_payment, parent_order.date_created_gmt, 0) {$query_order}";
 
 		return $pieces;
 	}
@@ -1878,7 +1878,8 @@ class WCS_Admin_Post_Types {
 		//phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$pieces['join'] .= "LEFT JOIN {$table_name} as lp
-			ON {$order_table}.id = lp.id";
+			ON {$order_table}.id = lp.id
+			LEFT JOIN {$order_table} as parent_order on {$order_table}.parent_order_id = parent_order.id";
 
 		return $pieces;
 	}
