@@ -5,6 +5,7 @@
 * Fix - Resolved an issue that would cause subscriptions to be directly cancelled by the WooCommerce process of automatically cancelling unpaid orders in-line with the hold stock setting.
 * Fix - Prevent duplicate status transition notes on subscriptions and potential infinite loops when processing subscription status transitions.
 * Fix - Resolved an issue that could lead to "Undefined array key 'order-received'" errors.
+* Fix - Resolved database errors that would occur when ordering the subscriptions list table by the 'Last order date' on sites with HPOS enabled.
 
 = 6.9.0 - 2024-03-28 =
 * Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
