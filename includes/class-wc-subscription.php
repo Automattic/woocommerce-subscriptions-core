@@ -576,6 +576,9 @@ class WC_Subscription extends WC_Order {
 		// Use local copy of status transition value.
 		$status_transition = $this->status_transition;
 
+		// Reset status transition variable.
+		$this->status_transition = false;
+
 		// If we're not currently in the midst of a status transition, bail early.
 		if ( ! $status_transition ) {
 			return;
@@ -617,9 +620,6 @@ class WC_Subscription extends WC_Order {
 			);
 			$this->add_order_note( __( 'Error during subscription status transition.', 'woocommerce-subscriptions' ) . ' ' . $e->getMessage() );
 		}
-
-		// This has run, so reset status transition variable
-		$this->status_transition = false;
 	}
 
 	/**
