@@ -1839,7 +1839,7 @@ class WCS_Admin_Post_Types {
 				WHERE order_meta.meta_key = '_subscription_renewal'
 				GROUP BY order_meta.meta_value) lp
 			ON {$order_table}.id = lp.meta_value
-			LEFT JOIN {$order_table} orders on {$order_table}.parent_order_id = orders.ID";
+			LEFT JOIN {$order_table} as parent_order on {$order_table}.parent_order_id = parent_order.ID";
 
 		return $pieces;
 	}
