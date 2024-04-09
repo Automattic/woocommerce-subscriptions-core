@@ -512,9 +512,6 @@ class WCS_Cart_Renewal {
 			return $value;
 		}
 
-		// Guard against the fake WC_Checkout singleton, see https://github.com/woocommerce/woocommerce-subscriptions/issues/427#issuecomment-260763250
-		remove_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10 );
-
 		$address_fields = array_merge(
 			WC()->countries->get_address_fields(
 				$order->get_billing_country(),
@@ -525,8 +522,6 @@ class WCS_Cart_Renewal {
 				'shipping_'
 			)
 		);
-
-		add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
 
 		// Generate the address getter method for the key.
 		$getter = "get_{$key}";
