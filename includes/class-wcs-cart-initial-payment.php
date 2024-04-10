@@ -59,6 +59,8 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 		 * This is intended for situations in which re-creating the cart will result in
 		 * the loss of order data.
 		 *
+		 * @since 6.2.0
+		 *
 		 * @param bool     $recreate_cart Whether to recreate the initial payment order. Default true.
 		 * @param WC_Order $order         The order object.
 		 * @param string   $order_key     The order key.
