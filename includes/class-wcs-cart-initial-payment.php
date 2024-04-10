@@ -53,19 +53,20 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 		}
 
 		/**
-		 * Filter whether to recreate the initial payment order.
+		 * Filter whether to set up the cart during the pay-for-order payment flow.
 		 *
-		 * Allows developers to prevent the initial payment order from being recreated and
-		 * manage the pending to processing/completed workflow without duplicating the order.
+		 * Allows developers to bypass cart setup for the pay-for-order payment flow.
+		 * This is intended for situations in which re-creating the cart will result in
+		 * the loss of order data.
 		 *
-		 * @param bool $recreate_order Whether to recreate the initial payment order. Default true.
-		 * @param WC_Order $order The order object.
-		 * @param string $order_key The order key.
-		 * @param int $order_id The order ID.
+		 * @param bool     $recreate_cart Whether to recreate the initial payment order. Default true.
+		 * @param WC_Order $order         The order object.
+		 * @param string   $order_key     The order key.
+		 * @param int      $order_id      The order ID.
 		 */
-		$recreate_order = apply_filters( 'wcs_recreate_initial_payment_order', true, $order, $order_key, $order_id );
+		$recreate_cart = apply_filters( "wcs_setup_cart_for_{$this->cart_item_key}", true, $order, $order_key, $order_id );
 
-		if ( ! $recreate_order ) {
+		if ( ! $recreate_cart ) {
 			return;
 		}
 
