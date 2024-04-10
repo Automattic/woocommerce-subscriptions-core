@@ -71,8 +71,9 @@ class WCS_Failed_Scheduled_Action_Manager {
 	 * @param string $message the message to be written to the log.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.19
 	 */
-	protected function log( $message ) {
-		$this->logger->add( 'failed-scheduled-actions', $message );
+	protected function log( $message, $context = [] ) {
+		$context['source'] = 'failed-scheduled-actions';
+		wc_get_logger()->error( $message, $context );
 	}
 
 	/**
@@ -89,21 +90,53 @@ class WCS_Failed_Scheduled_Action_Manager {
 			return;
 		}
 
+		$log_entry           = '';
 		$subscription_action = $this->get_action_hook_label( $action->get_hook() );
 
 		switch ( current_filter() ) {
 			case 'action_scheduler_failed_action':
-				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action, absint( $error ) ) );
+				$log_entry = sprintf( 'scheduled action %s (%s) failed to finish processing after %s seconds', $action_id, $subscription_action, absint( $error ) );
 				break;
 			case 'action_scheduler_failed_execution':
-				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing due to the following exception: %s', $action_id, $subscription_action, $error->getMessage() ) );
+				$log_entry = sprintf( 'scheduled action %s (%s) failed to finish processing due to the following exception: %s', $action_id, $subscription_action, $this->get_message_from_exception( $error ) );
 				break;
 			case 'action_scheduler_unexpected_shutdown':
-				$this->log( sprintf( 'scheduled action %s (%s) failed to finish processing due to the following error: %s', $action_id, $subscription_action, $error['message'] ) );
+				$log_entry = sprintf( 'scheduled action %s (%s) failed to finish processing due to the following error: %s', $action_id, $subscription_action, $this->get_message_from_error( $error ) );
 				break;
 		}
 
-		$this->log( sprintf( 'action args: %s', $this->get_action_args_string( $action->get_args() ) ) );
+		$context = array_filter(
+			[
+				'action_args' => $this->get_action_args_string( $action->get_args() ),
+				'error_trace' => $this->get_trace_from_error( $error ),
+			]
+		);
+
+		// If there is an exception listener and it has caught exceptions, log them for additional debugging.
+		if ( ! empty( $this->exceptions ) ) {
+			foreach ( $this->exceptions as $exception ) {
+				$message = $this->get_message_from_exception( $exception );
+
+				$context['exceptions'][] = $message;
+				ActionScheduler_Logger::instance()->log( $action_id, $message );
+			}
+
+			// Now that we've logged the exceptions, we can detach the exception listener.
+			$this->clear_exceptions_and_detach_listener();
+		}
+
+		$this->log( $log_entry, $context );
+
+		// Prior to WC 8.6 the logger didn't display the context inline with the message so we log the context separately.
+		if ( wcs_is_woocommerce_pre( '8.6' ) ) {
+			foreach ( $context as $key => $value ) {
+				if ( is_array( $value ) ) {
+					$value = implode( PHP_EOL, $value );
+				}
+
+				$this->log( "{$key}: {$value}" );
+			}
+		}
 
 		// Store information about the scheduled action for displaying an admin notice
 		$failed_scheduled_actions = get_option( WC_Subscriptions_Admin::$option_prefix . '_failed_scheduled_actions', array() );
@@ -114,18 +147,6 @@ class WCS_Failed_Scheduled_Action_Manager {
 		);
 
 		update_option( WC_Subscriptions_Admin::$option_prefix . '_failed_scheduled_actions', $failed_scheduled_actions );
-
-		// If there is an exception listener and it's caught exceptions, log them for additional debugging.
-		if ( ! empty( $this->exceptions ) ) {
-			foreach ( $this->exceptions as $exception ) {
-				$message = 'Exception: ' . $exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine();
-				$this->log( $message . PHP_EOL . $exception->getTraceAsString() );
-				ActionScheduler_Logger::instance()->log( $action_id, $message );
-			}
-
-			// Now that we've logged the exceptions, we can detach the exception listener.
-			$this->clear_exceptions_and_detach_listener();
-		}
 	}
 
 	/**
@@ -278,5 +299,55 @@ class WCS_Failed_Scheduled_Action_Manager {
 	protected function get_action( $action_id ) {
 		$store = ActionScheduler_Store::instance();
 		return $store->fetch_action( $action_id );
+	}
+
+	/**
+	 * Fetches a backtrace from an error.
+	 *
+	 * @param Exception|array $error The Exception or error data to fetch the backtrace from.
+	 * @return string The backtrace as a string.
+	 */
+	protected function get_trace_from_error( $error ) {
+		if ( is_a( $error, 'Exception' ) ) {
+			$previous = $error->getPrevious();
+			return $previous ? $previous->getTraceAsString() : $error->getTraceAsString();
+		} else {
+			return '';
+		}
+	}
+
+	/**
+	 * Generates a message from an exception.
+	 *
+	 * @param Exception $exception The exception to generate a message from.
+	 * @return string The message.
+	 */
+	protected function get_message_from_exception( $exception ) {
+		// When Action Scheduler throws an exception, it wraps the original exception in a new Exception. Information about the actual error is stored in the previous exception.
+		//error_log($exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine());
+		$previous  = $exception->getPrevious();
+		$exception = $previous ? $previous : $exception;
+
+		return $exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine();
+	}
+
+	/**
+	 * Undocumented function
+	 *
+	 * @param [type] $error
+	 * @return void
+	 */
+	protected function get_message_from_error( $error ) {
+		$message = $error['message'];
+
+		if ( isset( $error['file'] ) ) {
+			$message .= " in {$error['file']}";
+
+			if ( isset( $error['line'] ) ) {
+				$message .= ":{$error['line']}";
+			}
+		}
+
+		return $message;
 	}
 }
