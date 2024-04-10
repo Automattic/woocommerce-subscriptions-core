@@ -4,6 +4,7 @@
 * Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
 * Fix - Resolved an issue that would cause subscriptions to be directly cancelled by the WooCommerce process of automatically cancelling unpaid orders in-line with the hold stock setting.
 * Fix - Prevent duplicate status transition notes on subscriptions and potential infinite loops when processing subscription status transitions.
+* Fix - Resolved an issue that could lead to "Undefined array key 'order-received'" errors.
 * Fix - Resolved errors that could occur when paying for renewal orders via the checkout when the store has custom checkout fields.
 
 = 6.9.0 - 2024-03-28 =
