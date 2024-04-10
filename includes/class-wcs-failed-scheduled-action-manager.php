@@ -332,10 +332,12 @@ class WCS_Failed_Scheduled_Action_Manager {
 	}
 
 	/**
-	 * Undocumented function
+	 * Generates a message from an error array.
 	 *
-	 * @param [type] $error
-	 * @return void
+	 * The $error variable is obtained from get_last_error() and so has some standard keys.
+	 *
+	 * @param array $error The error data to generate a message from.
+	 * @return string The message including the file and line number if available.s
 	 */
 	protected function get_message_from_error( $error ) {
 		$message = $error['message'];
