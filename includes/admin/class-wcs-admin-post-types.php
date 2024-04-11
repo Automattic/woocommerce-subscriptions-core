@@ -1864,9 +1864,9 @@ class WCS_Admin_Post_Types {
 		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
 
 		// Create a temporary table, drop the previous one.
-		$wpdb->query( $wpdb->prepare( 'DROP TEMPORARY TABLE IF EXISTS %s', $table_name ) );
-
 		//phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
+
 		$wpdb->query(
 			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
 			SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment
