@@ -17,7 +17,8 @@ import { useMemo } from '@wordpress/element';
  * @param {boolean} props.showItems             If shipping rates should show items inside them.
  * @param {Element} props.noResultsMessage      Message shown when no rate are found.
  * @param {Function} props.renderOption          Function that decides how rates are going to render.
- * @param {Object}props.components
+ * @param {Object} props.components
+ * @param {string} props.context               This will be woocommerce/cart or woocommerce/checkout.
  */
 export const SubscriptionsRecurringPackages = ( {
 	extensions,
@@ -27,6 +28,7 @@ export const SubscriptionsRecurringPackages = ( {
 	noResultsMessage,
 	renderOption,
 	components,
+	context,
 } ) => {
 	const { subscriptions = [] } = extensions;
 	const { ShippingRatesControlPackage } = components;
@@ -58,6 +60,7 @@ export const SubscriptionsRecurringPackages = ( {
 			showItems={ shouldShowItems }
 			noResultsMessage={ noResultsMessage }
 			renderOption={ renderOption }
+			highlightChecked={ 'woocommerce/checkout' === context }
 		/>
 	) );
 };
