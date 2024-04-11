@@ -6,6 +6,7 @@
 * Fix - Prevent duplicate status transition notes on subscriptions and potential infinite loops when processing subscription status transitions.
 * Fix - Resolved an issue that could lead to "Undefined array key 'order-received'" errors.
 * Fix - Resolved database errors that would occur when ordering the subscriptions list table by the 'Last order date' on sites with HPOS enabled.
+* Dev - Introduced a new filter ('wcs_setup_cart_for_subscription_initial_payment') to enable third-party plugins to use the pay-for-order flow to complete a subscription's initial payment.
 
 = 6.9.0 - 2024-03-28 =
 * Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
