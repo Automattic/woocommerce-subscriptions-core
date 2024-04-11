@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.0.0 - 2024-xx-xx =
+= 7.0.0 - 2024-04-11 =
 * Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
 * Fix - Resolved an issue that would cause subscriptions to be directly cancelled by the WooCommerce process of automatically cancelling unpaid orders in-line with the hold stock setting.
 * Fix - Prevent duplicate status transition notes on subscriptions and potential infinite loops when processing subscription status transitions.
