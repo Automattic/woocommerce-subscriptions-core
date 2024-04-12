@@ -308,7 +308,7 @@ class WCS_Failed_Scheduled_Action_Manager {
 	/**
 	 * Generates a message from an error array.
 	 *
-	 * The $error variable is obtained from get_last_error() and so has some standard keys.
+	 * The $error variable is obtained from get_last_error() and has standard keys message, file and line.
 	 *
 	 * @param array $error The error data to generate a message from.
 	 * @return string The message including the file and line number if available.s
