@@ -360,6 +360,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 
 				if ( $metadata ) {
 					WC_Data_Store::load( 'subscription' )->delete_meta( $subscription, (object) [ 'id' => $metadata->meta_id ] );
+					$subscription->delete_meta_data( $metadata->meta_key );
 				}
 			}
 		}
