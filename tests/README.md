@@ -23,3 +23,17 @@ Tip: try using `127.0.0.1` for the DB host if the default `localhost` isn't work
 ```
 $ ./vendor/bin/phpunit
 ```
+
+### Tips
+
+**Using Local by Flywheel**
+
+If you have MySQL installed via a socket (like with Local), your install command will look something like this:
+
+```
+bin/install-wp-tests.sh <db-name> <db-user> <db-password> "localhost:/Users/{username}/Library/ApplicationSupport/Local/run/Qm1DpkUyd/mysql/mysqld.sock"
+```
+
+You can find the socket location in your Local database settings. 
+
+<img width="500" alt="Screenshot 2024-04-12 at 10 29 07 am" src="https://github.com/Automattic/woocommerce-subscriptions-core/assets/8490476/fbd62f4e-de0f-4c20-b44c-c10365a1343f">
