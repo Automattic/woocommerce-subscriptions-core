@@ -1,11 +1,24 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.9.0 - xxxx-xx-xx =
+= 7.0.0 - 2024-xx-xx =
+* Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
+* Fix - Resolved an issue that would cause subscriptions to be directly cancelled by the WooCommerce process of automatically cancelling unpaid orders in-line with the hold stock setting.
+* Fix - Prevent duplicate status transition notes on subscriptions and potential infinite loops when processing subscription status transitions.
+* Fix - Resolved an issue that could lead to "Undefined array key 'order-received'" errors.
+* Dev - Introduced a new filter ('wcs_setup_cart_for_subscription_initial_payment') to enable third-party plugins to use the pay-for-order flow to complete a subscription's initial payment.
+
+= 6.9.0 - 2024-03-28 =
 * Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
 * Fix - Resolved an issue that could cause an empty error notice to appear on the My Account > Payment methods page when a customer attempted to delete a token used by subscriptions.
 * Fix - Make sure we always clear the subscription object from cache after updating dates.
 * Fix - Use block theme styles for the 'Add to Cart' button on subscription product pages.
 * Fix - Customer notes not being saved on the Edit Subscription page for stores with HPOS enabled.
+* Fix - Ensure products that have a yearly billing period can choose a date that the subscription is synchronized to.
+* Fix - Improved alignment of subscription product pricing fields on the edit product screen for consistency with other fields.
+* Fix - Avoid setting empty meta keys on subscriptions when changing the customer's default payment method.
+* Fix - Use a more scalable way to filter the orders admin list table by parent orders on HPOS stores.
+* Fix - Resolved an issue that prevented subscription custom place order button labels from working on the block checkout.
+* Update - Change the update all subscriptions checkbox displayed on the change payment method page to be enabled by default.
 
 = 6.8.0 - 2024-02-08 =
 * Fix - Block the UI after a customer clicks actions on the My Account > Subscriptions page to prevent multiple requests from being sent.
