@@ -273,7 +273,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	}
 
 	/**
-	 * Check the related renewal order cache value is set when creating a subscription, becuase it should be set by
+	 * Check the related renewal order cache value is set when creating a subscription, because it should be set by
 	 * WCS_Related_Order_Store_Cached_CPT::set_empty_renewal_order_cache()
 	 */
 	public function test_set_empty_renewal_order_cache() {

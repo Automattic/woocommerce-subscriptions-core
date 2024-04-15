@@ -203,7 +203,7 @@ const TabHeading = ( {
 
 /**
  * Component responsible for rendering a single recurring total panel.
- * We render several onces depending on how many recurring carts we have.
+ * We render several ones depending on how many recurring carts we have.
  *
  * @param {Object} props                     Props passed to component.
  * @param {Object} props.subscription        Recurring cart data that we registered
