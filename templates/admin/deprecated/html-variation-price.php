@@ -80,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		// Sign-up Fee
 		woocommerce_wp_text_input( array(
 			'id'            => 'variable_subscription_sign_up_fee[' . $loop . ']',
-			'class'         => 'wc_input_subscription_initial_price',
+			'class'         => 'wc_input_subscription_intial_price',
 			'wrapper_class' => '_subscription_sign_up_fee_field',
 			'label'         => sprintf( __( 'Sign-up Fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 			'placeholder'   => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),

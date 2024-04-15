@@ -349,8 +349,8 @@ class WC_Subscriptions_Admin {
 			woocommerce_wp_text_input(
 				array(
 					'id'                => '_subscription_sign_up_fee',
-					// Keep wc_input_subscription_initial_price for backward compatibility.
-					'class'             => 'wc_input_subscription_initial_price wc_input_subscription_initial_price wc_input_price  short',
+					// Keep wc_input_subscription_intial_price for backward compatibility.
+					'class'             => 'wc_input_subscription_intial_price wc_input_subscription_initial_price wc_input_price  short',
 					// translators: %s is a currency symbol / code
 					'label'             => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 					'placeholder'       => _x( 'e.g. 9.90', 'example price', 'woocommerce-subscriptions' ),
