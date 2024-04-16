@@ -68,7 +68,7 @@ class WC_Subscriptions_Cart_Validator {
 			wc_add_notice( __( 'A subscription has been removed from your cart. Products and subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
 
 			// Redirect to cart page to remove subscription & notify shopper
-			add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'redirect_ajax_add_to_cart' ) );
+			add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'add_to_cart_ajax_redirect' ) );
 		}
 
 		return $valid;
@@ -107,7 +107,7 @@ class WC_Subscriptions_Cart_Validator {
 				wc_add_notice( __( 'Your cart has been emptied of subscription products. Only one subscription product can be purchased at a time.', 'woocommerce-subscriptions' ), 'notice' );
 
 				// Redirect to cart page to remove subscription & notify shopper
-				add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'redirect_ajax_add_to_cart' ) );
+				add_filter( 'woocommerce_add_to_cart_fragments', array( __CLASS__, 'add_to_cart_ajax_redirect' ) );
 
 				break;
 			}
