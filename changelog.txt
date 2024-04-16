@@ -2,6 +2,7 @@
 
 = 7.1.0 - 2024-xx-xx =
 * Update - Update the shipping method styling to apply borders to the highlighted shipping option in the Checkout block.
+* Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
 
 = 7.0.0 - 2024-04-11 =
 * Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
