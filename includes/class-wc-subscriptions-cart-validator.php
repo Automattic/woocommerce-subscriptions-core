@@ -46,8 +46,10 @@ class WC_Subscriptions_Cart_Validator {
 			$product        = wc_get_product( $product_id );
 
 			// If the product is sold individually or if the cart doesn't already contain this product, empty the cart.
-			if ( ( $product && $product->is_sold_individually() ) || ! WC()->cart->find_product_in_cart( $cart_item_id ) ) {
+			if ( ! WC()->cart->is_empty() && ( ( $product && $product->is_sold_individually() ) || ! WC()->cart->find_product_in_cart( $cart_item_id ) ) ) {
+				$message = WC()->cart->get_cart_contents_count() > 1 ? __( 'Products have been removed from your cart. Only one subscription product can be purchased at a time.', 'woocommerce-subscriptions' ) : __( 'A product has been removed from your cart. Only one subscription product can be purchased at a time.', 'woocommerce-subscriptions' );
 				WC()->cart->empty_cart();
+				wc_add_notice( $message, 'notice' );
 			}
 		} elseif ( $is_subscription && wcs_cart_contains_renewal() && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
 
