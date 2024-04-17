@@ -114,7 +114,9 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 		}
 
 		// Sort results in order to keep consistency between cached results and queried results.
-		rsort( $subscription_ids );
+		if ( ! empty( $subscription_ids ) ) {
+			rsort( $subscription_ids );
+		}
 
 		return $subscription_ids;
 	}

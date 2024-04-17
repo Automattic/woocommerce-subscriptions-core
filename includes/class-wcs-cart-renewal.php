@@ -465,7 +465,7 @@ class WCS_Cart_Renewal {
 
 					if ( isset( $item_to_renew['_subtracted_base_location_taxes'] ) ) {
 						$price += array_sum( $item_to_renew['_subtracted_base_location_taxes'] ) * $item_to_renew['qty'];
-					} else {
+					} elseif ( isset( $item_to_renew['taxes']['subtotal'] ) ) {
 						$price += array_sum( $item_to_renew['taxes']['subtotal'] ); // Use the taxes array items here as they contain taxes to a more accurate number of decimals.
 					}
 				}
