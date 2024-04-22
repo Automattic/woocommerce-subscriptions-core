@@ -2,6 +2,7 @@
 
 = 7.1.0 - 2024-xx-xx =
 * Update - Update the shipping method styling to apply borders to the highlighted shipping option in the Checkout block.
+* Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
 * Tweak - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
 
