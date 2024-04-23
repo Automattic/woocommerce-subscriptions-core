@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<?php if ( $allow_item_removal ) : ?>
 						<td class="remove_item">
 							<?php if ( wcs_can_item_be_removed( $item, $subscription ) ) : ?>
-								<?php $confirm_notice = apply_filters( 'woocommerce_subscriptions_order_item_remove_confirmation_text', __( 'Are you sure you want remove this item from your subscription?', 'woocommerce-subscriptions' ), $item, $_product, $subscription );?>
+								<?php $confirm_notice = apply_filters( 'woocommerce_subscriptions_order_item_remove_confirmation_text', __( 'Are you sure you want to remove this item from your subscription?', 'woocommerce-subscriptions' ), $item, $_product, $subscription );?>
 								<a href="<?php echo esc_url( WCS_Remove_Item::get_remove_url( $subscription->get_id(), $item_id ) );?>" class="remove" onclick="return confirm('<?php printf( esc_html( $confirm_notice ) ); ?>');">&times;</a>
 							<?php endif; ?>
 						</td>
