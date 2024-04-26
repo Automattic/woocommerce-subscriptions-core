@@ -53,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						 * @param int $item_id The subscription line item ID.
 						 * @param WC_Order_Item|array $item The subscription line item.
 						 * @param WC_Subscription $subscription The subscription.
-						 * @param bool $plain_text Wether the item meta is being generated in a plain text context.
+						 * @param bool $plain_text Whether the item meta is being generated in a plain text context.
 						 */
 						do_action( 'woocommerce_order_item_meta_start', $item_id, $item, $subscription, false );
 
@@ -65,7 +65,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						 * @param int $item_id The subscription line item ID.
 						 * @param WC_Order_Item|array $item The subscription line item.
 						 * @param WC_Subscription $subscription The subscription.
-						 * @param bool $plain_text Wether the item meta is being generated in a plain text context.
+						 * @param bool $plain_text Whether the item meta is being generated in a plain text context.
 						 */
 						do_action( 'woocommerce_order_item_meta_end', $item_id, $item, $subscription, false );
 						?>

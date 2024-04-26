@@ -52,11 +52,11 @@ export const registerFilters = () => {
 						billingInterval,
 					} )
 				) {
-					// An edge case when length is 1 so it doens't have a length prefix
+					// An edge case when length is 1 so it doesn't have a length prefix
 					if ( 1 === subscriptionLength ) {
 						return getBillingFrequencyString(
 							subscriptions,
-							// translators: the word used to describe billing frequency, e.g. "fo1" 1 day or "for" 1 month.
+							// translators: the word used to describe billing frequency, e.g. "for" 1 day or "for" 1 month.
 							__( 'for 1', 'woocommerce-subscriptions' ),
 							label
 						);

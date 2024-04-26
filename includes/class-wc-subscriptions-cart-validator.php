@@ -139,7 +139,7 @@ class WC_Subscriptions_Cart_Validator {
 	 *
 	 * Attached by @see WC_Subscriptions_Cart_Validator::validate_cart_contents_for_mixed_checkout() and
 	 * @see WC_Subscriptions_Cart_Validator::maybe_empty_cart() when the store has multiple subscription
-	 * purcahses disabled, the cart already contains products and the customer adds a new item or logs in
+	 * purchases disabled, the cart already contains products and the customer adds a new item or logs in
 	 * causing a cart merge.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
