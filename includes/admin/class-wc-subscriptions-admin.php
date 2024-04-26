@@ -119,6 +119,9 @@ class WC_Subscriptions_Admin {
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_and_subscriptions_from_list' ) );
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
+		// Filter Order and Subscriptions used by Subscription Reports.
+		add_filter( 'woocommerce_orders_table_query_clauses', array( __CLASS__, 'filter_orders_and_subscriptions_from_order_table' ) );
+
 		add_action( 'admin_notices', __CLASS__ . '::display_renewal_filter_notice' );
 
 		add_shortcode( 'subscriptions', __CLASS__ . '::do_subscriptions_shortcode' );
@@ -1385,6 +1388,68 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $query_vars;
+	}
+
+	/**
+	 * Filters the Admin orders and subscriptions table results in HPOS based on a list of IDs returned by a report query.
+	 *
+	 * @since 7.1.0
+	 *
+	 * @param array $clauses The query clause.
+	 *
+	 * @return array $clauses The query clause with additional `where` clause .
+	 */
+	public static function filter_orders_and_subscriptions_from_order_table( $clauses ) {
+		global $wpdb;
+
+		if ( ! ( isset( $_GET['page'] ) && 'wc-orders' === $_GET['page'] ) || ! isset( $_GET['_report'] ) ) {
+			return $clauses;
+		}
+
+		// Map the order or subscription type to their respective keys and type key.
+		$object_type = isset( $_GET['_orders_list_key'] ) ? 'order' : ( isset( $_GET['_subscriptions_list_key'] ) ? 'subscription' : '');
+		$cache_report_key = isset( $_GET[ "_{$object_type}s_list_key" ] ) ? $_GET[ "_{$object_type}s_list_key" ] : '';
+
+		// If the report key or report arg is empty exit early.
+		if ( empty( $cache_report_key ) || empty( $_GET['_report'] ) ) {
+			$clauses['where'] .= " AND {$wpdb->posts}.ID = 0";
+			return $clauses;
+		}
+
+		$cache = get_transient( $_GET['_report'] );
+
+		// Display an admin notice if we cannot find the report data requested.
+		if ( ! isset( $cache[ $cache_report_key ] ) ) {
+			$admin_notice = new WCS_Admin_Notice( 'error' );
+			$admin_notice->set_simple_content(
+				sprintf(
+				/* translators: Placeholders are opening and closing link tags. */
+					__( 'We weren\'t able to locate the set of report results you requested. Please regenerate the link from the %1$sSubscription Reports screen%2$s.', 'woocommerce-subscriptions' ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ) . '">',
+					'</a>'
+				)
+			);
+			$admin_notice->display();
+
+			$clauses['where'] .= " AND {$wpdb->posts}.ID = 0";
+			wc_get_logger()->warning( 'returning 2 $clauses-- ' . wp_json_encode( $clauses ) );
+
+			return $clauses;
+		}
+
+		$results = $cache[ $cache_report_key ];
+
+		// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
+		if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
+			$results = array( $results[ (int) $_GET['_data_key'] ] );
+		}
+
+		$ids = explode( ',', implode( ',', wp_list_pluck( $results, "{$object_type}_ids", true ) ) );
+
+		$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
+		$clauses['where'] .= $wpdb->prepare( " AND {$wpdb->prefix}wc_orders.ID IN ($format)", $ids );
+
+		return $clauses;
 	}
 
 	/**
