@@ -7,6 +7,7 @@
 * Tweak - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
 * Fix - Subscription table is empty in mobile view when HPOS is enabled.
+* Fix - WooCommerce page header is hidden when HPOS is enabled.
 
 = 7.0.0 - 2024-04-11 =
 * Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
