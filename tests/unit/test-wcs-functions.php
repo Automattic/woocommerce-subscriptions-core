@@ -1741,7 +1741,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( 0, count( $subscriptions ) );
 		unset( $subscriptions );
 
-		// Check status filter. Subscription 1 is active but switched from variation 1 to variation 2 so only subscription 2 should be returnd.
+		// Check status filter. Subscription 1 is active but switched from variation 1 to variation 2 so only subscription 2 should be returned.
 		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => array( 'active', 'on-hold' ) ) );
 
 		$this->assertIsArray( $subscriptions );

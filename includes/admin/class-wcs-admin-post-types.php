@@ -1056,7 +1056,7 @@ class WCS_Admin_Post_Types {
 	 *
 	 * There are a few special conditions for handling the post__in value. Namely:
 	 * - if there are no matching post_ids, the value should be array( 0 ), not an empty array()
-	 * - if there are existing IDs in post__in, we only want to retun posts with an ID in both
+	 * - if there are existing IDs in post__in, we only want to return posts with an ID in both
 	 *   the existing set and the new set
 	 *
 	 * While this method is public, it should not be used as it will eventually be deprecated and
@@ -1704,7 +1704,7 @@ class WCS_Admin_Post_Types {
 	 * @param string               $item_name      The line item's name.
 	 * @param string               $item_meta_html The line item's meta HTML.
 	 *
-	 * @return string The subcription line item column HTML content.
+	 * @return string The subscription line item column HTML content.
 	 */
 	protected static function get_item_display_div( $item, $item_name, $item_meta_html ) {
 		wcs_deprecated_function( '__METHOD__', '3.0.7' );

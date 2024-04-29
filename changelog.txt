@@ -6,6 +6,7 @@
 * Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
 * Tweak - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
+* Fix - Typo in confirmation alert when users remove an item from a subscription.
 * Fix - Subscription table is empty in mobile view when HPOS is enabled.
 * Fix - WooCommerce page header is hidden when HPOS is enabled.
 
@@ -54,7 +55,7 @@
 * Fix - When a subscription is flagged as requiring manual payments, allow admin users to turn on automatic payments for a subscription via the Edit Subscription page by selecting a new payment method.
 * Fix - When processing an early renewal order, make sure the suspension count is reset back to 0 on payment complete.
 * Fix - Ensure proper backfilling of subscription metadata (i.e. dates and cache) to the postmeta table when HPOS is enabled and compatibility mode (data syncing) is turned on.
-* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatibile way.
+* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatible way.
 * Dev - Introduce a new wcs_get_subscription_grouping_key() function to generate a unique key for a subscription based on its billing schedule. This function uses the existing recurring cart key concept.
 * Dev - Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.
 
