@@ -128,7 +128,7 @@ class WCS_Admin_Post_Types {
 	public function is_db_user_privileged() {
 		$permissions = $this->get_special_database_privileges();
 
-		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions ) && in_array( 'INDEX', $permissions ) && in_array( 'DROP', $permissions ) );
+		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions, true ) && in_array( 'INDEX', $permissions, true ) && in_array( 'DROP', $permissions, true ) );
 	}
 
 	/**
@@ -187,14 +187,17 @@ class WCS_Admin_Post_Types {
 		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
 
 		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
 
 		$wpdb->query(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
 			 SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm
 			 LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
 			 WHERE pm.meta_key = '_subscription_renewal'
-			 GROUP BY pm.meta_value" );
+			 GROUP BY pm.meta_value"
+		);
 		// Magic ends here
 
 		$pieces['join'] .= "LEFT JOIN {$table_name} lp
@@ -220,23 +223,25 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$product_id = '';
+		$product_id     = '';
 		$product_string = '';
 
-		if ( ! empty( $_GET['_wcs_product'] ) ) {
-			$product_id     = absint( $_GET['_wcs_product'] );
+		if ( ! empty( $_GET['_wcs_product'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$product_id     = absint( $_GET['_wcs_product'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$product_string = wc_get_product( $product_id )->get_formatted_name();
 		}
 
-		WCS_Select2::render( array(
-			'class'       => 'wc-product-search',
-			'name'        => '_wcs_product',
-			'placeholder' => esc_attr__( 'Search for a product&hellip;', 'woocommerce-subscriptions' ),
-			'action'      => 'woocommerce_json_search_products_and_variations',
-			'selected'    => strip_tags( $product_string ),
-			'value'       => $product_id,
-			'allow_clear' => 'true',
-		) );
+		WCS_Select2::render(
+			array(
+				'class'       => 'wc-product-search',
+				'name'        => '_wcs_product',
+				'placeholder' => esc_attr__( 'Search for a product&hellip;', 'woocommerce-subscriptions' ),
+				'action'      => 'woocommerce_json_search_products_and_variations',
+				'selected'    => wp_strip_all_tags( $product_string ),
+				'value'       => $product_id,
+				'allow_clear' => 'true',
+			)
+		);
 	}
 
 	/**
@@ -360,9 +365,9 @@ class WCS_Admin_Post_Types {
 
 		$action = '';
 
-		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) {
+		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) { // phpcs:ignore
 			$action = wc_clean( wp_unslash( $_REQUEST['action'] ) );
-		} elseif ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
+		} elseif ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) { // phpcs:ignore
 			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
@@ -549,10 +554,10 @@ class WCS_Admin_Post_Types {
 				break;
 
 			case 'order_title':
-
 				$customer_tip = '';
 
-				if ( $address = $the_subscription->get_formatted_billing_address() ) {
+				$address = $the_subscription->get_formatted_billing_address();
+				if ( $address ) {
 					$customer_tip .= _x( 'Billing:', 'meaning billing address', 'woocommerce-subscriptions' ) . ' ' . esc_html( $address );
 				}
 
@@ -567,15 +572,16 @@ class WCS_Admin_Post_Types {
 				}
 
 				if ( ! empty( $customer_tip ) ) {
-					echo '<div class="tips" data-tip="' . wc_sanitize_tooltip( $customer_tip ) . '">'; // XSS ok.
+					echo '<div class="tips" data-tip="' . wc_sanitize_tooltip( $customer_tip ) . '">'; // phpcs:ignore Standard.Category.SniffName.ErrorCode
 				}
 
 				// This is to stop PHP from complaining
 				$username = '';
 
-				if ( $the_subscription->get_user_id() && ( false !== ( $user_info = get_userdata( $the_subscription->get_user_id() ) ) ) ) {
+				$user_info = get_userdata( $the_subscription->get_user_id() );
+				if ( $the_subscription->get_user_id() && ( false !== $user_info ) ) {
 
-					$username  = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
+					$username = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
 
 					if ( $the_subscription->get_billing_first_name() || $the_subscription->get_billing_last_name() ) {
 						$username .= esc_html( ucfirst( $the_subscription->get_billing_first_name() ) . ' ' . ucfirst( $the_subscription->get_billing_last_name() ) );
@@ -639,7 +645,7 @@ class WCS_Admin_Post_Types {
 				break;
 
 			case 'recurring_total':
-				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
+				$column_content .= esc_html( wp_strip_all_tags( $the_subscription->get_formatted_order_total() ) );
 				$column_content .= '<small class="meta">';
 				// translators: placeholder is the display name of a payment gateway a subscription was paid by
 				$column_content .= esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) );
@@ -682,7 +688,7 @@ class WCS_Admin_Post_Types {
 		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
 		$datetime      = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
 
-		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
+		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			$column_content = '-';
 		} else {
 			$accurate_date    = $datetime->date_i18n( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) );
@@ -744,7 +750,6 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Search custom fields as well as content.
 	 *
-	 * @access public
 	 * @param WP_Query $wp
 	 * @return void
 	 */
@@ -755,7 +760,7 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$post_ids = wcs_subscription_search( $_GET['s'] );
+		$post_ids = isset( $_GET['s'] ) ? wcs_subscription_search( wc_clean( wp_unslash( $_GET['s'] ) ) ) : []; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( ! empty( $post_ids ) ) {
 
@@ -773,7 +778,6 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Change the label when searching orders.
 	 *
-	 * @access public
 	 * @param mixed $query
 	 * @return string
 	 */
@@ -792,13 +796,12 @@ class WCS_Admin_Post_Types {
 			return $query;
 		}
 
-		return wp_unslash( $_GET['s'] );
+		return isset( $_GET['s'] ) ? wc_clean( wp_unslash( $_GET['s'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
 	 * Query vars for custom searches.
 	 *
-	 * @access public
 	 * @param mixed $public_query_vars
 	 * @return array
 	 */
@@ -1101,7 +1104,7 @@ class WCS_Admin_Post_Types {
 			3  => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
 			4  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			// translators: placeholder is previous post title
-			5  => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			5  => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false, // // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			6  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			7  => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8  => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
@@ -1146,19 +1149,21 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$selected_gateway_id = ( ! empty( $_GET['_payment_method'] ) ) ? $_GET['_payment_method'] : ''; ?>
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$selected_gateway_id = ( ! empty( $_GET['_payment_method'] ) ) ? wc_clean( wp_unslash( $_GET['_payment_method'] ) ) : ''; ?>
 
 		<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">
-			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ) ?></option>
-			<option value="none" <?php echo esc_attr( 'none' == $selected_gateway_id ? 'selected' : '' ) . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ) ?></option>
+			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ); ?></option>
+			<option value="none" <?php echo esc_attr( 'none' === $selected_gateway_id ? 'selected' : '' ) . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ); ?></option>
 		<?php
 
 		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
-			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
+			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id === $gateway_id ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
 		}
 		echo '<option value="_manual_renewal">' . esc_html__( 'Manual Renewal', 'woocommerce-subscriptions' ) . '</option>';
 		?>
-		</select> <?php
+		</select>
+		<?php
 	}
 
 	/**
@@ -1187,7 +1192,7 @@ class WCS_Admin_Post_Types {
 	 */
 	public function shop_subscription_row_actions( $actions, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type ) {
+		if ( 'shop_subscription' === $post->post_type ) {
 			$actions = array();
 		}
 
@@ -1207,12 +1212,15 @@ class WCS_Admin_Post_Types {
 			wcs_deprecated_argument( __METHOD__, '3.0.7', 'The second parameter (product) is no longer used.' );
 		}
 
-		$item_meta_html = wc_display_item_meta( $item, array(
+		$item_meta_html = wc_display_item_meta(
+			$item,
+			array(
 				'before'    => '',
 				'after'     => '',
 				'separator' => '',
 				'echo'      => false,
-		) );
+			)
+		);
 
 		return $item_meta_html;
 	}
@@ -1226,7 +1234,7 @@ class WCS_Admin_Post_Types {
 	 */
 	protected static function get_item_name_html( $item, $_product, $include_quantity = 'include_quantity' ) {
 
-		$item_quantity  = absint( $item['qty'] );
+		$item_quantity = absint( $item['qty'] );
 
 		$item_name = '';
 
@@ -1271,8 +1279,9 @@ class WCS_Admin_Post_Types {
 				echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) );
 
 				if ( $item_meta_html ) {
-					echo wcs_help_tip( $item_meta_html, true );
-				} ?>
+					echo esc_html( wcs_help_tip( $item_meta_html, true ) );
+				}
+				?>
 			</td>
 		</tr>
 		<?php
