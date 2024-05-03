@@ -1402,21 +1402,38 @@ class WC_Subscriptions_Admin {
 	public static function filter_orders_and_subscriptions_from_order_table( $clauses ) {
 		global $wpdb;
 
-		if ( ! ( isset( $_GET['page'] ) && in_array( $_GET['page'], [ 'wc-orders', 'wc-orders--shop_subscription' ] ) ) || ! isset( $_GET['_report'] ) ) {
+		$query_vars = [
+			'page'                    => '',
+			'_report'                 => '',
+			'_orders_list_key'        => '',
+			'_subscriptions_list_key' => '',
+			'_data_key'               => '',
+		];
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// Map and sanitize $_GET vars to $query_vars.
+		foreach ( array_keys( $query_vars ) as $var ) {
+			if ( isset( $_GET[ $var ] ) ) {
+				$query_vars[ $var ] = sanitize_text_field( wp_unslash( $_GET[ $var ] ) );
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! ( ! empty( $query_vars['page'] ) && in_array( $query_vars['page'], [ 'wc-orders', 'wc-orders--shop_subscription' ], true ) ) || empty( $query_vars['_report'] ) ) {
 			return $clauses;
 		}
 
 		// Map the order or subscription type to their respective keys and type key.
-		$object_type = isset( $_GET['_orders_list_key'] ) ? 'order' : ( isset( $_GET['_subscriptions_list_key'] ) ? 'subscription' : '');
-		$cache_report_key = isset( $_GET[ "_{$object_type}s_list_key" ] ) ? $_GET[ "_{$object_type}s_list_key" ] : '';
+		$object_type      = ! empty( $query_vars['_orders_list_key'] ) ? 'order' : ( ! empty( $query_vars['_subscriptions_list_key'] ) ? 'subscription' : '' );
+		$cache_report_key = ! empty( $query_vars[ "_{$object_type}s_list_key" ] ) ? $query_vars[ "_{$object_type}s_list_key" ] : '';
 
 		// If the report key or report arg is empty exit early.
-		if ( empty( $cache_report_key ) || empty( $_GET['_report'] ) ) {
+		if ( empty( $cache_report_key ) || empty( $query_vars['_report'] ) ) {
 			$clauses['where'] .= " AND {$wpdb->posts}.ID = 0";
 			return $clauses;
 		}
 
-		$cache = get_transient( $_GET['_report'] );
+		$cache = get_transient( $query_vars['_report'] );
 
 		// Display an admin notice if we cannot find the report data requested.
 		if ( ! isset( $cache[ $cache_report_key ] ) ) {
@@ -1440,13 +1457,14 @@ class WC_Subscriptions_Admin {
 		$results = $cache[ $cache_report_key ];
 
 		// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
-		if ( ! empty( $_GET['_data_key'] ) && isset( $results[ (int) $_GET['_data_key'] ] ) ) {
-			$results = array( $results[ (int) $_GET['_data_key'] ] );
+		if ( ! empty( $query_vars['_data_key'] ) && isset( $results[ (int) $query_vars['_data_key'] ] ) ) {
+			$results = array( $results[ (int) $query_vars['_data_key'] ] );
 		}
 
-		$ids = explode( ',', implode( ',', wp_list_pluck( $results, "{$object_type}_ids", true ) ) );
-
+		$ids    = explode( ',', implode( ',', wp_list_pluck( $results, "{$object_type}_ids", true ) ) );
 		$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$clauses['where'] .= $wpdb->prepare( " AND {$wpdb->prefix}wc_orders.ID IN ($format)", $ids );
 
 		return $clauses;
