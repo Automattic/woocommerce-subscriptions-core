@@ -9,6 +9,7 @@
 * Fix - Typo in confirmation alert when users remove an item from a subscription.
 * Fix - Subscription table is empty in mobile view when HPOS is enabled.
 * Fix - WooCommerce page header is hidden when HPOS is enabled.
+* Dev - Calling wcs_create_subscription() will no longer attempt to fetch a fresh instance of the subscription at the end. This is to prevent loading the subscription from the database potentially unnecessarily.
 
 = 7.0.0 - 2024-04-11 =
 * Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
