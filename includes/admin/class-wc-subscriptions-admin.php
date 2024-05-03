@@ -1402,7 +1402,7 @@ class WC_Subscriptions_Admin {
 	public static function filter_orders_and_subscriptions_from_order_table( $clauses ) {
 		global $wpdb;
 
-		if ( ! ( isset( $_GET['page'] ) && 'wc-orders' === $_GET['page'] ) || ! isset( $_GET['_report'] ) ) {
+		if ( ! ( isset( $_GET['page'] ) && in_array( $_GET['page'], [ 'wc-orders', 'wc-orders--shop_subscription' ] ) ) || ! isset( $_GET['_report'] ) ) {
 			return $clauses;
 		}
 
