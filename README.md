@@ -39,7 +39,7 @@ new WC_Subscriptions_Core_Plugin();
 This repository can also be loaded as WordPress plugin alongside WC Subscriptions or WCPay. **This is for development purposes only**.
 
 > **Warning**
-> `subscriptions-core` as a standalone plugin will not initialize itself, it requies a client product plugin - ie WooCommerce Payments, or WooCommerce Subscription to be active.
+> `subscriptions-core` as a standalone plugin will not initialize itself, it requires a client product plugin - ie WooCommerce Payments, or WooCommerce Subscription to be active.
 
 ### Prerequisites
 - [Node](https://nodejs.org/en/) LTS v16.x.x

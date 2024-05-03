@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for requireing user registration on the checkout.
+ * Unit tests for requiring user registration on the checkout.
  */
 
 class WCS_Cart_User_Registration_Test extends WP_UnitTestCase {

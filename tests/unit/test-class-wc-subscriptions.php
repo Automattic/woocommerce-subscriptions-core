@@ -99,10 +99,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		}
 
 		// Subscriptions pending cancelation can only be reactivated if the subscription's end date is still in the future.
-		$subcription = $this->subscriptions['pending-cancel'];
+		$subscription = $this->subscriptions['pending-cancel'];
 
 		// End date in the future
-		$subcription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
+		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
 		$expected       = true;
 		$can_be_updated = $subscription->can_be_updated_to( 'active' );
 
@@ -112,7 +112,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $can_be_updated, '[FAILED]: pending-cancel to wc-active.' );
 
 		// End date in the past
-		$subcription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ] );
+		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ] );
 		$expected       = false;
 		$can_be_updated = $subscription->can_be_updated_to( 'active' );
 
@@ -215,7 +215,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			'cancelled'      => false,
 			'pending-cancel' => false,
 			'expired'        => false,
-			'switched'       => false, // should statuses be able to be udpated to their previous status ?!
+			'switched'       => false, // should statuses be able to be updated to their previous status ?!
 		];
 
 		foreach ( $this->subscriptions as $status => $subscription ) {
@@ -811,7 +811,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tests for WC_Subscription::calculate_next_payment_date() on subscriptions with different statuses
-	 * Overall this a pretty pointless test because there's no checks before calulating the next payment date for status
+	 * Overall this a pretty pointless test because there's no checks before calculating the next payment date for status
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */

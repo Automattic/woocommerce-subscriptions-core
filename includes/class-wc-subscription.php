@@ -365,7 +365,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'pending-cancel' :
-				// Only active subscriptions can be given the "pending cancellation" status, becuase it is used to account for a prepaid term
+				// Only active subscriptions can be given the "pending cancellation" status, because it is used to account for a prepaid term
 				if ( $this->payment_method_supports( 'subscription_cancellation' ) ) {
 					if ( $this->has_status( 'active' ) ) {
 						$can_be_updated = true;
@@ -2773,7 +2773,7 @@ class WC_Subscription extends WC_Order {
 			return false;
 		}
 
-		// Pass a timestamp to the WC 3.0 setters becasue WC expects MySQL date strings to be in site's timezone, but we have a date string in UTC timezone
+		// Pass a timestamp to the WC 3.0 setters because WC expects MySQL date strings to be in site's timezone, but we have a date string in UTC timezone
 		$timestamp = ( $datetime > 0 ) ? wcs_date_to_time( $datetime ) : 0;
 
 		$this->set_last_order_date( 'date_paid', $timestamp );
