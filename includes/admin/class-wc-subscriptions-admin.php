@@ -514,7 +514,7 @@ class WC_Subscriptions_Admin {
 
 		$site_offset = wc_timezone_offset();
 
-		// Save the timestamps in UTC time, the way WC does it.
+		// Fetch the timestamps in UTC time to check if the product is currently on sale.
 		$date_from = ! empty( $_POST['_sale_price_dates_from'] ) ? wcs_date_to_time( gmdate( 'Y-m-d 00:00:00', wcs_strtotime_dark_knight( wc_clean( wp_unslash( $_POST['_sale_price_dates_from'] ) ) ) ) ) - $site_offset : '';
 		$date_to   = ! empty( $_POST['_sale_price_dates_to'] ) ? wcs_date_to_time( gmdate( 'Y-m-d 23:59:59', wcs_strtotime_dark_knight( wc_clean( wp_unslash( $_POST['_sale_price_dates_to'] ) ) ) ) ) - $site_offset : '';
 
@@ -523,9 +523,6 @@ class WC_Subscriptions_Admin {
 		if ( ! empty( $date_to ) && empty( $date_from ) ) {
 			$date_from = $now;
 		}
-
-		update_post_meta( $post_id, '_sale_price_dates_from', $date_from );
-		update_post_meta( $post_id, '_sale_price_dates_to', $date_to );
 
 		// Update price if on sale
 		if ( '' !== $sale_price && ( ( empty( $date_to ) && empty( $date_from ) ) || ( $date_from < $now && ( empty( $date_to ) || $date_to > $now ) ) ) ) {
