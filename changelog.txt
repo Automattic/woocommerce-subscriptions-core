@@ -6,6 +6,7 @@
 * Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
 * Tweak - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
+* Fix - Filtered order links in subscription reports returns all the orders when HPOS is enabled.
 * Fix - Typo in confirmation alert when users remove an item from a subscription.
 * Fix - Ensure the scheduled sale price for subscription products ends at the end of the "to" day set in product settings.
 * Fix - Subscription table is empty in mobile view when HPOS is enabled.
