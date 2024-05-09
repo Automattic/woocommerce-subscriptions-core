@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.1.0 - 2024-xx-xx =
+= 7.1.0 - 2024-05-09 =
 * Fix - Add check to prevent fatal error in rsort and array_sum.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
 * Fix - Filtered order links in subscription reports returns all the orders when HPOS is enabled.
