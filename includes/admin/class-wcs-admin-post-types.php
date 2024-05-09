@@ -67,6 +67,7 @@ class WCS_Admin_Post_Types {
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+		add_filter( 'woocommerce_order_updated_messages', array( $this, 'post_updated_messages' ) );
 
 		// Add ListTable filters when CPT is enabled
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
@@ -1095,7 +1096,9 @@ class WCS_Admin_Post_Types {
 	 * @return array
 	 */
 	public function post_updated_messages( $messages ) {
-		global $post, $post_ID;
+		global $post, $theorder;
+
+		$created_date = ! empty( $theorder ) && $theorder instanceof WC_Subscription ? $theorder->get_date_created() : $post->post_date;
 
 		$messages['shop_subscription'] = array(
 			0  => '', // Unused. Messages start at index 1.
@@ -1109,7 +1112,7 @@ class WCS_Admin_Post_Types {
 			7  => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8  => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			// translators: php date string
-			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
+			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $created_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 

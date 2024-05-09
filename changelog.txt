@@ -11,6 +11,7 @@
 * Fix - Ensure the scheduled sale price for subscription products ends at the end of the "to" day set in product settings.
 * Fix - Subscription table is empty in mobile view when HPOS is enabled.
 * Fix - WooCommerce page header is hidden when HPOS is enabled.
+* Fix - Subscription updated messages missing on the Edit Subscription page when HPOS is enabled.
 * Fix - Resolved an issue that prevented bulk actions from running on the Subscriptions list table when the table was filtered by date, payment method, product or customer.
 * Dev - Calling wcs_create_subscription() will no longer attempt to fetch a fresh instance of the subscription at the end. This is to prevent loading the subscription from the database potentially unnecessarily.
 
