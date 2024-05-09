@@ -1367,7 +1367,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		$action_url   = add_query_arg( $action_url_args );
-		$action_url   = remove_query_arg( [ 'changed', 'ids' ], $action_url );
+		$action_url   = remove_query_arg( [ 'changed', 'ids', 'filter_action' ], $action_url );
 		$all_statuses = array(
 			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
