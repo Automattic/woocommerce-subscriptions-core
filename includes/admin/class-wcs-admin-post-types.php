@@ -66,7 +66,7 @@ class WCS_Admin_Post_Types {
 		add_filter( 'query_vars', array( $this, 'add_custom_query_var' ) );
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
-		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+		add_filter( 'woocommerce_order_updated_messages', array( $this, 'post_updated_messages' ) );
 
 		// Add ListTable filters when CPT is enabled
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
