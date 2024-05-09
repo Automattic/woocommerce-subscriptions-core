@@ -1,10 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.1.0 - 2024-xx-xx =
-* Update - Update the shipping method styling to apply borders to the highlighted shipping option in the Checkout block.
+= 7.1.0 - 2024-05-09 =
 * Fix - Add check to prevent fatal error in rsort and array_sum.
-* Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
-* Tweak - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
 * Fix - Filtered order links in subscription reports returns all the orders when HPOS is enabled.
 * Fix - Typo in confirmation alert when users remove an item from a subscription.
@@ -13,6 +10,9 @@
 * Fix - WooCommerce page header is hidden when HPOS is enabled.
 * Fix - Subscription updated messages missing on the Edit Subscription page when HPOS is enabled.
 * Fix - Resolved an issue that prevented bulk actions from running on the Subscriptions list table when the table was filtered by date, payment method, product or customer.
+* Update - Update the shipping method styling to apply borders to the highlighted shipping option in the Checkout block.
+* Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
+* Update - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
 * Dev - Calling wcs_create_subscription() will no longer attempt to fetch a fresh instance of the subscription at the end. This is to prevent loading the subscription from the database potentially unnecessarily.
 
 = 7.0.0 - 2024-04-11 =
