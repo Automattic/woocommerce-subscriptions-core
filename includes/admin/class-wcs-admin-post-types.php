@@ -1098,7 +1098,15 @@ class WCS_Admin_Post_Types {
 	public function post_updated_messages( $messages ) {
 		global $post, $theorder;
 
-		$created_date = ! empty( $theorder ) && $theorder instanceof WC_Subscription ? $theorder->get_date_created() : $post->post_date;
+		if ( ! isset( $theorder ) || ! $theorder instanceof WC_Subscription ) {
+			if ( ! isset( $post ) || 'shop_subscription' !== $post->post_type ) {
+				return $messages;
+			} elseif ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+				\Automattic\WooCommerce\Utilities\OrderUtil::init_theorder_object( $post );
+			} else {
+				return $messages;
+			}
+		}
 
 		$messages['shop_subscription'] = array(
 			0  => '', // Unused. Messages start at index 1.
@@ -1112,7 +1120,7 @@ class WCS_Admin_Post_Types {
 			7  => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8  => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			// translators: php date string
-			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $created_date ) ) . '</strong>' ),
+			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $theorder->get_date_created() ?? $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 
