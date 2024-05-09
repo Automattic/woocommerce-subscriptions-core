@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.1.1 - 2024-xx-xx =
+* Fix - Resolved an issue that caused "WC_DateTime could not be converted to int" warnings to occur on non-hpos sites while editing a subscription.
+
 = 7.1.0 - 2024-05-09 =
 * Fix - Add check to prevent fatal error in rsort and array_sum.
 * Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
