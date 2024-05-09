@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.1.0 - 2024-xx-xx =
+= 7.1.0 - 2024-05-09 =
 * Update - Update the shipping method styling to apply borders to the highlighted shipping option in the Checkout block.
 * Fix - Add check to prevent fatal error in rsort and array_sum.
 * Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
