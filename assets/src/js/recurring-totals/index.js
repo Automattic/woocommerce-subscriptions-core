@@ -91,9 +91,12 @@ const ShippingTotal = ( {
 		? parseInt( values.total_shipping, 10 ) +
 		  parseInt( values.total_shipping_tax, 10 )
 		: parseInt( values.total_shipping, 10 );
+
+	const valueToShow =
+		0 === shippingTotals ? <strong>Free</strong> : shippingTotals;
 	return (
 		<TotalsItem
-			value={ shippingTotals }
+			value={ valueToShow }
 			label={ __( 'Shipping', 'woocommerce-subscriptions' ) }
 			currency={ currency }
 			description={
@@ -257,7 +260,7 @@ const RecurringSubscription = ( {
 					<Subtotal currency={ currency } values={ totals } />
 					<DiscountTotals currency={ currency } values={ totals } />
 				</TotalsWrapper>
-				<TotalsWrapper>
+				<TotalsWrapper className="wc-block-components-totals-shipping">
 					<ShippingTotal
 						currency={ currency }
 						needsShipping={ needsShipping }
