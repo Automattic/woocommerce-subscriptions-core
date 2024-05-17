@@ -2065,7 +2065,10 @@ class WC_Subscription extends WC_Order {
 			$relation_types = ( 'any' === $order_type ) ? array( 'renewal', 'resubscribe', 'switch' ) : array( $order_type );
 
 			foreach ( $relation_types as $relation_type ) {
-				$related_order_ids = array_merge( $related_order_ids, WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $relation_type ) );
+				$related_orders_for_relation_type = WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $relation_type );
+				if ( is_array( $related_orders_for_relation_type ) ) {
+					$related_order_ids = array_merge( $related_order_ids, $related_orders_for_relation_type );
+				}
 			}
 		}
 
