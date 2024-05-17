@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.1.2 - xxxx-xx-xx =
+* Fix - Add check to prevent fatal error when retrieving related order IDs.
+
 = 7.1.1 - 2024-05-09 =
 * Fix - Resolved an issue that caused "WC_DateTime could not be converted to int" warnings to occur on non-hpos sites while editing a subscription.
 
