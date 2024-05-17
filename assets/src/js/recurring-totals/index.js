@@ -93,7 +93,11 @@ const ShippingTotal = ( {
 		: parseInt( values.total_shipping, 10 );
 
 	const valueToShow =
-		0 === shippingTotals ? <strong>Free</strong> : shippingTotals;
+		0 === shippingTotals ? (
+			<strong>{ __( 'Free', 'woocommerce-subscriptions' ) }</strong>
+		) : (
+			shippingTotals
+		);
 	return (
 		<TotalsItem
 			value={ valueToShow }
