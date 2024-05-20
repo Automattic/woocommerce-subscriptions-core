@@ -10,7 +10,7 @@ import {
 	TotalsWrapper,
 } from '@woocommerce/blocks-checkout';
 import { getCurrencyFromPriceResponse } from '@woocommerce/price-format';
-import { getSetting } from '@woocommerce/settings';
+import { isWcVersion, getSetting } from '@woocommerce/settings';
 /**
  * Internal dependencies
  */
@@ -93,7 +93,7 @@ const ShippingTotal = ( {
 		: parseInt( values.total_shipping, 10 );
 
 	const valueToShow =
-		0 === shippingTotals ? (
+		0 === shippingTotals && isWcVersion( '9.0', '>=' ) ? (
 			<strong>{ __( 'Free', 'woocommerce-subscriptions' ) }</strong>
 		) : (
 			shippingTotals
