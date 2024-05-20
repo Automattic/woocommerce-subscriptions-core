@@ -89,6 +89,11 @@ class WC_Subscriptions_Renewal_Order {
 			return;
 		}
 
+		// Check if this is the last renewal order for a subscription
+		if ( ! wcs_order_is_latest_renewal( $order_id ) ) {
+			return;
+		}
+
 		$subscriptions        = wcs_get_subscriptions_for_renewal_order( $order_id );
 		$was_activated        = false;
 		$order                = wc_get_order( $order_id );

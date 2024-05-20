@@ -62,6 +62,27 @@ function wcs_order_contains_renewal( $order ) {
 }
 
 /**
+ * @param $order WC_Order The order object.
+ * @return bool|void Weather the order is the latest renewal order.
+ */
+function wcs_order_is_latest_renewal( $order ) {
+	$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
+
+	if ( empty( $subscriptions ) ) {
+		return false;
+	}
+
+	foreach ( $subscriptions as $subscription ) {
+		$last_renewal_order = wcs_get_last_renewal_order( $subscription );
+		if ( $last_renewal_order && $last_renewal_order->get_id() === $order->get_id() ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Checks the cart to see if it contains a subscription product renewal.
  *
  * @param  bool | Array The cart item containing the renewal, else false.
@@ -127,10 +148,7 @@ function wcs_get_subscriptions_for_renewal_order( $order ) {
  */
 function wcs_get_last_non_early_renewal_order( $subscription ) {
 	$last_non_early_renewal = false;
-	$renewal_orders         = $subscription->get_related_orders( 'all', 'renewal' );
-
-	// We need the orders sorted by the date they were created, with the newest first.
-	wcs_sort_objects( $renewal_orders, 'date_created', 'descending' );
+	$renewal_orders         = wcs_get_newest_renewal_orders( $subscription );
 
 	foreach ( $renewal_orders as $renewal_order ) {
 		if ( ! wcs_order_contains_early_renewal( $renewal_order ) ) {
@@ -140,6 +158,30 @@ function wcs_get_last_non_early_renewal_order( $subscription ) {
 	}
 
 	return $last_non_early_renewal;
+}
+
+/**
+ * Get the last renewal order (early renewals included).
+ *
+ * @param WC_Subscription $subscription The subscription object.
+ * @return WC_Order|bool The last non-early renewal order, otherwise false.
+ */
+function wcs_get_last_renewal_order( $subscription ) {
+	$renewal_orders         = wcs_get_newest_renewal_orders( $subscription );
+	return $renewal_orders ? reset( $renewal_orders ) : false;
+}
+
+/**
+ * @param $subscription WC_Subscription The subscription object.
+ * @return array The latest renewal orders
+ */
+function wcs_get_newest_renewal_orders( $subscription ) {
+	$renewal_orders         = $subscription->get_related_orders( 'all', 'renewal' );
+
+	// We need the orders sorted by the date they were created, with the newest first.
+	wcs_sort_objects( $renewal_orders, 'date_created', 'descending' );
+
+	return $renewal_orders;
 }
 
 /**
