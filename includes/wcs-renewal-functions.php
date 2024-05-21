@@ -63,23 +63,12 @@ function wcs_order_contains_renewal( $order ) {
 
 /**
  * @param $order WC_Order The order object.
- * @return bool|void Weather the order is the latest renewal order.
+ * @param $subscription WC_Subscription The subscription object.
+ * @return bool Whether the order is the latest renewal order of the provided subscription.
  */
-function wcs_order_is_latest_renewal( $order ) {
-	$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
-
-	if ( empty( $subscriptions ) ) {
-		return false;
-	}
-
-	foreach ( $subscriptions as $subscription ) {
-		$last_renewal_order = wcs_get_last_renewal_order( $subscription );
-		if ( $last_renewal_order && $last_renewal_order->get_id() === $order->get_id() ) {
-			return true;
-		}
-	}
-
-	return false;
+function wcs_order_is_latest_renewal_of_subscription( $order, $subscription ) {
+	$last_renewal_order = wcs_get_last_renewal_order( $subscription );
+	return $last_renewal_order && $last_renewal_order->get_id() === $order->get_id();
 }
 
 /**
