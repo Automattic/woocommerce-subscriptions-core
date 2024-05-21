@@ -83,7 +83,9 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 			return;
 		}
 
-		update_post_meta( $subscription->get_id(), '_cancelled_email_sent', 'true' );
+		$subscription->set_cancelled_email_sent( 'true' );
+		$subscription->save();
+
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
 
@@ -174,7 +176,7 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 				'type'        => 'select',
 				'description' => __( 'Choose which format of email to send.', 'woocommerce-subscriptions' ),
 				'default'     => 'html',
-				'class'       => 'email_type',
+				'class'       => 'email_type wc-enhanced-select',
 				'options'     => array(
 					'plain'     => _x( 'Plain text', 'email type', 'woocommerce-subscriptions' ),
 					'html'      => _x( 'HTML', 'email type', 'woocommerce-subscriptions' ),

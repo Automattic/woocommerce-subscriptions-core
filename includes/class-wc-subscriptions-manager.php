@@ -57,6 +57,8 @@ class WC_Subscriptions_Manager {
 
 		// Do the same thing for WordPress networks
 		add_action( 'wpmu_delete_user', __CLASS__ . '::trash_users_subscriptions_for_network' );
+
+		add_filter( 'woocommerce_cancel_unpaid_order', [ __CLASS__, 'exclude_subscription_from_order_cleanup' ], 10, 2 );
 	}
 
 	/**
@@ -145,8 +147,8 @@ class WC_Subscriptions_Manager {
 				$renewal_order = wcs_create_renewal_order( $subscription );
 
 				if ( is_wp_error( $renewal_order ) ) {
-					// translators: placeholder is an order note.
-					throw new Exception( sprintf( __( 'Error: Unable to create renewal order with note "%s"', 'woocommerce-subscriptions' ), $order_note ) );
+					// translators: placeholder %1 is an order note. %2 is the error message that was thrown.
+					throw new Exception( sprintf( __( 'Error: Unable to create renewal order with note "%1$s". Message: %2$s', 'woocommerce-subscriptions' ), $order_note, $renewal_order->get_error_message() ) );
 				}
 			}
 
@@ -606,6 +608,22 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
+	 * Excludes subscriptions from the order cleanup process.
+	 *
+	 * @param bool     $should_cancel Whether the order should be cancelled.
+	 * @param WC_Order $order         The order object.
+	 *
+	 * @return bool Whether the order should be cancelled.
+	 */
+	public static function exclude_subscription_from_order_cleanup( $should_cancel, $order ) {
+		if ( $should_cancel && 'shop_subscription' === $order->get_type() ) {
+			$should_cancel = false;
+		}
+
+		return $should_cancel;
+	}
+
+	/**
 	 * Creates subscriptions against a users account with a status of pending when a user creates
 	 * an order containing subscriptions.
 	 *
@@ -1001,7 +1019,7 @@ class WC_Subscriptions_Manager {
 					}
 				}
 
-				wp_delete_post( $subscription->get_id() );
+				$subscription->delete( true );
 			}
 		}
 	}
@@ -1351,7 +1369,7 @@ class WC_Subscriptions_Manager {
 	}
 
 	/**
-	 * A subscription now either has an end date or it doesn't, there is no way to calculate it based on the original subsciption
+	 * A subscription now either has an end date or it doesn't, there is no way to calculate it based on the original subscription
 	 * product (because a WC_Subscription object can have more than one product and syncing length with expiration date was both
 	 * cumbersome and error prone).
 	 *
@@ -1834,9 +1852,9 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function get_amount_from_proportion( $total, $proportion ) {
 
-		$sign_up_fee_proprotion = 1 - $proportion;
+		$sign_up_fee_proportion = 1 - $proportion;
 
-		$sign_up_total    = round( $total * $sign_up_fee_proprotion, 2 );
+		$sign_up_total    = round( $total * $sign_up_fee_proportion, 2 );
 		$recurring_amount = round( $total * $proportion, 2 );
 
 		// Handle any rounding bugs
@@ -2040,7 +2058,7 @@ class WC_Subscriptions_Manager {
 	 * if the amount is for $0 (and therefore, there is no payment to be processed by a gateway, and likely
 	 * no gateway used on the initial order).
 	 *
-	 * If a subscription has a $0 recurring total and is not already active (after being actived by something else
+	 * If a subscription has a $0 recurring total and is not already active (after being activated by something else
 	 * handling the 'scheduled_subscription_payment' with the default priority of 10), then this function will call
 	 * @see self::process_subscription_payment() to reactive the subscription, generate a renewal order etc.
 	 *

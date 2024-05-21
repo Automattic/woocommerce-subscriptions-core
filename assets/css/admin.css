@@ -2,19 +2,6 @@
 .woocommerce-subscriptions-activated p a.button-primary {
 	display: inline-block;
 }
-.woocommerce-subscriptions-activated a.button-primary:hover {
-	background: #bb77ae;
-	border-color: #aa559a;
-	-webkit-box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
-		0 1px 0 rgba( 0, 0, 0, 0.15 );
-	box-shadow: inset 0 1px 0 rgba( 255, 255, 255, 0.25 ),
-		0 1px 0 rgba( 0, 0, 0, 0.15 );
-}
-.woocommerce-subscriptions-activated a.button-primary:active,
-.woocommerce-subscriptions-activated a.button-primary:active {
-	background: #aa559a;
-	border-color: #aa559a;
-}
 
 /* Subscriptions Admin Page */
 .woocommerce_page_wc-orders--shop_subscription .tablenav input,
@@ -90,6 +77,28 @@ a.close-subscriptions-search {
 	display: block;
 	width: 50%;
 }
+/* Variation Subscription Product Sync Settings */
+.variable_subscription_sync .subscription_sync_annual > .select2-container {
+	max-width: 48%;
+}
+.variable_subscription_sync .subscription_sync_annual > .select2-container:last-child {
+	float: right;
+}
+#woocommerce-product-data .variable_subscription_pricing ._subscription_length_field .wc_input_subscription_length + .select2,
+#woocommerce-product-data .variable_subscription_sync .subscription_sync_week_month .wc_input_subscription_payment_sync + .select2 {
+	width: 100% !important;
+}
+/* Simple Subscription Product Sync Settings */
+._subscription_trial_length_field .select2-container:last-child,
+#general_product_data .subscription_sync_annual .select2-container:last-child {
+	width: 45% !important;
+	margin-left: 5%;
+}
+._subscription_trial_length_field .select2-container:not( :last-child ),
+#general_product_data .subscription_sync_annual .select2-container:not( :last-child ) {
+	width: 50% !important;
+}
+
 @media only screen and ( max-width: 1280px ) {
 	.woocommerce_options_panel ._subscription_price_fields .wrap,
 	.woocommerce_options_panel ._subscription_trial_length_field .wrap,
@@ -101,11 +110,9 @@ a.close-subscriptions-search {
 }
 .woocommerce_options_panel ._subscription_price_fields .wrap input,
 .woocommerce_options_panel ._subscription_price_fields .wrap select {
-	width: 30.75%;
-	margin-right: 3.8%;
+	width: 30%;
+	margin-right: 5%;
 }
-.woocommerce_options_panel ._subscription_trial_length_field .wrap input,
-.woocommerce_options_panel ._subscription_trial_length_field .wrap select,
 .woocommerce_options_panel
 	._subscription_payment_sync_date_day_field
 	.wrap
@@ -314,6 +321,27 @@ a.close-subscriptions-search {
 	width: auto !important;
 }
 
+#woocommerce-product-data .wc_input_subscription_length +.select2,
+#woocommerce-product-data .wc_input_subscription_payment_sync +.select2,
+#_subscription_limit +.select2 {
+	width: 50% !important;
+	margin-bottom: 4px;
+}
+
+.wc_input_subscription_period + .select2 {
+	width: 30% !important;
+	margin-top: 0;
+}
+.wc_input_subscription_trial_period + .select2 {
+	width: 50% !important;
+	margin-top: 0;
+}
+
+#general_product_data .wc_input_subscription_period_interval + .select2 {
+	margin-right: 5%;
+	width: 30% !important;
+}
+
 .variable_subscription_sync p._subscription_payment_sync_field {
 	padding-left: 0 !important;
 }
@@ -357,10 +385,42 @@ a.close-subscriptions-search {
 	.wc_input_subscription_price,
 #variable_product_options
 	.variable_subscription_pricing_2_3
-	.wc_input_subscription_period_interval {
-	max-width: 33%;
+	.wc_input_subscription_period + .select2,
+#variable_product_options
+	.variable_subscription_pricing_2_3
+	.wc_input_subscription_period_interval + .select2 {
+	width: calc( 100% / 3 ) !important;
 	float: left;
 }
+#variable_product_options
+	.variable_subscription_pricing_2_3
+	.wc_input_subscription_period + .select2,
+#variable_product_options
+	.variable_subscription_pricing_2_3
+	.wc_input_subscription_period_interval + .select2 {
+		padding-bottom: 2px;
+		margin-top: 2px;
+}
+
+#variable_product_options
+	.select2-container
+	.select2-selection--single {
+	min-height: 40px;
+}
+
+#variable_product_options
+	.select2-container
+	.select2-selection--single
+	.select2-selection__rendered {
+	line-height: 36px;
+}
+#variable_product_options
+	.select2-container
+	.select2-selection--single
+	.select2-selection__arrow {
+	height: 36px;
+}
+
 .variable_subscription_pricing_2_3 .wc_input_subscription_price {
 	clear: left;
 }
@@ -375,13 +435,14 @@ a.close-subscriptions-search {
 }
 #variable_product_options
 	.variable_subscription_pricing_2_3
-	.wc_input_subscription_trial_period,
+	.wc_input_subscription_trial_period + .select2,
 #variable_product_options
 	.variable_subscription_pricing_2_3
 	.wc_input_subscription_trial_length {
-	max-width: 50%;
+	width: 50%;
 }
-.variable_subscription_pricing_2_3 .wc_input_subscription_trial_period {
+.variable_subscription_pricing_2_3 .wc_input_subscription_trial_period + .select2 {
+	margin-top: 2px;
 	float: right;
 }
 .variable_subscription_pricing_2_3 .variable_subscription_length,
@@ -735,7 +796,7 @@ table.wp-list-table .subscription_renewal_order::after {
 	height: 100%;
 	text-align: center;
 	content: '\e018';
-	color: #a46497;
+	color: var(--wp-admin-theme-color);
 }
 
 table.wc_gateways .renewals .tips {

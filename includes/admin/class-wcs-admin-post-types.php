@@ -67,6 +67,7 @@ class WCS_Admin_Post_Types {
 		add_action( 'parse_query', array( $this, 'shop_subscription_search_custom_fields' ) );
 
 		add_filter( 'post_updated_messages', array( $this, 'post_updated_messages' ) );
+		add_filter( 'woocommerce_order_updated_messages', array( $this, 'post_updated_messages' ) );
 
 		// Add ListTable filters when CPT is enabled
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_by_product' ) );
@@ -128,7 +129,7 @@ class WCS_Admin_Post_Types {
 	public function is_db_user_privileged() {
 		$permissions = $this->get_special_database_privileges();
 
-		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions ) && in_array( 'INDEX', $permissions ) && in_array( 'DROP', $permissions ) );
+		return ( in_array( 'CREATE TEMPORARY TABLES', $permissions, true ) && in_array( 'INDEX', $permissions, true ) && in_array( 'DROP', $permissions, true ) );
 	}
 
 	/**
@@ -187,14 +188,17 @@ class WCS_Admin_Post_Types {
 		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
 
 		// Let's create a temporary table, drop the previous one, because otherwise this query is hella slow
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
 
 		$wpdb->query(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
 			 SELECT pm.meta_value as id, MAX( p.post_date_gmt ) as last_payment FROM {$wpdb->postmeta} pm
 			 LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
 			 WHERE pm.meta_key = '_subscription_renewal'
-			 GROUP BY pm.meta_value" );
+			 GROUP BY pm.meta_value"
+		);
 		// Magic ends here
 
 		$pieces['join'] .= "LEFT JOIN {$table_name} lp
@@ -203,7 +207,6 @@ class WCS_Admin_Post_Types {
 
 		return $pieces;
 	}
-
 
 	/**
 	 * Displays the dropdown for the product filter
@@ -221,23 +224,25 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$product_id = '';
+		$product_id     = '';
 		$product_string = '';
 
-		if ( ! empty( $_GET['_wcs_product'] ) ) {
-			$product_id     = absint( $_GET['_wcs_product'] );
+		if ( ! empty( $_GET['_wcs_product'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$product_id     = absint( $_GET['_wcs_product'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$product_string = wc_get_product( $product_id )->get_formatted_name();
 		}
 
-		WCS_Select2::render( array(
-			'class'       => 'wc-product-search',
-			'name'        => '_wcs_product',
-			'placeholder' => esc_attr__( 'Search for a product&hellip;', 'woocommerce-subscriptions' ),
-			'action'      => 'woocommerce_json_search_products_and_variations',
-			'selected'    => strip_tags( $product_string ),
-			'value'       => $product_id,
-			'allow_clear' => 'true',
-		) );
+		WCS_Select2::render(
+			array(
+				'class'       => 'wc-product-search',
+				'name'        => '_wcs_product',
+				'placeholder' => esc_attr__( 'Search for a product&hellip;', 'woocommerce-subscriptions' ),
+				'action'      => 'woocommerce_json_search_products_and_variations',
+				'selected'    => wp_strip_all_tags( $product_string ),
+				'value'       => $product_id,
+				'allow_clear' => 'true',
+			)
+		);
 	}
 
 	/**
@@ -361,9 +366,9 @@ class WCS_Admin_Post_Types {
 
 		$action = '';
 
-		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) {
+		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] ) { // phpcs:ignore
 			$action = wc_clean( wp_unslash( $_REQUEST['action'] ) );
-		} elseif ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) {
+		} elseif ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] ) { // phpcs:ignore
 			$action = wc_clean( wp_unslash( $_REQUEST['action2'] ) );
 		}
 
@@ -550,10 +555,10 @@ class WCS_Admin_Post_Types {
 				break;
 
 			case 'order_title':
-
 				$customer_tip = '';
 
-				if ( $address = $the_subscription->get_formatted_billing_address() ) {
+				$address = $the_subscription->get_formatted_billing_address();
+				if ( $address ) {
 					$customer_tip .= _x( 'Billing:', 'meaning billing address', 'woocommerce-subscriptions' ) . ' ' . esc_html( $address );
 				}
 
@@ -568,15 +573,16 @@ class WCS_Admin_Post_Types {
 				}
 
 				if ( ! empty( $customer_tip ) ) {
-					echo '<div class="tips" data-tip="' . wc_sanitize_tooltip( $customer_tip ) . '">'; // XSS ok.
+					echo '<div class="tips" data-tip="' . wc_sanitize_tooltip( $customer_tip ) . '">'; // phpcs:ignore Standard.Category.SniffName.ErrorCode
 				}
 
 				// This is to stop PHP from complaining
 				$username = '';
 
-				if ( $the_subscription->get_user_id() && ( false !== ( $user_info = get_userdata( $the_subscription->get_user_id() ) ) ) ) {
+				$user_info = get_userdata( $the_subscription->get_user_id() );
+				if ( $the_subscription->get_user_id() && ( false !== $user_info ) ) {
 
-					$username  = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
+					$username = '<a href="user-edit.php?user_id=' . absint( $user_info->ID ) . '">';
 
 					if ( $the_subscription->get_billing_first_name() || $the_subscription->get_billing_last_name() ) {
 						$username .= esc_html( ucfirst( $the_subscription->get_billing_first_name() ) . ' ' . ucfirst( $the_subscription->get_billing_last_name() ) );
@@ -640,7 +646,7 @@ class WCS_Admin_Post_Types {
 				break;
 
 			case 'recurring_total':
-				$column_content .= esc_html( strip_tags( $the_subscription->get_formatted_order_total() ) );
+				$column_content .= esc_html( wp_strip_all_tags( $the_subscription->get_formatted_order_total() ) );
 				$column_content .= '<small class="meta">';
 				// translators: placeholder is the display name of a payment gateway a subscription was paid by
 				$column_content .= esc_html( sprintf( __( 'Via %s', 'woocommerce-subscriptions' ), $the_subscription->get_payment_method_to_display() ) );
@@ -683,7 +689,7 @@ class WCS_Admin_Post_Types {
 		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
 		$datetime      = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
 
-		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) {
+		if ( 0 == $subscription->get_time( $date_type, 'gmt' ) ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 			$column_content = '-';
 		} else {
 			$accurate_date    = $datetime->date_i18n( __( 'Y/m/d g:i:s A', 'woocommerce-subscriptions' ) );
@@ -745,7 +751,6 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Search custom fields as well as content.
 	 *
-	 * @access public
 	 * @param WP_Query $wp
 	 * @return void
 	 */
@@ -756,7 +761,7 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$post_ids = wcs_subscription_search( $_GET['s'] );
+		$post_ids = isset( $_GET['s'] ) ? wcs_subscription_search( wc_clean( wp_unslash( $_GET['s'] ) ) ) : []; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( ! empty( $post_ids ) ) {
 
@@ -774,7 +779,6 @@ class WCS_Admin_Post_Types {
 	/**
 	 * Change the label when searching orders.
 	 *
-	 * @access public
 	 * @param mixed $query
 	 * @return string
 	 */
@@ -793,13 +797,12 @@ class WCS_Admin_Post_Types {
 			return $query;
 		}
 
-		return wp_unslash( $_GET['s'] );
+		return isset( $_GET['s'] ) ? wc_clean( wp_unslash( $_GET['s'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
 	 * Query vars for custom searches.
 	 *
-	 * @access public
 	 * @param mixed $public_query_vars
 	 * @return array
 	 */
@@ -880,6 +883,7 @@ class WCS_Admin_Post_Types {
 		$request_query = $this->set_filter_by_customer_query( $request_query );
 		$request_query = $this->set_filter_by_product_query( $request_query );
 		$request_query = $this->set_filter_by_payment_method_query( $request_query );
+		$request_query = $this->set_order_by_query_args( $request_query );
 
 		return $request_query;
 	}
@@ -1022,11 +1026,41 @@ class WCS_Admin_Post_Types {
 	}
 
 	/**
+	 * Sets the order by query args for the subscriptions list table request on HPOS enabled sites.
+	 *
+	 * This function is similar to the posts table equivalent function (self::request_query()) except it only sets the order by.
+	 *
+	 * @param array $request_query The query args sent to wc_get_orders() to populate the list table.
+	 * @return array $request_query
+	 */
+	private function set_order_by_query_args( $request_query ) {
+
+		if ( ! isset( $request_query['orderby'] ) ) {
+			return $request_query;
+		}
+
+		switch ( $request_query['orderby'] ) {
+			case 'last_payment_date':
+				add_filter( 'woocommerce_orders_table_query_clauses', [ $this, 'orders_table_query_clauses' ], 10, 3 );
+				break;
+			case 'start_date':
+			case 'trial_end_date':
+			case 'next_payment_date':
+			case 'end_date':
+				$request_query['meta_key'] = sprintf( '_schedule_%s', str_replace( '_date', '', $request_query['orderby'] ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				$request_query['orderby']  = 'meta_value';
+				break;
+		}
+
+		return $request_query;
+	}
+
+	/**
 	 * Set the 'post__in' query var with a given set of post ids.
 	 *
 	 * There are a few special conditions for handling the post__in value. Namely:
 	 * - if there are no matching post_ids, the value should be array( 0 ), not an empty array()
-	 * - if there are existing IDs in post__in, we only want to retun posts with an ID in both
+	 * - if there are existing IDs in post__in, we only want to return posts with an ID in both
 	 *   the existing set and the new set
 	 *
 	 * While this method is public, it should not be used as it will eventually be deprecated and
@@ -1062,7 +1096,17 @@ class WCS_Admin_Post_Types {
 	 * @return array
 	 */
 	public function post_updated_messages( $messages ) {
-		global $post, $post_ID;
+		global $post, $theorder;
+
+		if ( ! isset( $theorder ) || ! $theorder instanceof WC_Subscription ) {
+			if ( ! isset( $post ) || 'shop_subscription' !== $post->post_type ) {
+				return $messages;
+			} elseif ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+				\Automattic\WooCommerce\Utilities\OrderUtil::init_theorder_object( $post );
+			} else {
+				return $messages;
+			}
+		}
 
 		$messages['shop_subscription'] = array(
 			0  => '', // Unused. Messages start at index 1.
@@ -1071,12 +1115,12 @@ class WCS_Admin_Post_Types {
 			3  => __( 'Custom field deleted.', 'woocommerce-subscriptions' ),
 			4  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			// translators: placeholder is previous post title
-			5  => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+			5  => isset( $_GET['revision'] ) ? sprintf( _x( 'Subscription restored to revision from %s', 'used in post updated messages', 'woocommerce-subscriptions' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false, // // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			6  => __( 'Subscription updated.', 'woocommerce-subscriptions' ),
 			7  => __( 'Subscription saved.', 'woocommerce-subscriptions' ),
 			8  => __( 'Subscription submitted.', 'woocommerce-subscriptions' ),
 			// translators: php date string
-			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), wcs_date_to_time( $post->post_date ) ) . '</strong>' ),
+			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), strtotime( $theorder->get_date_created() ?? $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
 		);
 
@@ -1116,19 +1160,21 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		$selected_gateway_id = ( ! empty( $_GET['_payment_method'] ) ) ? $_GET['_payment_method'] : ''; ?>
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$selected_gateway_id = ( ! empty( $_GET['_payment_method'] ) ) ? wc_clean( wp_unslash( $_GET['_payment_method'] ) ) : ''; ?>
 
 		<select class="wcs_payment_method_selector" name="_payment_method" id="_payment_method" class="first">
-			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ) ?></option>
-			<option value="none" <?php echo esc_attr( 'none' == $selected_gateway_id ? 'selected' : '' ) . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ) ?></option>
+			<option value=""><?php esc_html_e( 'Any Payment Method', 'woocommerce-subscriptions' ); ?></option>
+			<option value="none" <?php echo esc_attr( 'none' === $selected_gateway_id ? 'selected' : '' ) . '>' . esc_html__( 'None', 'woocommerce-subscriptions' ); ?></option>
 		<?php
 
 		foreach ( WC()->payment_gateways->get_available_payment_gateways() as $gateway_id => $gateway ) {
-			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id == $gateway_id ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
+			echo '<option value="' . esc_attr( $gateway_id ) . '"' . ( $selected_gateway_id === $gateway_id ? 'selected' : '' ) . '>' . esc_html( $gateway->title ) . '</option>';
 		}
 		echo '<option value="_manual_renewal">' . esc_html__( 'Manual Renewal', 'woocommerce-subscriptions' ) . '</option>';
 		?>
-		</select> <?php
+		</select>
+		<?php
 	}
 
 	/**
@@ -1140,7 +1186,7 @@ class WCS_Admin_Post_Types {
 	 */
 	public function list_table_primary_column( $default, $screen_id ) {
 
-		if ( 'edit-shop_subscription' == $screen_id ) {
+		if ( in_array( $screen_id, [ wcs_get_page_screen_id( 'shop_subscription' ), 'edit-shop_subscription' ], true ) ) {
 			$default = 'order_title';
 		}
 
@@ -1157,7 +1203,7 @@ class WCS_Admin_Post_Types {
 	 */
 	public function shop_subscription_row_actions( $actions, $post ) {
 
-		if ( 'shop_subscription' == $post->post_type ) {
+		if ( 'shop_subscription' === $post->post_type ) {
 			$actions = array();
 		}
 
@@ -1177,12 +1223,15 @@ class WCS_Admin_Post_Types {
 			wcs_deprecated_argument( __METHOD__, '3.0.7', 'The second parameter (product) is no longer used.' );
 		}
 
-		$item_meta_html = wc_display_item_meta( $item, array(
+		$item_meta_html = wc_display_item_meta(
+			$item,
+			array(
 				'before'    => '',
 				'after'     => '',
 				'separator' => '',
 				'echo'      => false,
-		) );
+			)
+		);
 
 		return $item_meta_html;
 	}
@@ -1196,7 +1245,7 @@ class WCS_Admin_Post_Types {
 	 */
 	protected static function get_item_name_html( $item, $_product, $include_quantity = 'include_quantity' ) {
 
-		$item_quantity  = absint( $item['qty'] );
+		$item_quantity = absint( $item['qty'] );
 
 		$item_name = '';
 
@@ -1241,8 +1290,9 @@ class WCS_Admin_Post_Types {
 				echo wp_kses( $item_name, array( 'a' => array( 'href' => array() ) ) );
 
 				if ( $item_meta_html ) {
-					echo wcs_help_tip( $item_meta_html, true );
-				} ?>
+					echo esc_html( wcs_help_tip( $item_meta_html, true ) );
+				}
+				?>
 			</td>
 		</tr>
 		<?php
@@ -1315,8 +1365,9 @@ class WCS_Admin_Post_Types {
 
 		// On HPOS environments, WC expects a slightly different format for the bulk actions.
 		if ( $is_hpos_enabled ) {
+			$id_key          = wcs_is_woocommerce_pre( '8.1' ) ? 'order' : 'id';
 			$action_url_args = [
-				'order'    => [ $subscription->get_id() ],
+				$id_key    => [ $subscription->get_id() ],
 				'_wpnonce' => wp_create_nonce( 'bulk-orders' ),
 			];
 		} else {
@@ -1327,7 +1378,7 @@ class WCS_Admin_Post_Types {
 		}
 
 		$action_url   = add_query_arg( $action_url_args );
-		$action_url   = remove_query_arg( [ 'changed', 'ids' ], $action_url );
+		$action_url   = remove_query_arg( [ 'changed', 'ids', 'filter_action' ], $action_url );
 		$all_statuses = array(
 			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
 			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
@@ -1673,7 +1724,7 @@ class WCS_Admin_Post_Types {
 	 * @param string               $item_name      The line item's name.
 	 * @param string               $item_meta_html The line item's meta HTML.
 	 *
-	 * @return string The subcription line item column HTML content.
+	 * @return string The subscription line item column HTML content.
 	 */
 	protected static function get_item_display_div( $item, $item_name, $item_meta_html ) {
 		wcs_deprecated_function( '__METHOD__', '3.0.7' );
@@ -1750,5 +1801,106 @@ class WCS_Admin_Post_Types {
 			} );
 		</script>
 		<?php
+	}
+
+	/**
+	 * Adds Order table query clauses to order the subscriptions list table by last payment date.
+	 *
+	 * There are 2 methods we use to order the subscriptions list table by last payment date:
+	 *  - High performance: This method uses a temporary table to store the last payment date for each subscription.
+	 *  - Low performance: This method uses a subquery to get the last payment date for each subscription.
+	 *
+	 * @param string[]         $pieces Associative array of the clauses for the query.
+	 * @param OrdersTableQuery $query  The query object.
+	 * @param array            $args   Query args.
+	 *
+	 * @return string[] $pieces Associative array of the clauses for the query.
+	 */
+	public function orders_table_query_clauses( $pieces, $query, $args ) {
+
+		if ( ! is_admin() || ! isset( $args['type'] ) || 'shop_subscription' !== $args['type'] ) {
+			return $pieces;
+		}
+
+		// Let's check whether we even have the privileges to do the things we want to do
+		if ( $this->is_db_user_privileged() ) {
+			$pieces = self::orders_table_clauses_high_performance( $pieces );
+		} else {
+			$pieces = self::orders_table_clauses_low_performance( $pieces );
+		}
+
+		$query_order = strtoupper( $args['order'] );
+
+		$pieces['orderby'] = "COALESCE(lp.last_payment, parent_order.date_created_gmt, 0) {$query_order}";
+
+		return $pieces;
+	}
+
+	/**
+	 * Adds order table query clauses to sort the subscriptions list table by last payment date.
+	 *
+	 * This function provides a lower performance method using a subquery to sort by last payment date.
+	 * It is a HPOS version of @see self::posts_clauses_low_performance().
+	 *
+	 * @param string[] $pieces Associative array of the clauses for the query.
+	 * @return string[] $pieces Updated associative array of clauses for the query.
+	 */
+	private function orders_table_clauses_low_performance( $pieces ) {
+		$order_datastore = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class );
+		$order_table     = $order_datastore::get_orders_table_name();
+		$meta_table      = $order_datastore::get_meta_table_name();
+
+		$pieces['join'] .= "LEFT JOIN
+				(SELECT
+					MAX( orders.date_created_gmt ) as last_payment,
+					order_meta.meta_value
+				FROM {$meta_table} as order_meta
+				LEFT JOIN {$order_table} orders ON orders.id = order_meta.order_id
+				WHERE order_meta.meta_key = '_subscription_renewal'
+				GROUP BY order_meta.meta_value) lp
+			ON {$order_table}.id = lp.meta_value
+			LEFT JOIN {$order_table} as parent_order on {$order_table}.parent_order_id = parent_order.ID";
+
+		return $pieces;
+	}
+
+	/**
+	 * Adds order table query clauses to sort the subscriptions list table by last payment date.
+	 *
+	 * This function provides a higher performance method using a temporary table to sort by last payment date.
+	 * It is a HPOS version of @see self::posts_clauses_high_performance().
+	 *
+	 * @param string[] $pieces Associative array of the clauses for the query.
+	 * @return string[] $pieces Updated associative array of clauses for the query.
+	 */
+	private function orders_table_clauses_high_performance( $pieces ) {
+		global $wpdb;
+
+		$order_datastore = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class );
+		$order_table     = $order_datastore::get_orders_table_name();
+		$meta_table      = $order_datastore::get_meta_table_name();
+		$session         = wp_get_session_token();
+
+		$table_name = substr( "{$wpdb->prefix}tmp_{$session}_lastpayment", 0, 64 );
+
+		// Create a temporary table, drop the previous one.
+		//phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$table_name}" );
+
+		$wpdb->query(
+			"CREATE TEMPORARY TABLE {$table_name} (id INT PRIMARY KEY, last_payment DATETIME) AS
+			SELECT order_meta.meta_value as id, MAX( orders.date_created_gmt ) as last_payment
+			FROM {$meta_table} as order_meta
+			LEFT JOIN {$order_table} as orders ON orders.id = order_meta.order_id
+			WHERE order_meta.meta_key = '_subscription_renewal'
+			GROUP BY order_meta.meta_value"
+		);
+		//phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$pieces['join'] .= "LEFT JOIN {$table_name} as lp
+			ON {$order_table}.id = lp.id
+			LEFT JOIN {$order_table} as parent_order on {$order_table}.parent_order_id = parent_order.id";
+
+		return $pieces;
 	}
 }

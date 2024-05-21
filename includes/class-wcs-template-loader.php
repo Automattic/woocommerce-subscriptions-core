@@ -13,8 +13,6 @@ class WCS_Template_Loader {
 	 * @var array[] Array of file names and their directory found in templates/
 	 */
 	private static $relocated_templates = [
-		'html-variation-price.php'                => 'admin/deprecated/',
-		'html-variation-synchronisation.php'      => 'admin/deprecated/',
 		'order-shipping-html.php'                 => 'admin/deprecated/',
 		'order-tax-html.php'                      => 'admin/deprecated/',
 		'html-admin-notice.php'                   => 'admin/',
@@ -366,7 +364,7 @@ class WCS_Template_Loader {
 	 * @since 1.4.0
 	 *
 	 * @param string $template
-	 * @param string $tempalte_name
+	 * @param string $template_name
 	 * @param array  $args
 	 * @param string $template_path
 	 * @param

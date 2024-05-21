@@ -57,7 +57,7 @@ class WC_Subscription extends WC_Order {
 		'billing_period'          => '',
 		'billing_interval'        => 1,
 		'suspension_count'        => 0,
-		'requires_manual_renewal' => 'true',
+		'requires_manual_renewal' => true,
 		'cancelled_email_sent'    => false,
 		'trial_period'            => '',
 
@@ -91,6 +91,18 @@ class WC_Subscription extends WC_Order {
 		'requires_manual_renewal',
 		'suspension_count',
 	);
+
+	/**
+	 * The meta key used to flag that the subscription's payment failed.
+	 *
+	 * Stored on the renewal order itself.
+	 *
+	 * Payments via the Block checkout transition the order status from failed to pending and then to processing.
+	 * This makes it impossible for us to know if the order was initially failed. This meta key flags that the order was initially failed.
+	 *
+	 * @var string
+	 */
+	const RENEWAL_FAILED_META_KEY = '_failed_renewal_order';
 
 	/**
 	 * Initializes a specific subscription if the ID is passed, otherwise a new and empty instance of a subscription.
@@ -251,31 +263,30 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
-	 * Checks if the subscription has an unpaid order or renewal order (and therefore, needs payment).
+	 * Checks if the subscription needs payment.
 	 *
-	 * @param string $subscription_key A subscription key of the form created by @see self::get_subscription_key()
-	 * @param int $user_id The ID of the user who owns the subscriptions. Although this parameter is optional, if you have the User ID you should pass it to improve performance.
-	 * @return bool True if the subscription has an unpaid renewal order, false if the subscription has no unpaid renewal orders.
+	 * A subscription requires payment if it:
+	 *  - is pending or failed,
+	 *  - has an unpaid parent order, or
+	 *  - has an unpaid order or renewal order (and therefore, needs payment)
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @return bool True if the subscription requires payment, otherwise false.
 	 */
 	public function needs_payment() {
-
 		$needs_payment = false;
+		$parent_order  = $this->get_parent();
 
-		// First check if the subscription is pending or failed or is for $0
+		// If the subscription is pending or failed and it has a total > 0, it needs payment.
 		if ( parent::needs_payment() ) {
-
 			$needs_payment = true;
-
-		// Now make sure the parent order doesn't need payment
-		} elseif ( ( $parent_order = $this->get_parent() ) && ( $parent_order->needs_payment() || $parent_order->has_status( array( 'on-hold', 'cancelled' ) ) ) ) {
-
+		} elseif ( $parent_order && ( $parent_order->needs_payment() || $parent_order->has_status( array( 'on-hold', 'cancelled' ) ) ) ) {
+			// If the subscription has an unpaid parent order, it needs payment.
 			$needs_payment = true;
-
-		// And finally, check that the latest order (switch or renewal) doesn't need payment
 		} else {
-
-			$order = $this->get_last_order( 'all', array( 'renewal', 'switch' ) );
+			// Lastly, check if the last non-early renewal order needs payment.
+			$order = wcs_get_last_non_early_renewal_order( $this );
 
 			if ( $order && ( $order->needs_payment() || $order->has_status( array( 'on-hold', 'failed', 'cancelled' ) ) ) ) {
 				$needs_payment = true;
@@ -354,7 +365,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case 'pending-cancel' :
-				// Only active subscriptions can be given the "pending cancellation" status, becuase it is used to account for a prepaid term
+				// Only active subscriptions can be given the "pending cancellation" status, because it is used to account for a prepaid term
 				if ( $this->payment_method_supports( 'subscription_cancellation' ) ) {
 					if ( $this->has_status( 'active' ) ) {
 						$can_be_updated = true;
@@ -565,6 +576,9 @@ class WC_Subscription extends WC_Order {
 		// Use local copy of status transition value.
 		$status_transition = $this->status_transition;
 
+		// Reset status transition variable.
+		$this->status_transition = false;
+
 		// If we're not currently in the midst of a status transition, bail early.
 		if ( ! $status_transition ) {
 			return;
@@ -606,9 +620,6 @@ class WC_Subscription extends WC_Order {
 			);
 			$this->add_order_note( __( 'Error during subscription status transition.', 'woocommerce-subscriptions' ) . ' ' . $e->getMessage() );
 		}
-
-		// This has run, so reset status transition variable
-		$this->status_transition = false;
 	}
 
 	/**
@@ -942,10 +953,84 @@ class WC_Subscription extends WC_Order {
 	 * The more aptly named set_schedule_start() cannot exist because then WC core thinks the _schedule_start meta is an
 	 * internal meta key and throws errors.
 	 *
-	 * @param string $schedule_start
+	 * @param string $schedule_start The date to set the start date to. Should be a WC_DateTime or a string in the format 'Y-m-d H:i:s' (UTC).
 	 */
 	public function set_start_date( $schedule_start ) {
-		$this->set_prop( 'schedule_start', $schedule_start );
+		$this->set_date_prop( 'start', is_a( $schedule_start, 'WC_DateTime' ) ? $schedule_start : wcs_date_to_time( $schedule_start ) );
+	}
+
+	/**
+	 * Set schedule trial end date.
+	 *
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the trial end date prop from the data store.
+	 * Calling this function does not automatically schedule the trial end date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
+	 *
+	 * @param string $schedule_trial_end
+	 */
+	public function set_trial_end_date( $schedule_trial_end ) {
+		$this->set_prop( 'schedule_trial_end', $schedule_trial_end );
+	}
+
+	/**
+	 * Set schedule next payment date.
+	 *
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the next payment date prop from the data store.
+	 * Calling this function does not automatically schedule the next payment date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
+	 *
+	 * @param string $schedule_next_payment
+	 */
+	public function set_next_payment_date( $schedule_next_payment ) {
+		$this->set_prop( 'schedule_next_payment', $schedule_next_payment );
+	}
+
+	/**
+	 * Set schedule cancelled date.
+	 *
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the cancelled date prop from the data store.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
+	 *
+	 * @param string $schedule_cancelled
+	 */
+	public function set_cancelled_date( $schedule_cancelled ) {
+		$this->set_prop( 'schedule_cancelled', $schedule_cancelled );
+	}
+
+	/**
+	 * Set schedule end date.
+	 *
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the end date prop from the data store.
+	 * Calling this function does not automatically schedule the end date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
+	 *
+	 * @param string $schedule_end
+	 */
+	public function set_end_date( $schedule_end ) {
+		$this->set_prop( 'schedule_end', $schedule_end );
+	}
+
+	/**
+	 * Set schedule payment retry date.
+	 *
+	 * Note: This function is intended for internal use only and should not be accessed directly.
+	 * It only exists to support setting the payment retry date prop from the data store.
+	 * Calling this function does not automatically schedule the payment retry date as a Scheduled Action.
+	 *
+	 * Use WC_Subscription::update_dates() instead.
+	 *
+	 * @param string $schedule_payment_retry
+	 */
+	public function set_payment_retry_date( $schedule_payment_retry ) {
+		$this->set_prop( 'schedule_payment_retry', $schedule_payment_retry );
 	}
 
 	/**
@@ -1779,11 +1864,18 @@ class WC_Subscription extends WC_Order {
 		// Add order note depending on initial payment
 		$this->add_order_note( __( 'Payment status marked complete.', 'woocommerce-subscriptions' ) );
 
-		$this->update_status( 'active' ); // also saves the subscription
+		// $this->update_status() only calls save if the status has changed.
+		if ( 'active' !== $this->get_status( 'edit' ) ) {
+			$this->update_status( 'active' );
+		} else {
+			$this->save();
+		}
 
 		do_action( 'woocommerce_subscription_payment_complete', $this );
 
 		if ( false !== $last_order && wcs_order_contains_renewal( $last_order ) ) {
+			$last_order->delete_meta_data( self::RENEWAL_FAILED_META_KEY );
+			$last_order->save();
 			do_action( 'woocommerce_subscription_renewal_payment_complete', $this, $last_order );
 		}
 	}
@@ -1798,10 +1890,17 @@ class WC_Subscription extends WC_Order {
 		// Make sure the last order's status is set to failed
 		$last_order = $this->get_last_order( 'all', 'any' );
 
-		if ( false !== $last_order && false === $last_order->has_status( 'failed' ) ) {
-			remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
-			$last_order->update_status( 'failed' );
-			add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
+		if ( false !== $last_order ) {
+			$last_order->update_meta_data( self::RENEWAL_FAILED_META_KEY, wc_bool_to_string( true ) );
+
+			if ( false === $last_order->has_status( 'failed' ) ) {
+				remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
+				$last_order->update_status( 'failed' );
+				add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
+			} else {
+				// If we didn't update the status, save the order to make sure our self::RENEWAL_FAILED_META_KEY meta data is saved.
+				$last_order->save();
+			}
 		}
 
 		// Log payment failure on order
@@ -2674,7 +2773,7 @@ class WC_Subscription extends WC_Order {
 			return false;
 		}
 
-		// Pass a timestamp to the WC 3.0 setters becasue WC expects MySQL date strings to be in site's timezone, but we have a date string in UTC timezone
+		// Pass a timestamp to the WC 3.0 setters because WC expects MySQL date strings to be in site's timezone, but we have a date string in UTC timezone
 		$timestamp = ( $datetime > 0 ) ? wcs_date_to_time( $datetime ) : 0;
 
 		$this->set_last_order_date( 'date_paid', $timestamp );

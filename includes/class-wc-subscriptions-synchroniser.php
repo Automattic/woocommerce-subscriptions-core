@@ -112,7 +112,8 @@ class WC_Subscriptions_Synchroniser {
 		// If it's an initial sync order and the total is zero, and nothing needs to be shipped, do not reduce stock
 		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
 
-		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
+		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_product_grouping_key', 10, 2 );
+		add_filter( 'woocommerce_subscriptions_item_grouping_key', __CLASS__ . '::add_to_recurring_product_grouping_key', 10, 2 );
 
 		// Add defaults for our options.
 		add_filter( 'default_option_' . self::$setting_id_days_no_fee, array( __CLASS__, 'option_default' ), 10, 3 );
@@ -218,6 +219,7 @@ class WC_Subscriptions_Synchroniser {
 				'css'      => 'min-width:150px;',
 				'default'  => 'no',
 				'type'     => 'select',
+				'class'    => 'wc-enhanced-select',
 				'options'  => array(
 					'no'        => _x( 'Never (do not charge any recurring amount)', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
 					'recurring' => _x( 'Never (charge the full recurring amount at sign-up)', 'when to prorate first payment / subscription length', 'woocommerce-subscriptions' ),
@@ -285,12 +287,12 @@ class WC_Subscriptions_Synchroniser {
 			woocommerce_wp_select(
 				array(
 					'id'          => self::$post_meta_key,
-					'class'       => 'wc_input_subscription_payment_sync select short',
+					'class'       => 'wc_input_subscription_payment_sync select short wc-enhanced-select',
 					'label'       => self::$sync_field_label,
 					'options'     => self::get_billing_period_ranges( $subscription_period ),
 					'description' => self::$sync_description,
 					'desc_tip'    => true,
-					'value'       => $payment_day, // Explicity set value in to ensure backward compatibility
+					'value'       => $payment_day, // Explicitly set value in to ensure backward compatibility
 				)
 			);
 
@@ -303,14 +305,20 @@ class WC_Subscriptions_Synchroniser {
 				<span class="wrap">
 
 					<label for="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wcs_hidden_label"><?php esc_html_e( 'Month for Synchronisation', 'woocommerce-subscriptions' ); ?></label>
-					<select id="<?php echo esc_attr( self::$post_meta_key_month ); ?>" name="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wc_input_subscription_payment_sync last" >
+					<select id="<?php echo esc_attr( self::$post_meta_key_month ); ?>" name="<?php echo esc_attr( self::$post_meta_key_month ); ?>" class="wc_input_subscription_payment_sync last wc-enhanced-select" >
 						<?php foreach ( self::get_year_sync_options() as $value => $label ) { ?>
 							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $payment_month, true ) ?>><?php echo esc_html( $label ); ?></option>
 						<?php } ?>
 					</select>
 
-					<?php $daysInMonth = $payment_month ? gmdate( 't', wc_string_to_timestamp( "2001-{$payment_month}-01" ) ) : 0; ?>
-					<input type="number" id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync" value="<?php echo esc_attr( $payment_day ); ?>" placeholder="<?php echo esc_attr_x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ); ?>" step="1" min="<?php echo esc_attr( min( 1, $daysInMonth ) ); ?>" max="<?php echo esc_attr( $daysInMonth ); ?>" <?php disabled( 0, $payment_month, true ); ?> />
+					<?php $days_in_month = $payment_month ? gmdate( 't', wc_string_to_timestamp( "2001-{$payment_month}-01" ) ) : 0; ?>
+					<select id="<?php echo esc_attr( self::$post_meta_key_day ); ?>" name="<?php echo esc_attr( self::$post_meta_key_day ); ?>" class="wc_input_subscription_payment_sync wc-enhanced-select" <?php disabled( 0, $payment_month, true ); ?> />
+					<?php
+					foreach ( range( 1, $days_in_month ) as $day ) {
+						echo '<option value="' . esc_attr( $day ) . '"' . selected( $day, $payment_day, false ) . '>' . esc_html( $day ) . '</option>';
+					}
+					?>
+					</select>
 				</span>
 				<?php echo wcs_help_tip( self::$sync_description_year ); ?>
 			</p><?php
@@ -595,7 +603,7 @@ class WC_Subscriptions_Synchroniser {
 	 *
 	 * @param WC_Product $product A subscription product.
 	 * @param string $type (optional) The format to return the first payment date in, either 'mysql' or 'timestamp'. Default 'mysql'.
-	 * @param string $from_date (optional) The date to calculate the first payment from in GMT/UTC timzeone. If not set, it will use the current date. This should not include any trial period on the product.
+	 * @param string $from_date (optional) The date to calculate the first payment from in GMT/UTC timezone. If not set, it will use the current date. This should not include any trial period on the product.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
 	 */
 	public static function calculate_first_payment_date( $product, $type = 'mysql', $from_date = '' ) {
@@ -1206,18 +1214,27 @@ class WC_Subscriptions_Synchroniser {
 	}
 
 	/**
-	 * If the cart item is synced, add a '_synced' string to the recurring cart key.
+	 * Alters the subscription grouping key to ensure synced products are grouped separately.
 	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 * @param string                      $key  The subscription product's grouping key.
+	 * @param array|WC_Order_Item_Product $item The cart item or order item that the key is being generated for.
+	 *
+	 * @return string The subscription product grouping key with a synced product flag if the product is synced.
 	 */
-	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
-		$product = $cart_item['data'];
+	public static function add_to_recurring_product_grouping_key( $key, $item ) {
+		$product = false;
 
-		if ( false === strpos( $cart_key, '_synced' ) && self::is_product_synced( $product ) ) {
-			$cart_key .= '_synced';
+		if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
+			$product = $item->get_product();
+		} elseif ( is_array( $item ) && isset( $item['data'] ) ) {
+			$product = $item['data'];
 		}
 
-		return $cart_key;
+		if ( $product && false === strpos( $key, '_synced' ) && self::is_product_synced( $product ) ) {
+			$key .= '_synced';
+		}
+
+		return $key;
 	}
 
 	/**
@@ -1295,7 +1312,7 @@ class WC_Subscriptions_Synchroniser {
 	 * Gets the number of sign-up grace period days.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.6
-	 * @return int The number of days in the grace period. 0 will be returned if the stroe isn't charging the full recurring price on sign-up -- a prerequiste for setting a grace period.
+	 * @return int The number of days in the grace period. 0 will be returned if the store isn't charging the full recurring price on sign-up -- a prerequisite for setting a grace period.
 	 */
 	private static function get_number_of_grace_period_days() {
 		return get_option( self::$setting_id_proration, 'no' ) === 'recurring' ? get_option( self::$setting_id_days_no_fee ) : 0;
@@ -1466,7 +1483,7 @@ class WC_Subscriptions_Synchroniser {
 	/**
 	 * Check if a given order included a subscription that is synced to a certain day.
 	 *
-	 * Deprecated becasuse _order_contains_synced_subscription is no longer stored on the order @see self::subscription_contains_synced_product
+	 * Deprecated because _order_contains_synced_subscription is no longer stored on the order @see self::subscription_contains_synced_product
 	 *
 	 * @param int $order_id The ID or a WC_Order item to check.
 	 * @return bool Returns true if the order contains a synced subscription, otherwise, false.
@@ -1590,4 +1607,19 @@ class WC_Subscriptions_Synchroniser {
 		return $end_date;
 	}
 
+	/**
+	 * Alters the recurring cart item key to ensure synced products are grouped separately.
+	 *
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 * @deprecated 6.5.0
+	 *
+	 * @param string $cart_key  The recurring cart item key.
+	 * @param array  $cart_item The cart item's data.
+	 *
+	 * @return string The cart item recurring cart key with a synced product flag if the product is synced.
+	 */
+	public static function add_to_recurring_cart_key( $cart_key, $cart_item ) {
+		wcs_deprecated_function( __METHOD__, '6.5.0', __CLASS__ . '::add_to_recurring_product_grouping_key' );
+		return self::add_to_recurring_product_grouping_key( $cart_key, $cart_item );
+	}
 }

@@ -127,7 +127,7 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 	public function test_wcs_get_subscription_ranges() {
 
 		$expected_output_years = array(
-			0 => 'Never expire',
+			0 => 'Do not stop until cancelled',
 			1 => '1 year',
 			2 => '2 years',
 			3 => '3 years',
@@ -137,7 +137,7 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 		$this->assertEquals( $expected_output_years, wcs_get_subscription_ranges( 'year' ) );
 
 		$expected_output_months = array(
-			0  => 'Never expire',
+			0  => 'Do not stop until cancelled',
 			1  => '1 month',
 			2  => '2 months',
 			3  => '3 months',
@@ -166,7 +166,7 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 		$this->assertEquals( $expected_output_months, wcs_get_subscription_ranges( 'month' ) );
 
 		$expected_output_weeks = array(
-			0  => 'Never expire',
+			0  => 'Do not stop until cancelled',
 			1  => '1 week',
 			2  => '2 weeks',
 			3  => '3 weeks',
@@ -223,7 +223,7 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 		$this->assertEquals( $expected_output_weeks, wcs_get_subscription_ranges( 'week' ) );
 
 		$expected_output_days = array(
-			0  => 'Never expire',
+			0  => 'Do not stop until cancelled',
 			1  => '1 day',
 			2  => '2 days',
 			3  => '3 days',

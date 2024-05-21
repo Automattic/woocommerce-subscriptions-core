@@ -32,6 +32,10 @@ class WC_Subscriptions_Order {
 		add_filter( 'manage_edit-shop_order_columns', __CLASS__ . '::add_contains_subscription_column' );
 		add_action( 'manage_shop_order_posts_custom_column', __CLASS__ . '::add_contains_subscription_column_content', 10, 1 );
 
+		// HPOS - Add column that indicates whether an order is parent or renewal for a subscription.
+		add_filter( 'woocommerce_shop_order_list_table_columns', __CLASS__ . '::add_contains_subscription_column' );
+		add_action( 'woocommerce_shop_order_list_table_custom_column', __CLASS__ . '::add_contains_subscription_column_content_orders_table', 10, 2 );
+
 		// Record initial payment against the subscription & set start date based on that payment
 		add_action( 'woocommerce_order_status_changed', __CLASS__ . '::maybe_record_subscription_payment', 9, 3 );
 
@@ -44,8 +48,13 @@ class WC_Subscriptions_Order {
 		// Add dropdown to admin orders screen to filter on order type
 		add_action( 'restrict_manage_posts', __CLASS__ . '::restrict_manage_subscriptions', 50 );
 
+		// For HPOS - Add dropdown to admin orders screen to filter on order type.
+		add_action( 'woocommerce_order_list_table_restrict_manage_orders', __CLASS__ . '::restrict_manage_subscriptions_hpos' );
+
 		// Add filter to queries on admin orders screen to filter on order type. To avoid WC overriding our query args, we need to hook on after them on 10.
 		add_filter( 'request', __CLASS__ . '::orders_by_type_query', 11 );
+		// HPOS - Add filter to queries on admin orders screen to filter on order type. Only triggered for the shop_order order type.
+		add_filter( 'woocommerce_shop_order_list_table_prepare_items_query_args', __CLASS__ . '::maybe_modify_orders_by_type_query_from_request', 11 );
 
 		// Don't display migrated order item meta on the Edit Order screen
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_order_itemmeta' );
@@ -64,6 +73,10 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::maybe_autocomplete_order', 10, 3 );
 
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', array( __CLASS__, 'add_subscription_order_query_args' ), 10, 2 );
+
+		add_filter( 'woocommerce_order_query_args', array( __CLASS__, 'map_order_query_args_for_subscriptions' ) );
+
+		add_filter( 'woocommerce_orders_table_query_clauses', [ __CLASS__, 'filter_orders_query_by_parent_orders' ], 10, 2 );
 	}
 
 	/*
@@ -409,26 +422,36 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	* Add column content to the WooCommerce -> Orders admin screen to indicate whether an
-	* order is a parent of a subscription, a renewal order for a subscription, or a
-	* regular order.
-	*
-	* @param string $column The string of the current column
-	* @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
+	 * Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	 * order is a parent of a subscription, a renewal order for a subscription, or a regular order.
+	 *
+	 * @see add_contains_subscription_column_content_orders_table For when HPOS is enabled.
+	 *
+	 * @param string $column The string of the current column
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	*/
 	public static function add_contains_subscription_column_content( $column ) {
 		global $post;
 
-		if ( 'subscription_relationship' == $column ) {
-			if ( wcs_order_contains_subscription( $post->ID, 'renewal' ) ) {
-				echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
-			} elseif ( wcs_order_contains_subscription( $post->ID, 'resubscribe' ) ) {
-				echo '<span class="subscription_resubscribe_order tips" data-tip="' . esc_attr__( 'Resubscribe Order', 'woocommerce-subscriptions' ) . '"></span>';
-			} elseif ( wcs_order_contains_subscription( $post->ID, 'parent' ) ) {
-				echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
-			} else {
-				echo '<span class="normal_order">&ndash;</span>';
-			}
+		if ( 'subscription_relationship' === $column ) {
+			self::render_contains_subscription_column_content( $post->ID );
+		}
+	}
+
+	/**
+	 * Add column content to the WooCommerce -> Orders admin screen to indicate whether an
+	 * order is a parent of a subscription, a renewal order for a subscription, or a regular order.
+	 *
+	 * @see add_contains_subscription_column_content For when HPOS is disabled.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param string   $column_name Identifier for the custom column.
+	 * @param WC_Order $order       Current WooCommerce order object.
+	 */
+	public static function add_contains_subscription_column_content_orders_table( string $column_name, WC_Order $order ) {
+		if ( 'subscription_relationship' === $column_name ) {
+			self::render_contains_subscription_column_content( $order->get_id() );
 		}
 	}
 
@@ -459,6 +482,23 @@ class WC_Subscriptions_Order {
 		$paid_statuses   = array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' );
 		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order );
 		$order_completed = in_array( $new_order_status, $paid_statuses, true ) && in_array( $old_order_status, $unpaid_statuses, true );
+
+		/**
+		 * Filter whether the subscription order is considered completed.
+		 *
+		 * Allow third party extensions to modify whether the order is considered
+		 * completed and the subscription should activate. This allows for different
+		 * treatment of orders and subscriptions during the completion flow.
+		 *
+		 * @since 6.9.0
+		 *
+		 * @param bool              $order_completed  Whether the order is considered completed.
+		 * @param string            $new_order_status The new order status.
+		 * @param string            $old_order_status The old order status.
+		 * @param WC_Subscription[] $subscriptions    The subscriptions in the order.
+		 * @param WC_Order          $order            The order object.
+		 */
+		$order_completed = apply_filters( 'wcs_is_subscription_order_completed', $order_completed, $new_order_status, $old_order_status, $subscriptions, $order );
 
 		foreach ( $subscriptions as $subscription ) {
 			// A special case where payment completes after user cancels subscription
@@ -568,7 +608,7 @@ class WC_Subscriptions_Order {
 	/* Edit Order Page Content */
 
 	/**
-	 * Returns all parent subscription orders for a user, specificed with $user_id
+	 * Returns all parent subscription orders for a user, specified with $user_id
 	 *
 	 * @return array An array of order IDs.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.4
@@ -706,33 +746,26 @@ class WC_Subscriptions_Order {
 	public static function restrict_manage_subscriptions() {
 		global $typenow;
 
-		if ( 'shop_order' != $typenow ) {
+		if ( 'shop_order' !== $typenow ) {
 			return;
-		}?>
-		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
-			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
-			<?php
-			$order_types = apply_filters( 'woocommerce_subscriptions_order_type_dropdown', array(
-				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
-				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
-				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
-				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
-				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
-				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
-			) );
+		}
 
-			foreach ( $order_types as $order_type_key => $order_type_description ) {
-				echo '<option value="' . esc_attr( $order_type_key ) . '"';
+		self::render_restrict_manage_subscriptions_dropdown();
+	}
 
-				if ( isset( $_GET['shop_order_subtype'] ) && $_GET['shop_order_subtype'] ) {
-					selected( $order_type_key, $_GET['shop_order_subtype'] );
-				}
+	/**
+	 * When HPOS is active, adds admin dropdown for order types to Woocommerce -> Orders screen
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param string $order_type The order type.
+	 */
+	public static function restrict_manage_subscriptions_hpos( string $order_type ) {
+		if ( 'shop_order' !== $order_type ) {
+			return;
+		}
 
-				echo '>' . esc_html( $order_type_description ) . '</option>';
-			}
-			?>
-			</select>
-		<?php
+		self::render_restrict_manage_subscriptions_dropdown();
 	}
 
 	/**
@@ -744,62 +777,90 @@ class WC_Subscriptions_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
 	 */
 	public static function orders_by_type_query( $vars ) {
-		global $typenow, $wpdb;
+		global $typenow;
 
-		if ( 'shop_order' == $typenow && ! empty( $_GET['shop_order_subtype'] ) ) {
-
-			if ( 'original' == $_GET['shop_order_subtype'] || 'regular' == $_GET['shop_order_subtype'] ) {
-
-				$vars['meta_query']['relation'] = 'AND';
-
-				$vars['meta_query'][] = array(
-					'key'     => '_subscription_renewal',
-					'compare' => 'NOT EXISTS',
-				);
-
-				$vars['meta_query'][] = array(
-					'key'     => '_subscription_switch',
-					'compare' => 'NOT EXISTS',
-				);
-
-			} elseif ( 'parent' == $_GET['shop_order_subtype'] ) {
-
-				$vars['post__in'] = wcs_get_subscription_orders();
-
-			} else {
-
-				switch ( $_GET['shop_order_subtype'] ) {
-					case 'renewal':
-						$meta_key = '_subscription_renewal';
-						break;
-					case 'resubscribe':
-						$meta_key = '_subscription_resubscribe';
-						break;
-					case 'switch':
-						$meta_key = '_subscription_switch';
-						break;
-					default:
-						$meta_key = '';
-						break;
-				}
-
-				$meta_key = apply_filters( 'woocommerce_subscriptions_admin_order_type_filter_meta_key', $meta_key, $_GET['shop_order_subtype'] );
-
-				if ( ! empty( $meta_key ) ) {
-					$vars['meta_query'][] = array(
-						'key'     => $meta_key,
-						'compare' => 'EXISTS',
-					);
-				}
-			}
-
-			// Also exclude parent orders from non-subscription query
-			if ( 'regular' == $_GET['shop_order_subtype'] ) {
-				$vars['post__not_in'] = wcs_get_subscription_orders();
-			}
+		if ( 'shop_order' === $typenow ) {
+			return self::maybe_modify_orders_by_type_query_from_request( $vars );
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Filters the arguments to be passed to `wc_get_orders()` under the Woocommerce -> Orders screen.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param array $order_query_args Arguments to be passed to `wc_get_orders()`.
+	 *
+	 * @return array
+	 */
+	public static function maybe_modify_orders_by_type_query_from_request( array $order_query_args ): array {
+		// The order subtype selected by the user in the dropdown.
+		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		// Don't modify the query args if no order subtype was selected.
+		if ( empty( $selected_shop_order_subtype ) ) {
+			return $order_query_args;
+		}
+
+		if ( 'original' === $selected_shop_order_subtype || 'regular' === $selected_shop_order_subtype ) {
+
+			$order_query_args['meta_query']['relation'] = 'AND';
+
+			$order_query_args['meta_query'][] = array(
+				'key'     => '_subscription_renewal',
+				'compare' => 'NOT EXISTS',
+			);
+
+			$order_query_args['meta_query'][] = array(
+				'key'     => '_subscription_switch',
+				'compare' => 'NOT EXISTS',
+			);
+
+		} elseif ( 'parent' === $selected_shop_order_subtype ) {
+			if ( wcs_is_custom_order_tables_usage_enabled() ) {
+				$order_query_args['subscription_parent'] = true;
+			} else {
+				$order_query_args['post__in'] = wcs_get_subscription_orders();
+			}
+		} else {
+
+			switch ( $selected_shop_order_subtype ) {
+				case 'renewal':
+					$meta_key = '_subscription_renewal';
+					break;
+				case 'resubscribe':
+					$meta_key = '_subscription_resubscribe';
+					break;
+				case 'switch':
+					$meta_key = '_subscription_switch';
+					break;
+				default:
+					$meta_key = '';
+					break;
+			}
+
+			$meta_key = apply_filters( 'woocommerce_subscriptions_admin_order_type_filter_meta_key', $meta_key, $selected_shop_order_subtype );
+
+			if ( ! empty( $meta_key ) ) {
+				$order_query_args['meta_query'][] = array(
+					'key'     => $meta_key,
+					'compare' => 'EXISTS',
+				);
+			}
+		}
+
+		// Also exclude parent orders from non-subscription query
+		if ( 'regular' === $selected_shop_order_subtype ) {
+			if ( wcs_is_custom_order_tables_usage_enabled() ) {
+				$order_query_args['subscription_parent'] = false;
+			} else {
+				$order_query_args['post__not_in'] = wcs_get_subscription_orders();
+			}
+		}
+
+		return $order_query_args;
 	}
 
 	/**
@@ -886,7 +947,7 @@ class WC_Subscriptions_Order {
 	 * against the line item on the original order for that subscription.
 	 *
 	 * In v2.0, this data was moved to a distinct subscription object which had its own line items for those amounts.
-	 * This function bridges the two data structures to support deprecated functions used to retreive a subscription's
+	 * This function bridges the two data structures to support deprecated functions used to retrieve a subscription's
 	 * meta data from the original order rather than the subscription itself.
 	 *
 	 * @param WC_Order $order A WC_Order object
@@ -924,7 +985,7 @@ class WC_Subscriptions_Order {
 	 * against the line item on the original order for that subscription.
 	 *
 	 * In v2.0, this data was moved to a distinct subscription object which had its own line items for those amounts.
-	 * This function bridges the two data structures to support deprecated functions used to retreive a subscription's
+	 * This function bridges the two data structures to support deprecated functions used to retrieve a subscription's
 	 * meta data from the original order rather than the subscription itself.
 	 *
 	 * @param WC_Order $order A WC_Order object
@@ -1218,6 +1279,87 @@ class WC_Subscriptions_Order {
 		return $query;
 	}
 
+	/**
+	 * Filter the query_vars of a wc_get_orders() query to map 'any' to be all valid subscription statuses instead of
+	 * defaulting to only valid order statuses.
+	 *
+	 * @param $query_vars
+	 *
+	 * @return mixed
+	 */
+	public static function map_order_query_args_for_subscriptions( $query_vars ) {
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			return $query_vars;
+		}
+
+		/**
+		 * Map the 'any' status to wcs_get_subscription_statuses() in HPOS environments.
+		 *
+		 * In HPOS environments, the 'any' status now maps to wc_get_order_statuses() statuses. Whereas, in
+		 * WP Post architecture 'any' meant any status except for ‘inherit’, ‘trash’ and ‘auto-draft’.
+		 *
+		 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
+		 */
+		if ( isset( $query_vars['post_type'] ) && '' !== $query_vars['post_type'] ) {
+			// OrdersTableQuery::maybe_remap_args() will overwrite `type` with the `post_type` value.
+			if ( 'shop_subscription' !== $query_vars['post_type'] ) {
+				return $query_vars;
+			}
+
+			// Simplify the type logic.
+			$query_vars['type'] = 'shop_subscription';
+			unset( $query_vars['post_type'] );
+		}
+
+		if ( isset( $query_vars['type'] ) && 'shop_subscription' === $query_vars['type'] ) {
+			if ( isset( $query_vars['post_status'] ) && '' !== $query_vars['post_status'] ) {
+				// OrdersTableQuery::maybe_remap_args() will overwrite `status` with the `post_status` value.
+				if ( [ 'any' ] !== (array) $query_vars['post_status'] ) {
+					return $query_vars;
+				}
+
+				// Simplify the status logic.
+				$query_vars['status'] = 'any';
+				unset( $query_vars['post_status'] );
+			}
+
+			if ( [ 'any' ] === (array) $query_vars['status'] || [ '' ] === (array) $query_vars['status'] ) {
+				$query_vars['status'] = array_keys( wcs_get_subscription_statuses() );
+			}
+		}
+
+		return $query_vars;
+	}
+
+	/**
+	 * Modifies the query clauses of a wc_get_orders() query to include/exclude parent orders based on the 'subscription_parent' argument.
+	 *
+	 * @param array            $query_clauses The query clauses.
+	 * @param OrdersTableQuery $order_query   The order query object.
+	 *
+	 * @return $query_clauses The modified query clauses to include/exclude parent orders.
+	 */
+	public static function filter_orders_query_by_parent_orders( $query_clauses, $order_query ) {
+		$include_parent_orders = $order_query->get( 'subscription_parent' );
+
+		// Bail if there's no argument to include/exclude parent orders.
+		if ( is_null( $include_parent_orders ) ) {
+			return $query_clauses;
+		}
+
+		if ( true === $include_parent_orders ) {
+			// Limit query to parent orders.
+			$query_clauses['join']  = ( empty( $query_clauses['join'] ) ? '' : $query_clauses['join'] . ' ' );
+			$query_clauses['join'] .= "INNER JOIN {$order_query->get_table_name( 'orders' )} as subscriptions ON subscriptions.parent_order_id = {$order_query->get_table_name( 'orders' )}.id AND subscriptions.type = 'shop_subscription'";
+		} elseif ( false === $include_parent_orders ) {
+			// Exclude parent orders.
+			$query_clauses['where']  = ( empty( $query_clauses['where'] ) ? '1=1 ' : $query_clauses['where'] . ' ' );
+			$query_clauses['where'] .= "AND {$order_query->get_table_name( 'orders' )}.id NOT IN (SELECT parent_order_id FROM {$order_query->get_table_name( 'orders' )} WHERE type = 'shop_subscription')";
+		}
+
+		return $query_clauses;
+	}
+
 	/* Deprecated Functions */
 
 	/**
@@ -1246,7 +1388,7 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Checks if an order contains an in active subscription and if it does, denies download acces
+	 * Checks if an order contains an in active subscription and if it does, denies download access
 	 * to files purchased on the order.
 	 *
 	 * @return bool False if the order contains a subscription that has expired or is cancelled/on-hold, otherwise, the original value of $download_permitted
@@ -2015,7 +2157,7 @@ class WC_Subscriptions_Order {
 	/**
 	 * Returns the amount outstanding on a subscription product.
 	 *
-	 * Deprecated because the subscription oustanding balance on a subscription is no longer added and an order can contain more
+	 * Deprecated because the subscription outstanding balance on a subscription is no longer added and an order can contain more
 	 * than one subscription.
 	 *
 	 * @param WC_Order $order The WC_Order object of the order for which you want to determine the number of failed payments.
@@ -2028,9 +2170,9 @@ class WC_Subscriptions_Order {
 
 		$failed_payment_count = self::get_failed_payment_count( $order, $product_id );
 
-		$oustanding_balance = $failed_payment_count * self::get_recurring_total( $order, $product_id );
+		$outstanding_balance = $failed_payment_count * self::get_recurring_total( $order, $product_id );
 
-		return $oustanding_balance;
+		return $outstanding_balance;
 	}
 
 	/**
@@ -2225,5 +2367,65 @@ class WC_Subscriptions_Order {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * Prints the HTML for the admin dropdown for order types to Woocommerce -> Orders screen.
+	 *
+	 * @since 6.3.0
+	 */
+	private static function render_restrict_manage_subscriptions_dropdown() {
+		$order_types = apply_filters(
+			'woocommerce_subscriptions_order_type_dropdown',
+			array(
+				'original'    => _x( 'Original', 'An order type', 'woocommerce-subscriptions' ),
+				'parent'      => _x( 'Subscription Parent', 'An order type', 'woocommerce-subscriptions' ),
+				'renewal'     => _x( 'Subscription Renewal', 'An order type', 'woocommerce-subscriptions' ),
+				'resubscribe' => _x( 'Subscription Resubscribe', 'An order type', 'woocommerce-subscriptions' ),
+				'switch'      => _x( 'Subscription Switch', 'An order type', 'woocommerce-subscriptions' ),
+				'regular'     => _x( 'Non-subscription', 'An order type', 'woocommerce-subscriptions' ),
+			)
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$selected_shop_order_subtype = isset( $_GET['shop_order_subtype'] ) ? wc_clean( wp_unslash( $_GET['shop_order_subtype'] ) ) : '';
+
+		?>
+		<select name='shop_order_subtype' id='dropdown_shop_order_subtype'>
+			<option value=""><?php esc_html_e( 'All orders types', 'woocommerce-subscriptions' ); ?></option>
+
+			<?php foreach ( $order_types as $order_type_key => $order_type_description ) : ?>
+				<option
+					value="<?php echo esc_attr( $order_type_key ); ?>"
+					<?php selected( $selected_shop_order_subtype, $order_type_key ); ?>
+				>
+					<?php echo esc_html( $order_type_description ); ?>
+				</option>
+			<?php endforeach; ?>
+
+		</select>
+		<?php
+	}
+
+	/**
+	 * Renders the contents of the "contains_subscription" column.
+	 *
+	 * This column indicates whether an order is a parent of a subscription,
+	 * a renewal order for a subscription, or a regular order.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @param integer $order_id The ID of the order in the current row.
+	 */
+	private static function render_contains_subscription_column_content( int $order_id ) {
+		if ( wcs_order_contains_subscription( $order_id, 'renewal' ) ) {
+			echo '<span class="subscription_renewal_order tips" data-tip="' . esc_attr__( 'Renewal Order', 'woocommerce-subscriptions' ) . '"></span>';
+		} elseif ( wcs_order_contains_subscription( $order_id, 'resubscribe' ) ) {
+			echo '<span class="subscription_resubscribe_order tips" data-tip="' . esc_attr__( 'Resubscribe Order', 'woocommerce-subscriptions' ) . '"></span>';
+		} elseif ( wcs_order_contains_subscription( $order_id, 'parent' ) ) {
+			echo '<span class="subscription_parent_order tips" data-tip="' . esc_attr__( 'Parent Order', 'woocommerce-subscriptions' ) . '"></span>';
+		} else {
+			echo '<span class="normal_order">&ndash;</span>';
+		}
 	}
 }

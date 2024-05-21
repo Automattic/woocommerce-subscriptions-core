@@ -4,7 +4,7 @@
  *
  * Performs reference transaction related transactions requests via the PayPal Express Checkout API,
  * including the creation of a billing agreement and processing renewal payments using that billing
- * agremeent's ID in a reference tranasction.
+ * agremeent's ID in a reference transaction.
  *
  * Also hijacks checkout when PayPal Standard is chosen as the payment method, but Reference Transactions
  * are enabled on the store's PayPal account, to go via Express Checkout approval flow instead of the
@@ -35,6 +35,18 @@ class WCS_PayPal_Reference_Transaction_API extends WCS_SV_API_Base {
 
 	/** @var array the request parameters */
 	private $parameters = array();
+
+	/** @var string */
+	public $gateway_id;
+
+	/** @var string */
+	public $api_username;
+
+	/** @var string */
+	public $api_password;
+
+	/** @var string */
+	public $api_signature;
 
 	/**
 	 * Constructor - setup request object and set endpoint

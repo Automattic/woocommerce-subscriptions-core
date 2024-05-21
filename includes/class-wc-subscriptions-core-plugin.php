@@ -16,7 +16,7 @@ class WC_Subscriptions_Core_Plugin {
 	 * The version of subscriptions-core library.
 	 * @var string
 	 */
-	protected $library_version = '5.8.0'; // WRCS: DEFINED_VERSION.
+	protected $library_version = '7.1.1'; // WRCS: DEFINED_VERSION.
 
 	/**
 	 * The subscription scheduler instance.
@@ -45,6 +45,16 @@ class WC_Subscriptions_Core_Plugin {
 	 * @var WC_Subscriptions_Core_Plugin
 	 */
 	protected static $instance = null;
+
+	/**
+	 * An array of cart handler objects.
+	 *
+	 * Use @see WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( '{class}' ) to fetch a cart handler instance.
+	 * eg WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( 'WCS_Cart_Renewal' ).
+	 *
+	 * @var WCS_Cart_Renewal[]
+	 */
+	protected $cart_handlers = [];
 
 	/**
 	 * Initialise class and attach callbacks.
@@ -84,7 +94,7 @@ class WC_Subscriptions_Core_Plugin {
 	}
 
 	/**
-	 * Defines WC Subscriptions contants.
+	 * Defines WC Subscriptions constants.
 	 */
 	protected function define_constants() {
 		define( 'WCS_INIT_TIMESTAMP', gmdate( 'U' ) );
@@ -121,9 +131,9 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_PayPal_Standard_Change_Payment_Method::init();
 		WC_Subscriptions_Tracker::init();
 		WCS_Upgrade_Logger::init();
-		new WCS_Cart_Renewal();
-		new WCS_Cart_Resubscribe();
-		new WCS_Cart_Initial_Payment();
+		$this->add_cart_handler( new WCS_Cart_Renewal() );
+		$this->add_cart_handler( new WCS_Cart_Resubscribe() );
+		$this->add_cart_handler( new WCS_Cart_Initial_Payment() );
 		WCS_Download_Handler::init();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
@@ -133,6 +143,7 @@ class WC_Subscriptions_Core_Plugin {
 		WCS_Dependent_Hook_Manager::init();
 		WCS_Admin_Product_Import_Export_Manager::init();
 		WC_Subscriptions_Frontend_Scripts::init();
+		WCS_Admin_Empty_List_Content_Manager::init();
 		WC_Subscriptions_Change_Address_Via_Checkout_Handler::init();
 
 		add_action( 'init', array( 'WC_Subscriptions_Synchroniser', 'init' ) );
@@ -154,11 +165,9 @@ class WC_Subscriptions_Core_Plugin {
 		// Initialise the cache.
 		$this->cache = WCS_Cache_Manager::get_instance();
 
-		if ( class_exists( 'Automattic\WooCommerce\Blocks\Package' ) && version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '4.4.0', '>' ) ) {
-			// When WooCommerceBlocks is loaded, set up the Integration class.
-			add_action( 'woocommerce_blocks_loaded', array( $this, 'setup_blocks_integration' ) );
-			add_action( 'woocommerce_blocks_loaded', array( 'WC_Subscriptions_Extend_Store_Endpoint', 'init' ) );
-		}
+		// When WooCommerceBlocks is loaded, set up the Integration class.
+		add_action( 'woocommerce_blocks_loaded', array( $this, 'setup_blocks_integration' ) );
+		add_action( 'woocommerce_blocks_loaded', array( 'WC_Subscriptions_Extend_Store_Endpoint', 'init' ) );
 
 		if ( ! $payment_gateways_handler::are_zero_total_subscriptions_allowed() ) {
 			WC_Subscriptions_Gateway_Restrictions_Manager::init();
@@ -322,24 +331,37 @@ class WC_Subscriptions_Core_Plugin {
 	}
 
 	/**
+	 * Gets the cart handler instance.
+	 *
+	 * @param string $class The class name of the cart handler. eg 'WCS_Cart_Renewal'.
+	 * @return WCS_Cart_Renewal|null The cart handler instance or null if not found.
+	 */
+	public function get_cart_handler( $class ) {
+		if ( ! isset( $this->cart_handlers[ $class ] ) ) {
+			return null;
+		}
+
+		return $this->cart_handlers[ $class ];
+	}
+
+	/**
+	 * Adds a cart handler instance.
+	 *
+	 * This is used to add cart handlers for different cart types. For example, renewal, resubscribe, initial, switch etc.
+	 * To access a cart handler instance, use WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( $class ).
+	 *
+	 * @param WCS_Cart_Renewal $cart_handler An instance of a cart handler.
+	 */
+	protected function add_cart_handler( $cart_handler ) {
+		$this->cart_handlers[ get_class( $cart_handler ) ] = $cart_handler;
+	}
+
+	/**
 	 * Registers Subscriptions order types.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 */
 	public function register_order_types() {
-		$subscriptions_exist = $this->cache->cache_and_get( 'wcs_do_subscriptions_exist', 'wcs_do_subscriptions_exist' );
-
-		if ( true === (bool) apply_filters( 'woocommerce_subscriptions_not_empty', $subscriptions_exist ) ) {
-			$not_found_text = __( 'No Subscriptions found', 'woocommerce-subscriptions' );
-		} else {
-			$not_found_text = '<p>' . __( 'Subscriptions will appear here for you to view and manage once purchased by a customer.', 'woocommerce-subscriptions' ) . '</p>';
-			// translators: placeholders are opening and closing link tags
-			$not_found_text .= '<p>' . sprintf( __( '%1$sLearn more about managing subscriptions &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/store-manager-guide/#section-3" target="_blank">', '</a>' ) . '</p>';
-			// translators: placeholders are opening and closing link tags
-			$not_found_text .= '<p>' . sprintf( __( '%1$sAdd a subscription product &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( WC_Subscriptions_Admin::add_subscription_url() ) . '">', '</a>' ) . '</p>';
-		}
-
-		$subscriptions_not_found_text = apply_filters( 'woocommerce_subscriptions_not_found_label', $not_found_text );
 
 		wc_register_order_type(
 			'shop_subscription',
@@ -358,7 +380,7 @@ class WC_Subscriptions_Core_Plugin {
 						'view'               => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'view_item'          => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'search_items'       => __( 'Search Subscriptions', 'woocommerce-subscriptions' ),
-						'not_found'          => $subscriptions_not_found_text,
+						'not_found'          => WCS_Admin_Empty_List_Content_Manager::get_content(),
 						'not_found_in_trash' => _x( 'No Subscriptions found in trash', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'parent'             => _x( 'Parent Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'menu_name'          => __( 'Subscriptions', 'woocommerce-subscriptions' ),
@@ -510,7 +532,7 @@ class WC_Subscriptions_Core_Plugin {
 	public function load_plugin_textdomain() {
 		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', $this->get_subscriptions_core_directory() . '/languages' );
 
-		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
+		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overridden by any file already loaded)
 		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );
 	}
 
@@ -561,6 +583,9 @@ class WC_Subscriptions_Core_Plugin {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
 	 */
 	public function setup_blocks_integration() {
+		if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Package' ) || ! version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '4.4.0', '>' ) ) {
+			return;
+		}
 		/**
 		 * Filter the compatible blocks for WooCommerce Subscriptions.
 		 */

@@ -50,7 +50,7 @@ class WC_Subscriptions_Upgrader {
 
 		$version_out_of_date = version_compare( self::$active_version, WC_Subscriptions_Core_Plugin::instance()->get_library_version(), '<' );
 
-		// Set the cron lock on every request with an out of date version, regardless of authentication level, as we can only lock cron for up to 10 minutes at a time, but we need to keep it locked until the upgrade is complete, regardless of who is browing the site
+		// Set the cron lock on every request with an out of date version, regardless of authentication level, as we can only lock cron for up to 10 minutes at a time, but we need to keep it locked until the upgrade is complete, regardless of who is browsing the site
 		if ( $version_out_of_date ) {
 			self::set_cron_lock();
 		}
@@ -261,6 +261,11 @@ class WC_Subscriptions_Upgrader {
 			}
 
 			WCS_Upgrade_3_1_0::migrate_subscription_webhooks_using_api_version_3();
+		}
+
+		if ( version_compare( self::$active_version, '6.8.0', '<' ) ) {
+			// Upon upgrading to 6.8.0 delete the 'wcs_cleanup_big_logs' WP Cron job that is no longer used.
+			wp_unschedule_hook( 'wcs_cleanup_big_logs' );
 		}
 
 		self::upgrade_complete();

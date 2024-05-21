@@ -105,7 +105,7 @@ function wcs_create_subscription( $args = array() ) {
 	$order = ( isset( $args['order_id'] ) ) ? wc_get_order( $args['order_id'] ) : null;
 
 	$default_args = array(
-		'status'             => '',
+		'status'             => apply_filters( 'woocommerce_default_subscription_status', 'pending' ),
 		'order_id'           => 0,
 		'customer_note'      => null,
 		'customer_id'        => null,
@@ -174,7 +174,7 @@ function wcs_create_subscription( $args = array() ) {
 
 	$subscription->set_customer_note( $args['customer_note'] ?? '' );
 	$subscription->set_customer_id( $args['customer_id'] );
-	$subscription->set_date_created( $args['date_created'] );
+	$subscription->set_date_created( wcs_date_to_time( $args['date_created'] ) );
 	$subscription->set_created_via( $args['created_via'] );
 	$subscription->set_currency( $args['currency'] );
 	$subscription->set_prices_include_tax( 'no' !== $args['prices_include_tax'] );
@@ -190,12 +190,11 @@ function wcs_create_subscription( $args = array() ) {
 
 	/**
 	 * Filter the newly created subscription object.
-	 * We need to fetch the subscription from the database as the current object state doesn't match the loaded state.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.22
 	 * @param WC_Subscription $subscription
 	 */
-	$subscription = apply_filters( 'wcs_created_subscription', wcs_get_subscription( $subscription ) );
+	$subscription = apply_filters( 'wcs_created_subscription', $subscription );
 
 	/**
 	 * Triggered after a new subscription is created.
@@ -501,7 +500,13 @@ function wcs_get_subscriptions( $args ) {
 
 	// Maybe filter to a specific customer.
 	if ( 0 !== $args['customer_id'] && is_numeric( $args['customer_id'] ) ) {
-		$query_args['customer_id'] = $args['customer_id'];
+		// When HPOS is disabled, fetch subscriptions by customer_id using the user's subscription cache and query by post__in for improved performance.
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$users_subscription_ids = WCS_Customer_Store::instance()->get_users_subscription_ids( $args['customer_id'] );
+			$query_args             = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $users_subscription_ids );
+		} else {
+			$query_args['customer_id'] = $args['customer_id'];
+		}
 	}
 
 	// We need to restrict subscriptions to those which contain a certain product/variation

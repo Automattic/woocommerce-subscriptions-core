@@ -106,6 +106,7 @@ function wcs_copy_order_address( $from_order, $to_order, $address_type = 'all' )
 		$to_order->set_shipping_state( $from_order->get_shipping_state() );
 		$to_order->set_shipping_postcode( $from_order->get_shipping_postcode() );
 		$to_order->set_shipping_country( $from_order->get_shipping_country() );
+		$to_order->set_shipping_phone( $from_order->get_shipping_phone() );
 	}
 
 	if ( 'all' === $address_type || 'billing' === $address_type ) {
@@ -214,17 +215,28 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 		// If we got here, the subscription was created without problems
 		$transaction->commit();
 
+		// Delete the transient that caches whether the order needs processing. Because we've added line items, the order may now need processing.
+		delete_transient( 'wc_order_' . $new_order->get_id() . '_needs_processing' );
+
+		/*
+		 * Fetch a fresh instance of the order because the current order instance has an empty line item cache generated before we had copied the line items.
+		 * Fetching a new instance will ensure the line items are available via $new_order->get_items().
+		 */
+		$order = wc_get_order( $new_order->get_id() );
+
+		if ( ! $order ) {
+			// translators: placeholder %1 is the order type. %2 is the subscription ID we attempted to create the order for.
+			throw new Exception( sprintf( __( 'There was an error fetching the new order (%1$s) for subscription %2$d.', 'woocommerce-subscriptions' ), $type, $subscription->get_id() ) );
+		}
+
 		/**
 		 * Filters the new order created from the subscription.
-		 *
-		 * Fetches a fresh instance of the order because the current order instance has an empty line item cache generated before we had copied the line items.
-		 * Fetching a new instance will ensure the line items are available via $new_order->get_items().
 		 *
 		 * @param WC_Order        $new_order    The new order created from the subscription.
 		 * @param WC_Subscription $subscription The subscription the order was created from.
 		 * @param string          $type         The type of order being created. Either 'renewal_order' or 'resubscribe_order'.
 		 */
-		return apply_filters( 'wcs_new_order_created', wc_get_order( $new_order->get_id() ), $subscription, $type );
+		return apply_filters( 'wcs_new_order_created', $order, $subscription, $type );
 
 	} catch ( Exception $e ) {
 		// There was an error adding the subscription
@@ -246,7 +258,7 @@ function wcs_get_new_order_title( $type ) {
 	$type = wcs_validate_new_order_type( $type );
 
 	// translators: placeholders are strftime() strings.
-	$order_date = strftime( _x( '%b %d, %Y @ %I:%M %p', 'Used in subscription post title. "Subscription renewal order - <this>"', 'woocommerce-subscriptions' ) ); // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText
+	$order_date = ( new DateTime( 'now' ) )->format( _x( 'M d, Y @ h:i A', 'Order date parsed by DateTime::format', 'woocommerce-subscriptions' ) );
 
 	switch ( $type ) {
 		case 'renewal_order':
@@ -406,22 +418,6 @@ function wcs_get_orders_with_meta_query( $args ) {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $handle_meta, 10, 2 );
 	}
 
-	/**
-	 * Map the 'any' status to wcs_get_subscription_statuses() in HPOS environments.
-	 *
-	 * In HPOS environments, the 'any' status now maps to wc_get_order_statuses() statuses. Whereas, in
-	 * WP Post architecture 'any' meant any status except for ‘inherit’, ‘trash’ and ‘auto-draft’.
-	 *
-	 * If we're querying for subscriptions, we need to map 'any' to be all valid subscription statuses otherwise it would just search for order statuses.
-	 */
-	if ( isset( $args['status'], $args['type'] ) &&
-		[ 'any' ] === (array) $args['status'] &&
-		'shop_subscription' === $args['type'] &&
-		$is_hpos_in_use
-	) {
-		$args['status'] = array_keys( wcs_get_subscription_statuses() );
-	}
-
 	$results = wc_get_orders( $args );
 
 	if ( ! $is_hpos_in_use ) {
@@ -455,11 +451,18 @@ function wcs_get_subscription_orders( $return_fields = 'ids', $order_type = 'par
 	$order_ids = array();
 
 	if ( $any_order_type || in_array( 'parent', $order_type ) ) {
+		$is_hpos          = wcs_is_custom_order_tables_usage_enabled();
+		$table_name       = $is_hpos ? 'wc_orders' : 'posts';
+		$parent_order_col = $is_hpos ? 'parent_order_id' : 'post_parent';
+		$type_col         = $is_hpos ? 'type' : 'post_type';
+
+		// @codingStandardsIgnoreStart
 		$order_ids = array_merge( $order_ids, $wpdb->get_col(
-			"SELECT DISTINCT post_parent FROM {$wpdb->posts}
-			 WHERE post_type = 'shop_subscription'
-			 AND post_parent <> 0"
+			"SELECT DISTINCT {$parent_order_col} FROM {$wpdb->prefix}{$table_name}
+			WHERE {$type_col} = 'shop_subscription'
+			AND {$parent_order_col} <> 0"
 		) );
+		// @codingStandardsIgnoreEnd
 	}
 
 	if ( $any_order_type || in_array( 'renewal', $order_type ) || in_array( 'resubscribe', $order_type ) || in_array( 'switch', $order_type ) ) {
@@ -983,4 +986,20 @@ function wcs_order_contains_early_renewal( $order ) {
 	 * @param WC_Order $order The WC_Order object.
 	 */
 	return apply_filters( 'woocommerce_subscriptions_is_early_renewal_order', $is_early_renewal, $order );
+}
+
+/**
+ * Generates a key for grouping subscription products with the same billing schedule.
+ *
+ * Used by the orders/<id>/subscriptions REST API endpoint to group order items into subscriptions.
+ *
+ * @see https://woocommerce.com/document/subscriptions/develop/multiple-subscriptions/#section-3
+ *
+ * @param WC_Order_Item_Product $item         The order item to generate the key for.
+ * @param int                   $renewal_time The timestamp of the first renewal payment.
+ *
+ * @return string The item's subscription grouping key.
+ */
+function wcs_get_subscription_item_grouping_key( $item, $renewal_time = '' ) {
+	return apply_filters( 'woocommerce_subscriptions_item_grouping_key', wcs_get_subscription_grouping_key( $item->get_product(), $renewal_time ), $item );
 }
