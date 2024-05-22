@@ -68,7 +68,8 @@ class WC_Subscriptions_Addresses {
 					'update_subscription_address' => $subscription->get_id(),
 					'wcs_nonce'                   => wp_create_nonce( 'wcs_edit_address_' . $subscription->get_id() ),
 				),
-				wc_get_checkout_url() );
+				wc_get_checkout_url()
+			);
 		} else {
 			$edit_address_url = add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) );
 		}

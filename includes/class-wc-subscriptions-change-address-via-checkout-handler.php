@@ -53,17 +53,19 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		add_action( 'woocommerce_order_needs_payment', array( __CLASS__, 'order_does_not_need_payment' ), 10, 2 );
 		add_action( 'woocommerce_get_checkout_order_received_url', array( __CLASS__, 'change_order_received_url' ), 10, 2 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'process_request' ) );
-		//woocommerce_order_item_quantity -- dont reserve stock for this order.
-		//woocommerce_get_checkout_order_received_url --- change the order's redirect URL to send the customer back to the subscription page.
 
-		//add_filter( 'woocommerce_enqueue_styles', array( __CLASS__, 'enqueue_styles' ), 100, 1 );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'register_scripts' ] );
 
 		add_filter( 'woocommerce_order_button_text', array( __CLASS__, 'order_button_text' ) );
 
-		add_action( 'woocommerce_subscription_payment_complete', function( $subscription ) {
-			error_log('RUNNING woocommerce_subscription_payment_complete');
-		} );
+		add_action(
+			'woocommerce_subscription_payment_complete',
+			function(
+			$subscription
+			) {
+				error_log( 'RUNNING woocommerce_subscription_payment_complete' );
+			}
+		);
 	}
 
 	/**
@@ -178,18 +180,18 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	public static function crumbs_for_address_change( $crumbs ) {
 
 		if ( ! is_main_query() && ! is_page() && ! is_checkout() ) {
-			error_log(1);
+			error_log( 1 );
 			return $crumbs;
 		}
 
 		if ( ! isset( $_GET['update_subscription_address'] ) && ! self::cart_contains_change_address_request() ) {
-			error_log(2);
+			error_log( 2 );
 			return $crumbs;
 		}
 
 		if ( isset( $_GET['update_subscription_address'] ) ) {
 			$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		} else  {
+		} else {
 			$subscription = self::get_subscription_from_cart();
 		}
 

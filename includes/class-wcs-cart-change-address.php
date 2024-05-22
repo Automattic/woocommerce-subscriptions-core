@@ -9,7 +9,6 @@
  * @package WooCommerce Subscriptions
  * @subpackage WCS_Cart_Resubscribe
  * @category Class
- * @author Prospress
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 
@@ -34,9 +33,13 @@ class WCS_Cart_Change_Address extends WCS_Cart_Renewal {
 	 * @return void
 	 */
 	public function add_subscription_to_cart( $subscription ) {
-		$this->setup_cart( $subscription, array(
-			'subscription_id' => $subscription->get_id(),
-		), 'all_items_required' );
+		$this->setup_cart(
+			$subscription,
+			array(
+				'subscription_id' => $subscription->get_id(),
+			),
+			'all_items_required'
+		);
 	}
 
 	/**
