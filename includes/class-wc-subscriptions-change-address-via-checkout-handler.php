@@ -57,15 +57,6 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'register_scripts' ] );
 
 		add_filter( 'woocommerce_order_button_text', array( __CLASS__, 'order_button_text' ) );
-
-		add_action(
-			'woocommerce_subscription_payment_complete',
-			function(
-			$subscription
-			) {
-				error_log( 'RUNNING woocommerce_subscription_payment_complete' );
-			}
-		);
 	}
 
 	/**
@@ -180,16 +171,14 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	public static function crumbs_for_address_change( $crumbs ) {
 
 		if ( ! is_main_query() && ! is_page() && ! is_checkout() ) {
-			error_log( 1 );
 			return $crumbs;
 		}
 
-		if ( ! isset( $_GET['update_subscription_address'] ) && ! self::cart_contains_change_address_request() ) {
-			error_log( 2 );
+		if ( ! isset( $_GET['update_subscription_address'] ) && ! self::cart_contains_change_address_request() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return $crumbs;
 		}
 
-		if ( isset( $_GET['update_subscription_address'] ) ) {
+		if ( isset( $_GET['update_subscription_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$subscription = wcs_get_subscription( absint( $_GET['update_subscription_address'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		} else {
 			$subscription = self::get_subscription_from_cart();
@@ -361,7 +350,8 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		}
 
 		if ( ! isset( $_GET['update_subscription_address'] ) && ! is_admin() && ! is_ajax() && ! WC()->is_rest_api_request() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			//WC()->cart->empty_cart( true );
+			// @todo Check if needed
+			WC()->cart->empty_cart( true );
 		}
 	}
 
