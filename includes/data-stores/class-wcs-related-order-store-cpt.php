@@ -40,11 +40,14 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
+		// Filter out the new 'wc-checkout-draft' status, as it is not a valid order status for our purposes.
+		$statuses = wc_get_order_statuses();
+		unset( $statuses[ array_search( 'wc-checkout-draft', $statuses, true ) ] );
 		return wcs_get_orders_with_meta_query(
 			[
 				'limit'      => -1,
 				'type'       => 'shop_order',
-				'status'     => 'any',
+				'status'     => $statuses,
 				'return'     => 'ids',
 				'orderby'    => 'ID',
 				'order'      => 'DESC',
