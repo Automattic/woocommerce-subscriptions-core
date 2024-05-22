@@ -27,7 +27,7 @@ class WCS_Cart_Change_Address extends WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Undocumented function
+	 * Adds the subscription to the cart.
 	 *
 	 * @param [type] $subscription
 	 * @return void
