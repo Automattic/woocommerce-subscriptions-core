@@ -76,7 +76,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	}
 
 	/**
-	 * Undocumented function
+	 * Returns the submit button text for the change address request with filters applied.
 	 *
 	 * @return string The submit button text.
 	 */
@@ -85,7 +85,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	}
 
 	/**
-	 * Undocumented function
+	 * Register specific scripts for the change address request.
 	 *
 	 * @return void
 	 */
@@ -106,7 +106,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'strings'  => array(
 				'order_summary'                => __( 'Subscription totals', 'woocommerce-subscriptions' ),
-				'contact_description'          => __( "We'll use this email to send you details and updates about your subscription.", 'woocommerce-subscriptions' ),
+				'contact_description'          => __( 'We\'ll use this email to send you details and updates about your subscription.', 'woocommerce-subscriptions' ),
 				'shipping_address_description' => __( 'Enter the address where you want your subscription orders delivered.', 'woocommerce-subscriptions' ),
 				'change_address_submit'        => self::get_change_address_submit_button_text(),
 				'is_block_checkout'            => has_block( 'woocommerce/checkout', wc_get_page_id( 'checkout' ) ),
@@ -464,7 +464,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	}
 
 	/**
-	 * Undocumented function
+	 * Changes the order received URL to the subscription view order URL when the order is for a subscription address change.
 	 *
 	 * @param string $url
 	 * @param [type] $order
@@ -481,7 +481,7 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 	}
 
 	/**
-	 * Undocumented function
+	 * Process the request for a subscription address change.
 	 *
 	 * @param [type] $order
 	 * @return void
