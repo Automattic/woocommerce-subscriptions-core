@@ -514,6 +514,9 @@ class WC_Subscriptions_Change_Address_Via_Checkout_Handler {
 		$subscription->set_total( $cart->total );
 		$subscription->save();
 
+		// Add a note to the subscription to indicate the address change for the merchant.
+		$subscription->add_order_note( __( 'Shipping address updated by customer.', 'woocommerce-subscriptions' ) );
+
 		if ( count( WC()->cart->get_cart() ) > 0 ) {
 			WC()->cart->empty_cart();
 		}
