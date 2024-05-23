@@ -43,6 +43,7 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 		// Filter out the new 'wc-checkout-draft' status, as it is not a valid order status for our purposes.
 		$statuses = wc_get_order_statuses();
 		unset( $statuses[ array_search( 'wc-checkout-draft', $statuses, true ) ] );
+		var_dump( 'statuses: ' . json_encode( $statuses ) );
 		return wcs_get_orders_with_meta_query(
 			[
 				'limit'      => -1,
