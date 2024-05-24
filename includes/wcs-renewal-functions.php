@@ -62,6 +62,8 @@ function wcs_order_contains_renewal( $order ) {
 }
 
 /**
+ * Determines if a given order is the subscription's latest renewal order. 
+ * 
  * @param $order WC_Order The order object.
  * @param $subscription WC_Subscription The subscription object.
  * @return bool Whether the order is the latest renewal order of the provided subscription.
