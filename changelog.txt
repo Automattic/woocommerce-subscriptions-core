@@ -1,9 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.2.0 - xxxx-xx-xx =
+= 7.2.0 - 2024-xx-xx =
 * Fix - Regenerate subscriptions related order caches (renewal, resubscribe, switch) if it's stored as an invalid value to prevent fatal errors.
-
-= 7.1.2 - 2024-xx-xx =
 * Update - Show "FREE" instead of 0 when there is no shipping cost in the recurring totals section of the Cart and Checkout blocks (requires WooCommerce 9.0+).
 
 = 7.1.1 - 2024-05-09 =
