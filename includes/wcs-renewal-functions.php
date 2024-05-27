@@ -70,7 +70,7 @@ function wcs_order_contains_renewal( $order ) {
  * @return bool Whether the order is the latest renewal order of the provided subscription.
  */
 function wcs_is_order_last_renewal_of_subscription( $order, $subscription ) {
-	$last_renewal_order = wcs_get_renewal_orders_sorted_by( $subscription, 'date_created' );
+	$last_renewal_order = wcs_get_last_renewal_order( $subscription );
 	return $last_renewal_order && $last_renewal_order->get_id() === $order->get_id();
 }
 
