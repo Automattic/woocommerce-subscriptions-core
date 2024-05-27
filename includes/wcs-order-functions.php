@@ -1017,7 +1017,7 @@ function wcs_get_subscription_item_grouping_key( $item, $renewal_time = '' ) {
 function wcs_set_recurring_item_total( &$item ) {
 	$product = $item->get_product();
 
-	if ( ! $product ) {
+	if ( ! $product || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 		return;
 	}
 
