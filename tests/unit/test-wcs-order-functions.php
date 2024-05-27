@@ -385,5 +385,20 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 40, $line_item->get_total() );
 		$this->assertEquals( 40, $line_item->get_subtotal() );
+
+		/**
+		 * Simple product
+		 */
+		$simple_product = WC_Helper_Product::create_simple_product();
+
+		$line_item->set_product( $simple_product );
+		$line_item->set_quantity( 1 );
+		$line_item->set_total( 50 ); // Default price is $10.00. We set it to $50 here to confirm it's not changed.
+		$line_item->set_subtotal( 50 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 50, $line_item->get_total() );
+		$this->assertEquals( 50, $line_item->get_subtotal() );
 	}
 }
