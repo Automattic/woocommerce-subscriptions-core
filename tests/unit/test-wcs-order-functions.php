@@ -400,5 +400,26 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 50, $line_item->get_total() );
 		$this->assertEquals( 50, $line_item->get_subtotal() );
+
+		/**
+		 * Subscription item with quantity.
+		 */
+		$sign_up_fee_trial_product = WCS_Helper_Product::create_simple_subscription_product(
+			[
+				'price'                     => 40,
+				'subscription_sign_up_fee'  => 60,
+				'subscription_trial_length' => 10,
+			]
+		);
+
+		$line_item->set_product( $sign_up_fee_trial_product );
+		$line_item->set_quantity( 2 );
+		$line_item->set_total( 120 ); // Initial total is just the sign-up fee.
+		$line_item->set_subtotal( 120 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 80, $line_item->get_total() );
+		$this->assertEquals( 80, $line_item->get_subtotal() );
 	}
 }
