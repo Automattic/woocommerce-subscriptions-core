@@ -119,10 +119,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 *
 	 * @param WC_Order $subscription  The ID of the subscription for which calling code wants the related orders.
 	 * @param string   $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @param bool     $include_draft Whether to include draft orders in the results (`wc-checkout-draft` status).
 	 *
 	 * @return array An array of related order IDs.
 	 */
-	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
+	public function get_related_order_ids( WC_Order $subscription, $relation_type, $include_draft = true ) {
 		$related_order_ids = $this->get_related_order_ids_from_cache( $subscription, $relation_type );
 
 		// get_related_order_ids_from_cache() returns false if the ID is invalid. This can arise when the subscription hasn't been created yet. In any case, the related IDs should be an empty array to avoid a boolean return from this function.
@@ -144,7 +145,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			}
 
 			if ( false === $related_order_ids ) {
-				$related_order_ids = parent::get_related_order_ids( $subscription, $relation_type ); // No data in transient, query directly.
+				$related_order_ids = parent::get_related_order_ids( $subscription, $relation_type, $include_draft ); // No data in transient, query directly.
 			} else {
 				rsort( $related_order_ids ); // Queries are ordered from newest ID to oldest, so make sure the transient value is too.
 				delete_transient( $transient_key ); // We migrate the data to our new cache so can delete the old one.
