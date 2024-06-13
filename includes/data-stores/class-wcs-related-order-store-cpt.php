@@ -36,13 +36,15 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 *
 	 * @param WC_Order $subscription  The ID of the subscription for which calling code wants the related orders.
 	 * @param string   $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe.
+	 * @param bool     $include_draft Whether to include draft orders in the results (`wc-checkout-draft` status).
 	 *
 	 * @return array
 	 */
-	public function get_related_order_ids( WC_Order $subscription, $relation_type ) {
-		// Filter out the new 'wc-checkout-draft' status, as it is not a valid order status for our purposes.
-		$statuses = array_keys( wc_get_order_statuses() );
-		unset( $statuses[ array_search( 'wc-checkout-draft', $statuses, true ) ] );
+	public function get_related_order_ids( WC_Order $subscription, $relation_type, $include_draft = true ) {
+		if ( ! $include_draft ) {
+			$statuses = array_keys( wc_get_order_statuses() );
+			unset( $statuses[ array_search( 'wc-checkout-draft', $statuses, true ) ] );
+		}
 		return wcs_get_orders_with_meta_query(
 			[
 				'limit'      => -1,
