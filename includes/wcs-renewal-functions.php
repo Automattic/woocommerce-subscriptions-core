@@ -175,7 +175,6 @@ function wcs_get_last_renewal_order( $subscription ) {
 function wcs_get_renewal_orders_sorted_by( $subscription, $sort_by, $order = 'descending' ) {
 	$renewal_orders = $subscription->get_related_orders( 'all', 'renewal' );
 
-	
 	wcs_sort_objects( $renewal_orders, $sort_by, $order );
 
 	return $renewal_orders;
