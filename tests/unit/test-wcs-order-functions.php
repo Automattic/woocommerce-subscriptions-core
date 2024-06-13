@@ -304,6 +304,122 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 			$this->assertIsArray( $subscriptions );
 			$this->assertEmpty( $subscriptions );
 		}
+	}
 
+	public function test_wcs_set_recurring_item_total() {
+		/**
+		 * Regular subscription item.
+		 */
+		$product = WCS_Helper_Product::create_simple_subscription_product( [ 'price' => 10 ] );
+
+		$line_item = new WC_Order_Item_Product();
+		$line_item->set_product( $product );
+		$line_item->set_quantity( 1 );
+		$line_item->set_total( 10 );
+		$line_item->set_subtotal( 10 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 10, $line_item->get_total() );
+		$this->assertEquals( 10, $line_item->get_subtotal() );
+
+		/**
+		 * Subscription item with trial.
+		 */
+		$trial_product = WCS_Helper_Product::create_simple_subscription_product(
+			[
+				'price'                     => 20,
+				'subscription_trial_length' => 10,
+			]
+		);
+
+		$line_item = new WC_Order_Item_Product();
+		$line_item->set_product( $trial_product );
+		$line_item->set_quantity( 1 );
+		$line_item->set_total( 0 ); // Trial product's are free initially.
+		$line_item->set_subtotal( 0 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 20, $line_item->get_total() );
+		$this->assertEquals( 20, $line_item->get_subtotal() );
+
+		/**
+		 * Subscription item with sign-up fee.
+		 */
+		$sign_up_fee_product = WCS_Helper_Product::create_simple_subscription_product(
+			[
+				'price'                    => 30,
+				'subscription_sign_up_fee' => 50,
+			]
+		);
+
+		$line_item = new WC_Order_Item_Product();
+		$line_item->set_product( $sign_up_fee_product );
+		$line_item->set_quantity( 1 );
+		$line_item->set_total( 80 ); // Initial total is the sum of the product price and sign-up fee.
+		$line_item->set_subtotal( 80 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 30, $line_item->get_total() );
+		$this->assertEquals( 30, $line_item->get_subtotal() );
+
+		/**
+		 * Subscription item with sign-up fee and trial.
+		 */
+		$sign_up_fee_trial_product = WCS_Helper_Product::create_simple_subscription_product(
+			[
+				'price'                     => 40,
+				'subscription_sign_up_fee'  => 60,
+				'subscription_trial_length' => 10,
+			]
+		);
+
+		$line_item->set_product( $sign_up_fee_trial_product );
+		$line_item->set_quantity( 1 );
+		$line_item->set_total( 60 ); // Initial total is just the sign-up fee.
+		$line_item->set_subtotal( 60 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 40, $line_item->get_total() );
+		$this->assertEquals( 40, $line_item->get_subtotal() );
+
+		/**
+		 * Simple product
+		 */
+		$simple_product = WC_Helper_Product::create_simple_product();
+
+		$line_item->set_product( $simple_product );
+		$line_item->set_quantity( 1 );
+		$line_item->set_total( 50 ); // Default price is $10.00. We set it to $50 here to confirm it's not changed.
+		$line_item->set_subtotal( 50 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 50, $line_item->get_total() );
+		$this->assertEquals( 50, $line_item->get_subtotal() );
+
+		/**
+		 * Subscription item with quantity.
+		 */
+		$sign_up_fee_trial_product = WCS_Helper_Product::create_simple_subscription_product(
+			[
+				'price'                     => 40,
+				'subscription_sign_up_fee'  => 60,
+				'subscription_trial_length' => 10,
+			]
+		);
+
+		$line_item->set_product( $sign_up_fee_trial_product );
+		$line_item->set_quantity( 2 );
+		$line_item->set_total( 120 ); // Initial total is just the sign-up fee.
+		$line_item->set_subtotal( 120 );
+
+		wcs_set_recurring_item_total( $line_item );
+
+		$this->assertEquals( 80, $line_item->get_total() );
+		$this->assertEquals( 80, $line_item->get_subtotal() );
 	}
 }
