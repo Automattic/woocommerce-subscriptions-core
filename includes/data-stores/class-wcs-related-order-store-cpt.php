@@ -41,7 +41,9 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 	 * @return array
 	 */
 	public function get_related_order_ids( WC_Order $subscription, $relation_type, $include_draft = true ) {
-		if ( ! $include_draft ) {
+		if ( $include_draft ) {
+			$statuses = 'any';
+		} else {
 			$statuses = array_keys( wc_get_order_statuses() );
 			unset( $statuses[ array_search( 'wc-checkout-draft', $statuses, true ) ] );
 		}
