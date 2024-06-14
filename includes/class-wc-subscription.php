@@ -2049,11 +2049,10 @@ class WC_Subscription extends WC_Order {
 	 * Get the related order IDs for a subscription based on an order type.
 	 *
 	 * @param string $order_type Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'any'.
-	 * @param bool $include_draft Whether to include draft orders in the search. Defaults to true.
 	 * @return array List of related order IDs.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
-	protected function get_related_order_ids( $order_type = 'any', $include_draft = true ) {
+	protected function get_related_order_ids( $order_type = 'any' ) {
 
 		$related_order_ids = array();
 
@@ -2066,7 +2065,7 @@ class WC_Subscription extends WC_Order {
 			$relation_types = ( 'any' === $order_type ) ? array( 'renewal', 'resubscribe', 'switch' ) : array( $order_type );
 
 			foreach ( $relation_types as $relation_type ) {
-				$related_order_ids = array_merge( $related_order_ids, WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $relation_type, $include_draft ) );
+				$related_order_ids = array_merge( $related_order_ids, WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $relation_type ) );
 			}
 		}
 

@@ -86,11 +86,10 @@ abstract class WCS_Related_Order_Store {
 	 *
 	 * @param WC_Order $subscription The order or subscription for which calling code wants to find related orders.
 	 * @param string $relation_type The relationship between the subscription and the orders. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
-	 * @param bool $include_draft Whether to include draft orders in the results (`wc-checkout-draft` status).
 	 *
 	 * @return array
 	 */
-	abstract public function get_related_order_ids( WC_Order $subscription, $relation_type, $include_draft = true );
+	abstract public function get_related_order_ids( WC_Order $subscription, $relation_type );
 
 	/**
 	 * Find subscriptions related to a given order in a given way, if any.
