@@ -2060,14 +2060,15 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $order_id, $subscription->get_last_order() );
 		$this->assertEquals( wc_get_order( $order_id ), $subscription->get_last_order( 'all' ) );
 
+		// Test for the status filtering parameter
+		$order->update_status( 'failed' );
+		$order->save();
+		$this->assertFalse( $subscription->get_last_order( 'ids', array( 'parent', 'renewal' ), array( 'failed' ) ) );
+
 		$renewal    = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_id = wcs_get_objects_property( $renewal, 'id' );
 		$this->assertEquals( $renewal_id, $subscription->get_last_order( 'ids' ) );
 		$this->assertEquals( $renewal_id, $subscription->get_last_order() );
-
-		// Test for the status filtering parameter
-		$renewal->update_status( 'failed' );
-		$this->assertFalse( $subscription->get_last_order( 'ids', array( 'parent', 'renewal' ), array( 'failed' ) ) );
 
 		// For some reason or another, WC 3.0 changes the values in the `WC_Order_Data_Store_CPT->internal_meta_keys` property, meaning we can’t compare two of the same order and trust they'll be seen as the same by assertEquals() or assertSame() because the `WC_Order->data_store` property will have different values for `WC_Order_Data_Store_CPT->internal_meta_keys`, so instead we just have to check type
 		$last_order_object = $subscription->get_last_order( 'all' );
