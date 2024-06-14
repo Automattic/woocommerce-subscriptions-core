@@ -40,7 +40,8 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		for ( $i = 0; $i < 3; $i++ ) {
 			$order       = WCS_Helper_Subscription::create_order();
-			$order_ids[] = $order->get_id();
+			$order_id    = wcs_get_objects_property( $order, 'id' );
+			$order_ids[] = $order_id;
 
 			$this->add_relation_mock( $order, $subscription, $relation_type );
 		}
@@ -63,7 +64,7 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		for ( $i = 0; $i < 3; $i++ ) {
 			$order       = WCS_Helper_Subscription::create_order();
-			$order_ids[] = $order->get_id();
+			$order_ids[] = wcs_get_objects_property( $order, 'id' );
 
 			$this->add_relation_mock( $order, $subscription_one, $relation_type );
 			$this->add_relation_mock( $order, $subscription_two, $relation_type );
