@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <tr>
 	<td>
-		<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>">
+		<a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Edit order number %s', 'woocommerce' ), $order->get_order_number() ) ) ?>">
 			<?php
 			// translators: placeholder is an order number.
 			echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) );

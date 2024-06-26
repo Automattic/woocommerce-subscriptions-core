@@ -4,7 +4,7 @@
  *
  * @author   Prospress
  * @category WooCommerce Subscriptions/Templates
- * @version  1.0.0 - Migrated from WooCommerce Subscriptions v2.6.2
+ * @version  7.3.0 - Migrated from WooCommerce Subscriptions v2.6.2
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			?><tr class="order woocommerce-orders-table__row woocommerce-orders-table__row--status-<?php echo esc_attr( $order->get_status() ); ?>">
 				<td class="order-number woocommerce-orders-table__cell woocommerce-orders-table__cell-order-number" data-title="<?php esc_attr_e( 'Order Number', 'woocommerce-subscriptions' ); ?>">
-					<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>">
+					<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'View order number %s', 'woocommerce' ), $order->get_order_number() ) ) ?>">
 						<?php echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ); ?>
 					</a>
 				</td>
