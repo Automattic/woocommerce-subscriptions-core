@@ -377,7 +377,9 @@ class WC_Subscriptions_Change_Payment_Gateway {
 
 				// Redirect to success/confirmation/payment page
 				wc_add_notice( $notice );
-				wp_safe_redirect( $result['redirect'] );
+
+				// wp_safe_redirect is not appropriate here as some gateways may need to send customers off site to complete the change payment method process.
+				wp_redirect( $result['redirect'] );
 				exit;
 			}
 		}
