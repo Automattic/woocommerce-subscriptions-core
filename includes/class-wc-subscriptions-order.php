@@ -693,13 +693,13 @@ class WC_Subscriptions_Order {
 			return $needs_payment;
 		}
 
-		$has_next_payment                 = false;
-		$contains_expiring_limited_coupon = false;
-		$recurring_total                  = 0;
-		$contains_free_trial              = false;
-		$contains_synced                  = false;
-
+		// Check if there's a subscription attached to this order that will require a payment method.
 		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+			$has_next_payment                 = false;
+			$contains_expiring_limited_coupon = false;
+			$contains_free_trial              = false;
+			$contains_synced                  = false;
+
 			// Check if there's a subscription with a recurring total that would require a payment method.
 			$recurring_total = $subscription->get_total();
 
