@@ -701,7 +701,7 @@ class WC_Subscriptions_Order {
 			$contains_synced                  = false;
 
 			// Check if there's a subscription with a recurring total that would require a payment method.
-			$recurring_total = $subscription->get_total();
+			$recurring_total = (float) $subscription->get_total();
 
 			// Check that there is at least 1 subscription with a next payment that would require a payment method.
 			if ( $subscription->get_time( 'next_payment' ) ) {
@@ -727,7 +727,7 @@ class WC_Subscriptions_Order {
 			 * We need to collect a payment method if there's a subscription with a recurring total or a limited recurring coupon that is expiring and
 			 * there's a next payment date or a free trial or a synced product.
 			 */
-			if ( $contains_expiring_limited_coupon || $recurring_total > 0 && ( $has_next_payment || $contains_free_trial || $contains_synced ) ) {
+			if ( ( $contains_expiring_limited_coupon || $recurring_total > 0 ) && ( $has_next_payment || $contains_free_trial || $contains_synced ) ) {
 				$needs_payment = true;
 				break; // We've found a subscription that requires a payment method.
 			}
