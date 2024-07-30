@@ -124,7 +124,7 @@ class WCS_Privacy extends WC_Abstract_Privacy {
 	 */
 	public static function handle_privacy_bulk_actions( $redirect_url, $action, $subscription_ids ) {
 		if ( 'wcs_remove_personal_data' !== $action ) {
-			return;
+			return $redirect_url;
 		}
 
 		$changed       = 0;
