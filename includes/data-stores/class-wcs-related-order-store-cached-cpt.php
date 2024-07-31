@@ -283,6 +283,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			}
 		}
 
+		// Make sure the subscription's modified date is updated when a related order cache is updated.
+		$subscription->set_date_modified( current_time( 'mysql' ) );
+
 		$subscription_data_store = WC_Data_Store::load( 'subscription' );
 		$current_metadata        = $this->get_related_order_metadata( $subscription, $relation_type );
 		$new_metadata            = array(
