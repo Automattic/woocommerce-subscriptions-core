@@ -283,10 +283,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			}
 		}
 
-		/**
-		 * On non-HPOS sites, make sure the subscription's modified date is updated when a related order cache is updated.
-		 * On HPOS sites this isn't necessary because calling update_meta() will update the post_modified date.
-		 */
+		// On non-HPOS sites, make sure the subscription's modified date is updated when a related order cache is updated.
+		// On HPOS sites this isn't necessary because calling update_meta() or add_meta() will update the modified date.
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			$subscription->set_date_modified( current_time( 'mysql' ) );
 			$subscription->save();
