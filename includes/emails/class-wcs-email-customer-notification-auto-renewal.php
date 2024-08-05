@@ -36,6 +36,10 @@ class WCS_Email_Customer_Notification_Auto_Renewal extends WC_Email {
 
 		parent::__construct();
 
+		// TODO: check if this interferes with the UX via option setting.
+		$this->enabled = WC_Subscriptions_Email_Notifications::should_send_notification();
+
+		add_action( 'woocommerce_scheduled_subscription_customer_notification_auto_renewal', array( $this, 'trigger' ) );
 	}
 
 	/**
@@ -127,5 +131,4 @@ class WCS_Email_Customer_Notification_Auto_Renewal extends WC_Email {
 			$this->template_base
 		);
 	}
-
 }

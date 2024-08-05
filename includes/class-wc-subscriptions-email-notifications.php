@@ -28,4 +28,24 @@ class WC_Subscriptions_Email_Notifications {
 
 		return $email_classes;
 	}
+
+	/**
+	 * Should the emails be sent out?
+	 *
+	 * @return bool
+	 */
+	public static function should_send_notification() {
+		if ( WCS_Staging::is_duplicate_site() ) {
+			return false;
+		}
+
+		$allowed_env_types = array(
+			'production',
+		);
+		if ( ! in_array( wp_get_environment_type(), $allowed_env_types, true ) ) {
+			return false;
+		}
+
+		return true;
+	}
 }

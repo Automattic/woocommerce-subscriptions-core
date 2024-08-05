@@ -36,6 +36,9 @@ class WCS_Email_Customer_Notification_Manual_Renewal extends WC_Email {
 
 		parent::__construct();
 
+		$this->enabled = WC_Subscriptions_Email_Notifications::should_send_notification();
+
+		add_action( 'woocommerce_scheduled_subscription_customer_notification_manual_renewal', array( $this, 'trigger' ) );
 	}
 
 	/**
@@ -127,5 +130,4 @@ class WCS_Email_Customer_Notification_Manual_Renewal extends WC_Email {
 			$this->template_base
 		);
 	}
-
 }

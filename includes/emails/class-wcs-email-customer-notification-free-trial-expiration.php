@@ -35,6 +35,10 @@ class WCS_Email_Customer_Notification_Free_Trial_Expiration extends WC_Email {
 		$this->customer_email = true;
 
 		parent::__construct();
+
+		$this->enabled = WC_Subscriptions_Email_Notifications::should_send_notification();
+
+		add_action( 'woocommerce_scheduled_subscription_customer_notification_trial_expiration', array( $this, 'trigger' ) );
 	}
 
 	/**
