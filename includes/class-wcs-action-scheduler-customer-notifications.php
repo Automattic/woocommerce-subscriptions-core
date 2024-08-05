@@ -10,8 +10,7 @@
  */
 class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
-	//TODO: make number of hours configurable.
-	protected int $hours_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS; // aka 3 days in hours.
+	protected int $hours_offset;
 
 	protected DateInterval $time_delta;
 
@@ -25,7 +24,11 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	public function __construct() {
 		parent::__construct();
 
+		//TODO: make number of hours configurable.
+		$this->hours_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS; // aka 3 days in hours.
+
 		$this->time_delta = new DateInterval( "PT{$this->hours_offset}H" );
+
 	}
 
 	public function set_date_types_to_schedule() {
