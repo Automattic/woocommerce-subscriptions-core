@@ -125,6 +125,7 @@ class WC_Subscriptions_Core_Plugin {
 		WC_Subscriptions_Renewal_Order::init();
 		WC_Subscriptions_Checkout::init();
 		WC_Subscriptions_Email::init();
+		WC_Subscriptions_Email_Notifications::init();
 		WC_Subscriptions_Addresses::init();
 		WC_Subscriptions_Change_Payment_Gateway::init();
 		$payment_gateways_handler::init();
@@ -160,6 +161,8 @@ class WC_Subscriptions_Core_Plugin {
 		// Initialise the scheduler.
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
+
+		$notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
 
 		// Initialise the cache.
 		$this->cache = WCS_Cache_Manager::get_instance();
