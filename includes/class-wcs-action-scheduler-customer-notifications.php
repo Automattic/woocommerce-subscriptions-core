@@ -10,10 +10,21 @@
  */
 class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
+	/**
+	 * @var int Time offset (in whole hours) between the notification and the action it's notifying about.
+	 */
 	protected int $hours_offset;
 
+	/**
+	 * @var DateInterval Time offset between the notification and the action it's notifying about.
+	 */
 	protected DateInterval $time_delta;
 
+	/**
+	 * @var array|string[] Notifications scheduled by this class.
+	 *
+	 * Just for reference.
+	 */
 	protected array $notification_actions = array(
 		'woocommerce_scheduled_subscription_customer_notification_trial_expiring',
 		'woocommerce_scheduled_subscription_customer_notification_expiration',
@@ -28,7 +39,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$this->hours_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS; // aka 3 days in hours.
 
 		$this->time_delta = new DateInterval( "PT{$this->hours_offset}H" );
-
 	}
 
 	public function set_date_types_to_schedule() {
@@ -43,13 +53,13 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		if (
 			! (
 				$subscription->has_status( 'active' )
-				|| $subscription->has_status( 'pending-cancelled' ) //TODO: do we want to create notifications when user cancelled it?
+				|| $subscription->has_status( 'pending-cancelled' ) //TODO: do we want to create notifications when user cancelled the subscription?
 			)
 		) {
 			return;
 		}
 
-		$action_args = array( 'subscription_id' => $subscription->get_id() );
+		$action_args = $this->get_action_args( $subscription );
 
 		$next_scheduled = as_next_scheduled_action( $action, $action_args );
 
@@ -74,7 +84,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 */
 	protected function sub_time_offset( $datetime ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
-		$dt->sub( new DateInterval( 'PT' . $this->hours_offset . 'H' ) );
+		$dt->sub( $this->time_delta );
 
 		return $dt->getTimestamp();
 	}
