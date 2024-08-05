@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package WooCommerce_Subscriptions/Classes/Emails
  * @extends WC_Email
  */
-class WCS_Email_Customer_Notification_Free_Trial_Expiry extends WC_Email {
+class WCS_Email_Customer_Notification_Free_Trial_Expiration extends WC_Email {
 
 	/**
 	 * Create an instance of the class.
@@ -35,7 +35,6 @@ class WCS_Email_Customer_Notification_Free_Trial_Expiry extends WC_Email {
 		$this->customer_email = true;
 
 		parent::__construct();
-
 	}
 
 	/**
@@ -128,5 +127,4 @@ class WCS_Email_Customer_Notification_Free_Trial_Expiry extends WC_Email {
 			$this->template_base
 		);
 	}
-
 }
