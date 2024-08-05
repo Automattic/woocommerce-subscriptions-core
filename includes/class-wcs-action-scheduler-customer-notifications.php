@@ -26,7 +26,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * Just for reference.
 	 */
 	protected array $notification_actions = array(
-		'woocommerce_scheduled_subscription_customer_notification_trial_expiring',
+		'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_manual_renewal',
 		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
@@ -95,7 +95,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		$this->schedule_notification(
 			$subscription,
-			'woocommerce_scheduled_subscription_customer_notification_trial_expiring',
+			'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
 			$timestamp
 		);
 	}
