@@ -536,9 +536,9 @@ class WC_Subscriptions_Admin {
 		// Make sure trial period is within allowable range
 		$subscription_ranges = wcs_get_subscription_ranges();
 
-		$max_trial_length = count( $subscription_ranges[ $_POST['_subscription_trial_period'] ] ) - 1;
+		$max_trial_length = ! empty( $_POST['_subscription_trial_period'] ) ? count( $subscription_ranges[ $_POST['_subscription_trial_period'] ] ) - 1 : 0;
 
-		$_POST['_subscription_trial_length'] = absint( $_POST['_subscription_trial_length'] );
+		$_POST['_subscription_trial_length'] = ! empty( $_POST['_subscription_trial_length'] ) ? absint( $_POST['_subscription_trial_length'] ) : 0;
 
 		if ( $_POST['_subscription_trial_length'] > $max_trial_length ) {
 			$_POST['_subscription_trial_length'] = $max_trial_length;
@@ -754,9 +754,9 @@ class WC_Subscriptions_Admin {
 
 		// Make sure trial period is within allowable range
 		$subscription_ranges = wcs_get_subscription_ranges();
-		$max_trial_length    = count( $subscription_ranges[ $_POST['variable_subscription_trial_period'][ $index ] ] ) - 1;
+		$max_trial_length    = ! empty( $_POST['variable_subscription_trial_period'][ $index ] ) ? count( $subscription_ranges[ $_POST['variable_subscription_trial_period'][ $index ] ] ) - 1 : 0;
 
-		$_POST['variable_subscription_trial_length'][ $index ] = absint( $_POST['variable_subscription_trial_length'][ $index ] );
+		$_POST['variable_subscription_trial_length'][ $index ] = ! empty( $_POST['variable_subscription_trial_length'][ $index ] ) ? absint( $_POST['variable_subscription_trial_length'][ $index ] ) : 0;
 
 		if ( $_POST['variable_subscription_trial_length'][ $index ] > $max_trial_length ) {
 			$_POST['variable_subscription_trial_length'][ $index ] = $max_trial_length;
