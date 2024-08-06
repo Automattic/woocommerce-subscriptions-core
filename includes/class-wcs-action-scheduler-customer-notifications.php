@@ -43,7 +43,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 	public function set_date_types_to_schedule() {
 		$date_types_to_schedule = wcs_get_subscription_date_types();
-		unset( $date_types_to_schedule['start'] );
+		unset(
+			$date_types_to_schedule['start'],
+			$date_types_to_schedule['cancelled'] // prevent scheduling end date when reactivating subscription.
+		);
 
 		//TODO: filter?
 		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
@@ -53,7 +56,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		if (
 			! (
 				$subscription->has_status( 'active' )
-				|| $subscription->has_status( 'pending-cancelled' ) //TODO: do we want to create notifications when user cancelled the subscription?
+				|| $subscription->has_status( 'pending-cancel' ) //TODO: do we want to create notifications when user cancelled the subscription?
 			)
 		) {
 			return;
