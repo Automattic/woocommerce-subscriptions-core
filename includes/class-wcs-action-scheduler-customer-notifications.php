@@ -235,10 +235,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
 	protected function get_action_args( $subscription ) {
-
 		$action_args = array( 'subscription_id' => $subscription->get_id() );
 
-		// TODO maybe filter
 		return $action_args;
 	}
 
