@@ -62,7 +62,10 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$this->object    = $subscription;
 		$this->recipient = $subscription->get_billing_email();
 
-		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
+		if ( ! $this->is_enabled()
+			|| ! $this->get_recipient()
+			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
+		) {
 			return;
 		}
 

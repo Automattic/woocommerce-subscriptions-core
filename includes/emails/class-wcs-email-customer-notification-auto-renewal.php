@@ -19,6 +19,8 @@ class WCS_Email_Customer_Notification_Auto_Renewal extends WCS_Email_Customer_No
 	 * Create an instance of the class.
 	 */
 	public function __construct() {
+		parent::__construct();
+
 		$this->plugin_id = 'woocommerce-subscriptions_';
 
 		$this->id          = 'customer_notification_auto_renewal';
@@ -34,10 +36,5 @@ class WCS_Email_Customer_Notification_Auto_Renewal extends WCS_Email_Customer_No
 		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		$this->customer_email = true;
-
-		parent::__construct();
-
-		// TODO: check if this interferes with the UX via option setting.
-		$this->enabled = WC_Subscriptions_Email_Notifications::should_send_notification();
 	}
 }

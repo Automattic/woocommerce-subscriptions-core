@@ -138,20 +138,20 @@ class WC_Subscriptions_Email_Notifications {
 	/**
 	 * Should the emails be sent out?
 	 *
-	 * @return string yes|no
+	 * @return bool
 	 */
 	public static function should_send_notification() {
-		$notification_enabled = 'yes';
+		$notification_enabled = true;
 
 		if ( WCS_Staging::is_duplicate_site() ) {
-			$notification_enabled = 'no';
+			$notification_enabled = false;
 		}
 
 		$allowed_env_types = array(
 			'production',
 		);
 		if ( ! in_array( wp_get_environment_type(), $allowed_env_types, true ) ) {
-			$notification_enabled = 'no';
+			$notification_enabled = false;
 		}
 
 		/**
