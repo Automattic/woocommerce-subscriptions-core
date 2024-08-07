@@ -227,7 +227,10 @@ class WCS_Core_Autoloader {
 			if ( false !== strpos( $class, 'handler' ) ) {
 				$path .= '/deprecation-handlers';
 			}
-		} elseif ( false !== strpos( $class, 'wcs_email' ) && 'wc_subscriptions_email' !== $class ) {
+		} elseif ( false !== strpos( $class, 'email' )
+					&& 'wc_subscriptions_email' !== $class
+					&& 'wc_subscriptions_email_notifications' !== $class
+		) {
 			$path .= '/emails';
 		} elseif ( false !== strpos( $class, 'gateway' ) && 'wc_subscriptions_change_payment_gateway' !== $class ) {
 			$path .= '/gateways';
