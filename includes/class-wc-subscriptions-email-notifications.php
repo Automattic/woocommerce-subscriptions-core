@@ -18,6 +18,7 @@ class WC_Subscriptions_Email_Notifications {
 
 		add_filter( 'woocommerce_order_actions', array( __CLASS__, 'add_notification_actions' ), 10, 1 );
 
+		// TODO this is a bit ugly...
 		add_action(
 			'woocommerce_order_action_wcs_customer_notification_free_trial_expiration',
 			function ( $order ) {
@@ -78,6 +79,8 @@ class WC_Subscriptions_Email_Notifications {
 			10,
 			1
 		);
+
+		add_filter( 'woocommerce_subscription_settings', array( __CLASS__, 'add_settings' ), 20 );
 	}
 
 	/**
@@ -178,7 +181,6 @@ class WC_Subscriptions_Email_Notifications {
 
 		if ( wcs_is_subscription( $theorder ) ) {
 			//TODO maybe send only for active, on hold subscriptions?
-			//
 			$actions['wcs_customer_notification_free_trial_expiration']   = esc_html__( 'Send Free Trial Expiration notification', 'woocommerce-subscriptions' );
 			$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send Subscription Expiration notification', 'woocommerce-subscriptions' );
 			$actions['wcs_customer_notification_manual_renewal']          = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
@@ -186,5 +188,46 @@ class WC_Subscriptions_Email_Notifications {
 		}
 
 		return $actions;
+	}
+
+	/**
+	 * Adds the subscription notification setting.
+	 *
+	 * @since 8.0.0
+	 *
+	 * @param  array $settings Subscriptions settings.
+	 * @return array Subscriptions settings.
+	 */
+	public static function add_settings( $settings ) {
+		$notification_settings = array(
+			array(
+				'name' => __( 'Customer Notifications', 'woocommerce-subscriptions' ),
+				'type' => 'title',
+				'id'   => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
+				/* translators: Link to WC Settings > Email. */
+				'desc' => sprintf( __( 'To enable and disable notification, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
+			),
+			array(
+				'name'        => __( 'Hour Offset', 'woocommerce-subscriptions' ),
+				'desc'        => __( 'How many hours in before the event should the notification be sent.', 'woocommerce-subscriptions' ),
+				'tip'         => '',
+				'id'          => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications_offset',
+				'desc_tip'    => true,
+				'type'        => 'relative_date_selector',
+				'placeholder' => __( 'N/A', 'woocommerce-subscriptions' ),
+				'default'     => array(
+					'number' => '3',
+					'unit'   => 'days',
+				),
+				'autoload'    => false,
+			),
+			array(
+				'type' => 'sectionend',
+				'id'   => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
+			),
+		);
+
+		WC_Subscriptions_Admin::insert_setting_after( $settings, WC_Subscriptions_Admin::$option_prefix . '_miscellaneous', $notification_settings, 'multiple_settings', 'sectionend' );
+		return $settings;
 	}
 }
