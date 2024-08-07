@@ -16,11 +16,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	protected int $hours_offset;
 
 	/**
-	 * @var DateInterval Time offset between the notification and the action it's notifying about.
-	 */
-	protected DateInterval $time_delta;
-
-	/**
 	 * @var array|string[] Notifications scheduled by this class.
 	 *
 	 * Just for reference.
@@ -32,13 +27,26 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
 	);
 
+	public function get_hours_offset() {
+		/**
+		 * Offset between a subscription event and related notification.
+		 *
+		 * @since 8.0.0
+		 *
+		 * @param int $hours_offset
+		 */
+		return apply_filters( 'woocommerce_subscriptions_customer_notification_hours_offset', $this->hours_offset );
+	}
+
+	public function set_hours_offset( $hours_offset ) {
+		$this->hours_offset = $hours_offset;
+	}
+
 	public function __construct() {
 		parent::__construct();
 
 		//TODO: make number of hours configurable.
 		$this->hours_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS; // aka 3 days in hours.
-
-		$this->time_delta = new DateInterval( "PT{$this->hours_offset}H" );
 	}
 
 	public function set_date_types_to_schedule() {
@@ -87,7 +95,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 */
 	protected function sub_time_offset( $datetime ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
-		$dt->sub( $this->time_delta );
+		$dt->sub( new DateInterval( "PT{$this->get_hours_offset()}H" ) );
 
 		return $dt->getTimestamp();
 	}
