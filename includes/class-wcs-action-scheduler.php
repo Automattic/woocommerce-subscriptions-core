@@ -18,7 +18,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	/**
 	 * The priority of the subscription-related scheduled action.
 	 */
-	const ACTION_PRIORITY = 5;
+	const ACTION_PRIORITY = 1;
 
 	/**
 	 * An internal cache of action hooks and corresponding date types.
@@ -249,7 +249,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 	/**
 	 * Schedule an subscription-related action with the Action Scheduler.
 	 *
-	 * Subscription events are scheduled with a priority of 5 (see self::ACTION_PRIORITY) and the
+	 * Subscription events are scheduled with a priority of 1 (see self::ACTION_PRIORITY) and the
 	 * group 'wc_subscription_scheduled_event' (see self::ACTION_GROUP).
 	 *
 	 * @param int    $timestamp Unix timestamp of when the action should run.
