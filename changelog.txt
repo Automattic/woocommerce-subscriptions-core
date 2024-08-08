@@ -2,6 +2,7 @@
 
 = 7.4.0 - 2024-xx-xx =
 * Update - Schedule subscription-related events with a priority of 1 to allow for earlier execution within the Action Scheduler.
+* Fix - Ensure admin notices are displayed after performing bulk actions on subscriptions when HPOS is enabled.
 
 = 7.3.0 - 2024-07-16 =
 * Fix - Label improvements on subscription and order page templates.
