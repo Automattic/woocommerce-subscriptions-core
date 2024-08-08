@@ -27,7 +27,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
 	);
 
-	public function get_hours_offset() {
+	public function get_hours_offset( $subscription ) {
 		/**
 		 * Offset between a subscription event and related notification.
 		 *
@@ -35,7 +35,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		 *
 		 * @param int $hours_offset
 		 */
-		return apply_filters( 'woocommerce_subscriptions_customer_notification_hours_offset', $this->hours_offset );
+		return apply_filters( 'woocommerce_subscriptions_customer_notification_hours_offset', $this->hours_offset, $subscription );
 	}
 
 	public function set_hours_offset( $hours_offset ) {
@@ -124,19 +124,23 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 	//TODO: check timezones
 	/*
+	 * Subtract time offset from given datetime based on the settings and subscription properties.
+	 *
 	 * @param string $datetime
+	 * @param WC_Subscription $subscription
+	 *
 	 * @return int
 	 */
-	protected function sub_time_offset( $datetime ) {
+	protected function sub_time_offset( $datetime, $subscription ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
-		$dt->sub( new DateInterval( "PT{$this->get_hours_offset()}H" ) );
+		$dt->sub( new DateInterval( "PT{$this->get_hours_offset( $subscription )}H" ) );
 
 		return $dt->getTimestamp();
 	}
 
 	public function schedule_trial_ending_notification( $subscription ) {
 		$trial_end = $subscription->get_date( 'trial_end' );
-		$timestamp = $this->sub_time_offset( $trial_end );
+		$timestamp = $this->sub_time_offset( $trial_end, $subscription );
 
 		$this->schedule_notification(
 			$subscription,
@@ -147,7 +151,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 	public function schedule_expiry_notification( $subscription ) {
 		$subscription_end = $subscription->get_date( 'end' );
-		$timestamp        = $this->sub_time_offset( $subscription_end );
+		$timestamp        = $this->sub_time_offset( $subscription_end, $subscription );
 
 		$this->schedule_notification(
 			$subscription,
@@ -164,7 +168,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 
 		$next_payment = $subscription->get_date( 'next_payment' );
-		$timestamp    = $this->sub_time_offset( $next_payment );
+		$timestamp    = $this->sub_time_offset( $next_payment, $subscription );
 
 		// Can manual vs automatic payment change until it runs?
 		if ( $subscription->is_manual() ) {
