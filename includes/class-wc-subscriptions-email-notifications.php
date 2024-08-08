@@ -10,6 +10,9 @@
  * @category   Class
  */
 class WC_Subscriptions_Email_Notifications {
+
+	public static string $offset_setting_string = '_customer_notifications_offset';
+
 	public static function init() {
 
 		add_action( 'woocommerce_email_classes', __CLASS__ . '::add_emails', 10, 1 );
@@ -205,13 +208,13 @@ class WC_Subscriptions_Email_Notifications {
 				'type' => 'title',
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
 				/* translators: Link to WC Settings > Email. */
-				'desc' => sprintf( __( 'To enable and disable notification, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
+				'desc' => sprintf( __( 'To enable and disable individual notifications, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
 			),
 			array(
-				'name'        => __( 'Hour Offset', 'woocommerce-subscriptions' ),
-				'desc'        => __( 'How many hours in before the event should the notification be sent.', 'woocommerce-subscriptions' ),
+				'name'        => __( 'Time Offset', 'woocommerce-subscriptions' ),
+				'desc'        => __( 'How long before the event should the notification be sent.', 'woocommerce-subscriptions' ),
 				'tip'         => '',
-				'id'          => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications_offset',
+				'id'          => WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string,
 				'desc_tip'    => true,
 				'type'        => 'relative_date_selector',
 				'placeholder' => __( 'N/A', 'woocommerce-subscriptions' ),

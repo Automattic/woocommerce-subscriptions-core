@@ -45,8 +45,42 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	public function __construct() {
 		parent::__construct();
 
-		//TODO: make number of hours configurable.
-		$this->hours_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS; // aka 3 days in hours.
+		$setting_option     = get_option(
+			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
+			array(
+				'number' => 3,
+				'unit'   => 'days',
+			)
+		);
+		$this->hours_offset = self::convert_offset_to_hours( $setting_option );
+	}
+
+	/**
+	 * Calculate time offset in hours from the settings array.
+	 *
+	 * @param array $offset Format: array( 'number' => 3, 'unit' => 'days' )
+	 *
+	 * @return float|int
+	 */
+	protected static function convert_offset_to_hours( $offset ) {
+		$default_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS;
+
+		if ( ! isset( $offset['unit'] ) || ! isset( $offset['number'] ) ) {
+			return $default_offset;
+		}
+
+		switch ( $offset['unit'] ) {
+			case 'days':
+				return ( $offset['number'] * DAY_IN_SECONDS / HOUR_IN_SECONDS );
+			case 'weeks':
+				return ( $offset['number'] * WEEK_IN_SECONDS / HOUR_IN_SECONDS );
+			case 'months':
+				return ( $offset['number'] * MONTH_IN_SECONDS / HOUR_IN_SECONDS );
+			case 'years':
+				return ( $offset['number'] * YEAR_IN_SECONDS / HOUR_IN_SECONDS );
+			default:
+				return $default_offset;
+		}
 	}
 
 	public function set_date_types_to_schedule() {
