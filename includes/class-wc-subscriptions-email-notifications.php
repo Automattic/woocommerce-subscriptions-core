@@ -173,21 +173,42 @@ class WC_Subscriptions_Email_Notifications {
 	}
 
 	/**
-	 * Adds actions to the admin edit subscriptions page, if the subscription hasn't ended and the payment method supports them.
+	 * Adds actions to the admin edit subscriptions page.
 	 *
 	 * @param array $actions An array of available actions
 	 * @return array An array of updated actions
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function add_notification_actions( $actions ) {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
-			//TODO maybe send only for active, on hold subscriptions?
-			$actions['wcs_customer_notification_free_trial_expiration']   = esc_html__( 'Send Free Trial Expiration notification', 'woocommerce-subscriptions' );
-			$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send Subscription Expiration notification', 'woocommerce-subscriptions' );
-			$actions['wcs_customer_notification_manual_renewal']          = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
-			$actions['wcs_customer_notification_auto_renewal']            = esc_html__( 'Send Automatic Renewal notification', 'woocommerce-subscriptions' );
+			$subscription = $theorder;
+			//TODO: confirm if these statuses make sense.
+			$allowed_statuses = array(
+				'active',
+				'on-hold',
+				'pending-cancellation',
+			);
+
+			if ( ! in_array( $subscription->get_status(), $allowed_statuses, true ) ) {
+				return $actions;
+			}
+
+			if ( $subscription->get_date( 'trial_end' ) ) {
+				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send Free Trial Expiration notification', 'woocommerce-subscriptions' );
+			}
+
+			if ( $subscription->get_date( 'end' ) ) {
+				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send Subscription Expiration notification', 'woocommerce-subscriptions' );
+			}
+
+			if ( $subscription->get_date( 'next_payment' ) ) {
+				if ( $subscription->is_manual() ) {
+					$actions['wcs_customer_notification_manual_renewal'] = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
+				} else {
+					$actions['wcs_customer_notification_auto_renewal'] = esc_html__( 'Send Automatic Renewal notification', 'woocommerce-subscriptions' );
+				}
+			}
 		}
 
 		return $actions;
