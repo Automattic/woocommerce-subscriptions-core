@@ -27,6 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							$relationship,
 							'</br>'
 							)
+						)
 				); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				?>
 			</a>
