@@ -26,8 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 							__( 'This %1$s couldn\'t be loaded from the database. %1$s Click to learn more.', 'woocommerce-subscriptions' ),
 							$relationship,
 							'</br>'
-							)
 						)
+					)
 				); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				?>
 			</a>
