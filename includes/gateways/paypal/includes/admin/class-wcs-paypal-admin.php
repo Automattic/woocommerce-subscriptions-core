@@ -322,7 +322,8 @@ class WCS_PayPal_Admin {
 			$setting['description'] = sprintf(
 				/* translators: Placeholders are the opening and closing link tags.*/
 				__( "Before enabling PayPal Standard for Subscriptions, please note, when using PayPal Standard, customers are locked into using PayPal Standard for the life of their subscription, and PayPal Standard has a number of limitations. Please read the guide on %1\$swhy we don't recommend PayPal Standard%2\$s for Subscriptions before choosing to enable this option.", 'woocommerce-subscriptions' ),
-				'<a href="https://woocommerce.com/document/limitations-of-paypal-standard/">', '</a>'
+				'<a href="https://woocommerce.com/document/limitations-of-paypal-standard/">',
+				'</a>'
 			);
 		}
 
