@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order_id ) );
 		?>
 		<div class="wcs-unknown-order-info-wrapper">
-			<a href="https://docs.woocommerce.com/document/subscriptions/orders/#section-8">
+			<a href="https://woocommerce.com/document/subscriptions/orders/#why-are-some-orders-in-the-related-orders-table-not-linking-to-the-order">
 				<?php
 				// Translators: The %1 placeholder is the translated order relationship ("Parent Order"), %2 placeholder is a <br> HTML tag.
 				echo wcs_help_tip( sprintf( __( 'This %1$s couldn\'t be loaded from the database. %1$s Click to learn more.', 'woocommerce-subscriptions' ), $relationship, '</br>' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
