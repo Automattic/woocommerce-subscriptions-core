@@ -27,6 +27,19 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
 	);
 
+	public function __construct() {
+		parent::__construct();
+
+		$setting_option     = get_option(
+			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
+			array(
+				'number' => 3,
+				'unit'   => 'days',
+			)
+		);
+		$this->hours_offset = self::convert_offset_to_hours( $setting_option );
+	}
+
 	public function get_hours_offset( $subscription ) {
 		/**
 		 * Offset between a subscription event and related notification.
@@ -40,19 +53,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 	public function set_hours_offset( $hours_offset ) {
 		$this->hours_offset = $hours_offset;
-	}
-
-	public function __construct() {
-		parent::__construct();
-
-		$setting_option     = get_option(
-			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-			array(
-				'number' => 3,
-				'unit'   => 'days',
-			)
-		);
-		$this->hours_offset = self::convert_offset_to_hours( $setting_option );
 	}
 
 	/**
@@ -225,8 +225,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * When a subscription's status is updated, maybe schedule an event
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
-	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
-	 * @param string $datetime A MySQL formatted date/time string in the GMT/UTC timezone.
+	 * @param string $new_status New subscription status
+	 * @param string $old_status Previous status
 	 */
 	public function update_status( $subscription, $new_status, $old_status ) {
 
