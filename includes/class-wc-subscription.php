@@ -2104,7 +2104,7 @@ class WC_Subscription extends WC_Order {
 				$related_orders,
 				function( $order_id ) use ( $exclude_statuses ) {
 					$order = wc_get_order( $order_id );
-					return ! in_array( $order->get_status(), $exclude_statuses, true );
+					return $order && ! $order->has_status( $exclude_statuses );
 				}
 			);
 		}
