@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.3.0 - 2024-xx-xx =
-* Fix - Removing the new "wc-checkout-draft" status from the method used to retrieve related orders.
+* Dev - Introduce new parameter to WC_Subscription::get_last_order() to enable filtering out orders with specific statuses.
 * Fix - Fixed an issue with subscriptions containing multiple renewal orders to mark a random item as processing, instead of the last order.
 
 = 7.2.0 - 2024-06-13 =
