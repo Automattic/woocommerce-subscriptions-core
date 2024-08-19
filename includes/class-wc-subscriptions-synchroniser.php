@@ -686,10 +686,9 @@ class WC_Subscriptions_Synchroniser {
 					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
 				}
 			}
-			$number_of_months = WC_Subscriptions_Product::get_interval( $product );
 
 			// when a certain number of months are added and the first payment date moves to next year
-			if ( $month_number < gmdate( 'm', $from_timestamp ) || $number_of_months >= 12 ) {
+			if ( $month_number < gmdate( 'm', $from_timestamp ) || $interval >= 12 ) {
 				$year       = gmdate( 'Y', $from_timestamp );
 				$year++;
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} {$year}", $from_timestamp );
