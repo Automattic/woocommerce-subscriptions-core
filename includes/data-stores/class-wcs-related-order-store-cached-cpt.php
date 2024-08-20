@@ -283,19 +283,17 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			}
 		}
 
-		// On non-HPOS sites, make sure the subscription's modified date is updated when a related order cache is updated.
-		// On HPOS sites this isn't necessary because calling update_meta() or add_meta() will update the modified date.
-		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$subscription->set_date_modified( time() );
-			$subscription->save();
-		}
-
 		$subscription_data_store = WC_Data_Store::load( 'subscription' );
 		$current_metadata        = $this->get_related_order_metadata( $subscription, $relation_type );
 		$new_metadata            = array(
 			'key'   => $this->get_cache_meta_key( $relation_type ),
 			'value' => $related_order_ids,
 		);
+
+		// Update the subscription's modified date if the related order cache has changed. Only necessary on non-HPOS environments.
+		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			$this->update_modified_date_for_related_order_cache( $subscription, $related_order_ids, $current_metadata );
+		}
 
 		// Check if HPOS and data syncing is enabled then manually backfill the related orders cache values to WP Posts table.
 		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
@@ -660,5 +658,39 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		}
 
 		return false;
+	}
+
+	/**
+	 * Updates the subscription's modified date if the related order cache has changed.
+	 *
+	 * @param WC_Subscription $subscription      The subscription to update the modified date for.
+	 * @param array           $related_order_ids The related order IDs to compare with the current related order IDs.
+	 * @param object          $current_metadata  The current related order cache metadata.
+	 */
+	protected function update_modified_date_for_related_order_cache( $subscription, $related_order_ids, $current_metadata ) {
+		$subscription_modified = $subscription->get_date_modified( 'edit' );
+
+		// If the subscription's modified date is already up-to-date, don't update it again.
+		if ( $subscription_modified && $subscription_modified->getTimestamp() === time() ) {
+			return;
+		}
+
+		$related_orders_have_changed = false;
+
+		// If the new related order IDs are different from the current ones, update the cache.
+		if ( $current_metadata ) {
+			$current_related_order_ids = maybe_unserialize( $current_metadata->meta_value );
+
+			if ( $current_related_order_ids !== $related_order_ids ) {
+				$related_orders_have_changed = true;
+			}
+		} elseif ( ! empty( $related_order_ids ) ) {
+			$related_orders_have_changed = true;
+		}
+
+		if ( $related_orders_have_changed ) {
+			$subscription->set_date_modified( time() );
+			$subscription->save();
+		}
 	}
 }
