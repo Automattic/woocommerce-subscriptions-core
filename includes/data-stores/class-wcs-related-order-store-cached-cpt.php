@@ -671,7 +671,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$subscription_modified = $subscription->get_date_modified( 'edit' );
 
 		// If the subscription's modified date is already up-to-date, don't update it again.
-		if ( $subscription_modified && $subscription_modified->getTimestamp() === gmdate( 'U' ) ) {
+		if ( $subscription_modified && (int) $subscription_modified->getTimestamp() === (int) gmdate( 'U' ) ) {
 			return;
 		}
 
