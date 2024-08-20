@@ -675,8 +675,6 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			return;
 		}
 
-		$related_orders_have_changed = false;
-
 		// If the new related order IDs are different from the current ones, update the cache.
 		$current_related_order_ids = $current_metadata ? maybe_unserialize( $current_metadata->meta_value ) : null;
 
