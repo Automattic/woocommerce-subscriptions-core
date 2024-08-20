@@ -671,25 +671,17 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$subscription_modified = $subscription->get_date_modified( 'edit' );
 
 		// If the subscription's modified date is already up-to-date, don't update it again.
-		if ( $subscription_modified && $subscription_modified->getTimestamp() === time() ) {
+		if ( $subscription_modified && $subscription_modified->getTimestamp() === gmdate( 'U' ) ) {
 			return;
 		}
 
 		$related_orders_have_changed = false;
 
 		// If the new related order IDs are different from the current ones, update the cache.
-		if ( $current_metadata ) {
-			$current_related_order_ids = maybe_unserialize( $current_metadata->meta_value );
+		$current_related_order_ids = $current_metadata ? maybe_unserialize( $current_metadata->meta_value ) : null;
 
-			if ( $current_related_order_ids !== $related_order_ids ) {
-				$related_orders_have_changed = true;
-			}
-		} elseif ( ! empty( $related_order_ids ) ) {
-			$related_orders_have_changed = true;
-		}
-
-		if ( $related_orders_have_changed ) {
-			$subscription->set_date_modified( time() );
+		if ( $current_related_order_ids !== $related_order_ids ) {
+			$subscription->set_date_modified( gmdate( 'U' ) );
 			$subscription->save();
 		}
 	}
