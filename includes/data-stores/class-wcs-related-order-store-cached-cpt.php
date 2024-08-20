@@ -675,9 +675,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			return;
 		}
 
-		// If the new related order IDs are different from the current ones, update the cache.
-		$current_related_order_ids = $current_metadata ? maybe_unserialize( $current_metadata->meta_value ) : null;
+		$current_related_order_ids = $current_metadata ? maybe_unserialize( $current_metadata->meta_value ) : [];
 
+		// If the new related order IDs are different from the current ones, update the subscription's modified date.
 		if ( $current_related_order_ids !== $related_order_ids ) {
 			$subscription->set_date_modified( gmdate( 'U' ) );
 			$subscription->save();
