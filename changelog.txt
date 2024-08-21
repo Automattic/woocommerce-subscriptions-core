@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.4.1 - 2024-xx-xx =
+* Fix - Add a year to the next renewal date billing interval is 12 months or more for a synced subscription.
+
 = 7.4.0 - 2024-08-16 =
 * Dev - Introduce new parameter to WC_Subscription::get_last_order() to enable filtering out orders with specific statuses.
 * Update - Schedule subscription-related events with a priority of 1 to allow for earlier execution within the Action Scheduler.
