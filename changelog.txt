@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.4.1 - 2024-xx-xx =
+= 7.4.1 - 2024-08-21 =
 * Fix - Add a year to the next renewal date billing interval is 12 months or more for a synced subscription.
 
 = 7.4.0 - 2024-08-16 =
