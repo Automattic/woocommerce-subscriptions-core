@@ -315,7 +315,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		self::$cache_store->add_relation( $related_order, $subscription, 'renewal' );
 
 		$this->assertNotEquals( $original_modified_date->getTimestamp(), $subscription->get_date_modified()->getTimestamp() );
-		$this->assertEqualsWithDelta( gmdate( 'U' ), $subscription->get_date_modified()->getTimestamp(), 1 );
+		$this->assertEqualsWithDelta( time(), $subscription->get_date_modified()->getTimestamp(), 1 );
 	}
 
 	/**

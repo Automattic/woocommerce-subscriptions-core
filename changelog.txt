@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.5.0 - 2024-09-13 =
+= 7.5.0 - 2024-xx-xx =
 * Fix - Ensure a subscription's modified date is updated when its related order cache is updated on non-HPOS sites.
 
 = 7.4.1 - 2024-08-21 =
