@@ -313,6 +313,23 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 		$original_modified_date = $subscription->get_date_modified();
 
 		self::$cache_store->add_relation( $related_order, $subscription, 'renewal' );
+		$this->assertNotEquals( $original_modified_date->getTimestamp(), $subscription->get_date_modified()->getTimestamp() );
+		$this->assertEqualsWithDelta( time(), $subscription->get_date_modified()->getTimestamp(), 1 );
+	}
+
+	/**
+	 * Test that when a related order cache is emptied, the subscription's modified date is updated.
+	 */
+	public function test_modified_date_is_updated_when_emptied() {
+		$subscription  = WCS_Helper_Subscription::create_subscription();
+		$related_order = WCS_Helper_Subscription::create_order();
+
+		self::$cache_store->add_relation( $related_order, $subscription, 'renewal' );
+
+		$subscription->set_date_modified( strtotime( '- 3 days' ) );
+		$original_modified_date = $subscription->get_date_modified();
+
+		self::$cache_store->set_empty_renewal_order_cache( $subscription );
 
 		$this->assertNotEquals( $original_modified_date->getTimestamp(), $subscription->get_date_modified()->getTimestamp() );
 		$this->assertEqualsWithDelta( time(), $subscription->get_date_modified()->getTimestamp(), 1 );
