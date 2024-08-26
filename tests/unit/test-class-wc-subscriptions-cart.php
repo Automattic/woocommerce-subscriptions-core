@@ -185,4 +185,107 @@ class WC_Subscriptions_Cart_Test extends WP_UnitTestCase {
 		// Nest the calculate_totals call by calling it again.
 		WC()->cart->calculate_totals();
 	}
+
+	/**
+	 * Test that the calculation type is set when set_recurring_cart_key_before_calculate_totals() is called.
+	 */
+	public function test_set_recurring_cart_key_before_calculate_totals() {
+		$cart = $this->getMockBuilder( 'WC_Cart' )
+				->disableOriginalConstructor()
+				->setMethods( null ) // This makes the mock retain normal PHP object behavior
+				->getMock();
+
+		/**
+		 * Recurring cart.
+		 */
+		$cart->recurring_cart_key = 'test_key';
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+
+		$this->assertEquals( 'recurring_total', WC_Subscriptions_Cart::get_calculation_type() );
+
+		/**
+		 * Non-recurring cart.
+		 */
+		$cart->recurring_cart_key = '';
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+
+		$this->assertEquals( 'none', WC_Subscriptions_Cart::get_calculation_type() );
+
+		/**
+		 * Non-recurring cart.
+		 */
+		unset( $cart->recurring_cart_key );
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+
+		$this->assertEquals( 'none', WC_Subscriptions_Cart::get_calculation_type() );
+
+		unset( $cart );
+	}
+
+	/**
+	 * Test that the calculation type is set when set_recurring_cart_key_before_calculate_totals() and then is called.
+	 */
+	public function test_update_recurring_cart_key_after_calculate_totals_empty_stack() {
+		$cart = $this->getMockBuilder( 'WC_Cart' )
+				->disableOriginalConstructor()
+				->setMethods( null ) // This makes the mock retain normal PHP object behavior
+				->getMock();
+
+		/**
+		 * Empty stack.
+		 */
+		$cart->recurring_cart_key = 'test_key';
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+		WC_Subscriptions_Cart::update_recurring_cart_key_after_calculate_totals( $cart );
+
+		// Check that after a recurring cart has been been set (started) and then finished, the stack is empty and returns 'none'.
+		$this->assertEquals( 'none', WC_Subscriptions_Cart::get_calculation_type() );
+
+		unset( $cart );
+	}
+
+	/**
+	 * Test that the calculation type is set when update_recurring_cart_key_after_calculate_totals() is called and there' a recurring cart in the stack.
+	 */
+	public function test_update_recurring_cart_key_after_calculate_totals_with_recurring_cart() {
+		$cart = $this->getMockBuilder( 'WC_Cart' )
+				->disableOriginalConstructor()
+				->setMethods( null ) // This makes the mock retain normal PHP object behavior
+				->getMock();
+
+		/**
+		 * Recurring cart left in stack.
+		 */
+		$cart->recurring_cart_key = 'test_key';
+
+		// First, populate the stack with a cart with a recurring key.
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+
+		// Now, populate the stack with a cart without a recurring key.
+		$cart->recurring_cart_key = '';
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+		WC_Subscriptions_Cart::update_recurring_cart_key_after_calculate_totals( $cart );
+
+		$this->assertEquals( 'recurring_total', WC_Subscriptions_Cart::get_calculation_type() );
+	}
+
+	/**
+	 * Test that the calculation type is set when update_recurring_cart_key_after_calculate_totals() is called and there' a recurring cart in the stack.
+	 */
+	public function test_update_recurring_cart_key_after_calculate_totals_with_initial_cart() {
+		$cart = $this->getMockBuilder( 'WC_Cart' )
+				->disableOriginalConstructor()
+				->setMethods( null ) // This makes the mock retain normal PHP object behavior
+				->getMock();
+
+		// First, populate the stack with a cart without a recurring key.
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+
+		// Now, populate the stack with a cart with a recurring key.
+		$cart->recurring_cart_key = 'test_recurring_cart_key';
+		WC_Subscriptions_Cart::set_recurring_cart_key_before_calculate_totals( $cart );
+		WC_Subscriptions_Cart::update_recurring_cart_key_after_calculate_totals( $cart );
+
+		$this->assertEquals( 'none', WC_Subscriptions_Cart::get_calculation_type() );
+	}
 }
