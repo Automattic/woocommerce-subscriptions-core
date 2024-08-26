@@ -63,7 +63,6 @@ class WC_Subscriptions_Cart {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function init() {
-
 		// Make sure WC calculates total on sign up fee + price per period, and keep a record of the price per period
 		add_action( 'woocommerce_before_calculate_totals', __CLASS__ . '::add_calculation_price_filter', 10 );
 		add_action( 'woocommerce_calculate_totals', __CLASS__ . '::remove_calculation_price_filter', 10 );
