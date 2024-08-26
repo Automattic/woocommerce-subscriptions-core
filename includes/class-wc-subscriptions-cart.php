@@ -293,9 +293,14 @@ class WC_Subscriptions_Cart {
 			return $total;
 		}
 
+		// We're in the middle of a recalculation, let it run.
+		if ( 'none' !== self::$calculation_type ) {
+			return $total;
+		}
+
 		/**
-		 * If we're already calculating recurring totals, skip this calculation to avoid infinite loops.
-		 * We use whether there's a recurring cart key in the calculation stack to determine if we're in the middle calculating recurring totals.
+		 * If we're in the middle of calculating recurring totals, skip this calculation to avoid infinite loops.
+		 * We use whether there's a recurring cart key in the calculation stack (ie has started but hasn't finished) to determine if we're in the middle calculating recurring totals.
 		 */
 		if ( ! empty( array_diff( self::$recurring_totals_calculation_stack, [ 'none' ] ) ) ) {
 			return $total;
