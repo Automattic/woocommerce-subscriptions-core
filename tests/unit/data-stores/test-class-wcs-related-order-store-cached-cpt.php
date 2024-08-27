@@ -303,6 +303,55 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 	}
 
 	/**
+	 * Test that when a related order is added, the subscription's modified date is updated.
+	 */
+	public function test_modified_date_is_updated() {
+		$subscription  = WCS_Helper_Subscription::create_subscription();
+		$related_order = WCS_Helper_Subscription::create_order();
+
+		$subscription->set_date_modified( strtotime( '- 2 days' ) );
+		$original_modified_date = $subscription->get_date_modified();
+
+		self::$cache_store->add_relation( $related_order, $subscription, 'renewal' );
+		$this->assertNotEquals( $original_modified_date->getTimestamp(), $subscription->get_date_modified()->getTimestamp() );
+		$this->assertEqualsWithDelta( time(), $subscription->get_date_modified()->getTimestamp(), 1 );
+	}
+
+	/**
+	 * Test that when a related order cache is emptied, the subscription's modified date is updated.
+	 */
+	public function test_modified_date_is_updated_when_emptied() {
+		$subscription  = WCS_Helper_Subscription::create_subscription();
+		$related_order = WCS_Helper_Subscription::create_order();
+
+		self::$cache_store->add_relation( $related_order, $subscription, 'renewal' );
+
+		$subscription->set_date_modified( strtotime( '- 3 days' ) );
+		$original_modified_date = $subscription->get_date_modified();
+
+		self::$cache_store->set_empty_renewal_order_cache( $subscription );
+
+		$this->assertNotEquals( $original_modified_date->getTimestamp(), $subscription->get_date_modified()->getTimestamp() );
+		$this->assertEqualsWithDelta( time(), $subscription->get_date_modified()->getTimestamp(), 1 );
+	}
+
+	/**
+	 * Test that updating the related order cache to the same value (empty in this case), does not update the subscription's modified date.
+	 */
+	public function test_modified_date_is_not_updated() {
+		$subscription = WCS_Helper_Subscription::create_subscription();
+
+		self::$cache_store->set_empty_renewal_order_cache( $subscription );
+
+		$subscription->set_date_modified( strtotime( '- 2 days' ) );
+		$original_modified_date = $subscription->get_date_modified();
+
+		self::$cache_store->set_empty_renewal_order_cache( $subscription );
+
+		$this->assertEquals( $original_modified_date->getTimestamp(), $subscription->get_date_modified()->getTimestamp() );
+	}
+
+	/**
 	 * Provide a method to set the relation directly to avoid a breaking change in WCS_Related_Order_Store::add_relation()
 	 * breaking tests that aren't primarily designed to test WCS_Related_Order_Store::add_relation().
 	 *
