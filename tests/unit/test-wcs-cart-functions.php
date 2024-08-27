@@ -9,7 +9,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 	*/
 	public function provider_mock_cart() {
 		return array(
-			array( $this->getMockBuilder( 'WC_Cart' )->setMethods( array( 'get_cart', 'get_item_data' ) )->getMock() ),
+			array( $this->getMockBuilder( 'WC_Cart' )->setMethods( array( 'get_cart', 'get_item_data' ) )->disableOriginalConstructor()->getMock() ),
 		);
 	}
 
@@ -29,7 +29,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 		$mock_subscription_product->expects( $this->any() )->method( 'is_type' )->will( $this->returnValueMap( $product_type_map ) );
 
 		return array(
-			array( $this->getMockBuilder( 'WC_Cart' )->getMock(), $mock_subscription_product ),
+			array( $this->getMockBuilder( 'WC_Cart' )->disableOriginalConstructor()->getMock(), $mock_subscription_product ),
 		);
 	}
 
@@ -82,7 +82,7 @@ class WCS_Cart_Functions_Test extends WP_UnitTestCase {
 	*/
 	public function provider_test_wcs_cart_price_string() {
 
-		$cart = $this->getMockBuilder( 'WC_Cart' )->setMethods( array( 'get_cart', 'get_item_data' ) )->getMock();
+		$cart = $this->getMockBuilder( 'WC_Cart' )->setMethods( array( 'get_cart', 'get_item_data' ) )->disableOriginalConstructor()->getMock();
 		return array(
 			array( $cart, 'month', 1, 11, 10, '10.00', '/ month for 11 months' ),
 			array( $cart, 'month', 1, 12, 10, '10.00', '/ month for 12 months' ),
