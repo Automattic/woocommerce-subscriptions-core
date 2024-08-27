@@ -89,6 +89,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 				continue;
 			}
 
+			$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
+
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'active' );
 
