@@ -1,6 +1,13 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.4.0 - 2024-xx-xx =
+= 7.4.2 - 2024-08-27 =
+* Fix - Resolved an issue where simple product prices were incorrectly set to $0 when purchasing subscriptions and simple products with a coupon in WC 9.2.
+
+= 7.4.1 - 2024-08-21 =
+* Fix - Add a year to the next renewal date billing interval is 12 months or more for a synced subscription.
+
+= 7.4.0 - 2024-08-16 =
+* Dev - Introduce new parameter to WC_Subscription::get_last_order() to enable filtering out orders with specific statuses.
 * Update - Schedule subscription-related events with a priority of 1 to allow for earlier execution within the Action Scheduler.
 * Fix - Ensure admin notices are displayed after performing bulk actions on subscriptions when HPOS is enabled.
 

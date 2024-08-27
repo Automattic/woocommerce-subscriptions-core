@@ -2060,6 +2060,11 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $order_id, $subscription->get_last_order() );
 		$this->assertEquals( wc_get_order( $order_id ), $subscription->get_last_order( 'all' ) );
 
+		// Test for the status filtering parameter
+		$order->update_status( 'failed' );
+		$order->save();
+		$this->assertFalse( $subscription->get_last_order( 'ids', array( 'parent', 'renewal' ), array( 'failed' ) ) );
+
 		$renewal    = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_id = wcs_get_objects_property( $renewal, 'id' );
 		$this->assertEquals( $renewal_id, $subscription->get_last_order( 'ids' ) );
