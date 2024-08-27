@@ -1186,7 +1186,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 			if ( in_array( $status, $expected_to_pass, true ) ) {
 
-				if ( 'pending-cancel' === $status ) {
+				if ( 'pending-cancel' === $status || 'on-hold' === $status ) {
 					$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ) ] );
 				}
 
