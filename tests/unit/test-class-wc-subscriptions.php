@@ -143,10 +143,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @return array
 	 */
 	public function provide_test_can_be_updated_to_active_with_different_end_dates() {
-		return array(
-			'pending-cancel',
-			'on-hold',
-		);
+		return [
+			[ 'pending-cancel' ],
+			[ 'on-hold' ],
+		];
 	}
 
 	/**
