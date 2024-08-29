@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.5.0 - 2024-xx-xx =
+* Fix - Blocks the reactivation of a subscription when the end date is in the past.
 * Fix - Ensure a subscription's modified date is updated when its related order cache is updated on non-HPOS sites.
 
 = 7.4.2 - 2024-08-27 =
