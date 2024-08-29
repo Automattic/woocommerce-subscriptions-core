@@ -826,6 +826,31 @@ class WCS_Time_Functions_Tests extends WP_UnitTestCase {
 		date_default_timezone_set( 'UTC' );
 	}
 
+	/**
+	 * Test for `wcs_get_valid_periods` function.
+	 *
+	 * @return void
+	 */
+	public function test_wcs_get_valid_periods() {
+		$this->assertEquals( array( 'day', 'week', 'month', 'year' ), wcs_get_valid_periods() );
+	}
+
+	/**
+	 * Test for `wcs_is_valid_period` function.
+	 *
+	 * @return void
+	 */
+	public function test_wcs_is_valid_period() {
+		// Valid periods.
+		$this->assertTrue( wcs_is_valid_period( 'day' ) );
+		$this->assertTrue( wcs_is_valid_period( 'week' ) );
+		$this->assertTrue( wcs_is_valid_period( 'month' ) );
+		$this->assertTrue( wcs_is_valid_period( 'year' ) );
+
+		// Invalid periods.
+		$this->assertFalse( wcs_is_valid_period( 'foo' ) );
+	}
+
 	public function wcs_number_of_leap_days_error_provider() {
 		return array(
 			array( '', '' ),
