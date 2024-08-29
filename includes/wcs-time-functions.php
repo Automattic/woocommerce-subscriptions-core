@@ -70,6 +70,29 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
 }
 
 /**
+ * Returns an array of valid subscription periods.
+ *
+ * @return string[] An array of valid subscription periods.
+ *
+ * @since 7.5.0
+ */
+function wcs_get_valid_periods() {
+	return array( 'day', 'week', 'month', 'year' );
+}
+
+/**
+ * Checks if a period is valid.
+ *
+ * @param $period string The period to check.
+ * @return bool True if the period is valid, false otherwise.
+ *
+ * @since 7.5.0
+ */
+function wcs_is_valid_period( $period ) {
+	return in_array( $period, wcs_get_valid_periods(), true );
+}
+
+/**
  * Returns an array of subscription lengths.
  *
  * PayPal Standard Allowable Ranges
@@ -82,7 +105,7 @@ function wcs_get_subscription_trial_period_strings( $number = 1, $period = '' ) 
  */
 function wcs_get_non_cached_subscription_ranges() {
 
-	foreach ( array( 'day', 'week', 'month', 'year' ) as $period ) {
+	foreach ( wcs_get_valid_periods() as $period ) {
 
 		$subscription_lengths = array(
 			_x( 'Do not stop until cancelled', 'Subscription length', 'woocommerce-subscriptions' ),
