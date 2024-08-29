@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.5.0 - 2024-xx-xx =
+* Add - Add two new period helper functions: wcs_get_valid_periods and wcs_is_valid_period.
 * Fix - Blocks the reactivation of a subscription when the end date is in the past.
 * Fix - Ensure a subscription's modified date is updated when its related order cache is updated on non-HPOS sites.
 
