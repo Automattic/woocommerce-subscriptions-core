@@ -1852,12 +1852,8 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function maybe_attach_gettext_callback() {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_subscription' === $screen->id ) {
-				add_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10, 3 );
-			}
+		if ( self::is_edit_subscription_page() ) {
+			add_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10, 3 );
 		}
 	}
 
@@ -1868,13 +1864,35 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function maybe_unattach_gettext_callback() {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_subscription' === $screen->id ) {
-				remove_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10 );
-			}
+		if ( self::is_edit_subscription_page() ) {
+			remove_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10 );
 		}
+	}
+
+	/**
+	 * Check if the current page is the Edit Subscription page
+	 *
+	 * @return bool True if the current page is the Edit Subscription page
+	 *
+	 * @since 7.5.0
+	 */
+	public static function is_edit_subscription_page() {
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		if ( ! is_object( $screen ) ) {
+			return false;
+		}
+
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$subscriptions_page_id = 'woocommerce_page_wc-orders--shop_subscription';
+		} else {
+			$subscriptions_page_id = 'shop_subscription';
+		}
+
+		return $subscriptions_page_id === $screen->id;
 	}
 
 
