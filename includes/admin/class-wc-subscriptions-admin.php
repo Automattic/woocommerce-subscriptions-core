@@ -1891,6 +1891,7 @@ class WC_Subscriptions_Admin {
 				$translated_text = __( 'Subscription items can no longer be edited.', 'woocommerce-subscriptions' );
 				break;
 
+			case 'To edit this order change the status back to "Pending"':
 			case 'To edit this order change the status back to "Pending payment"':
 				$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
 				break;
