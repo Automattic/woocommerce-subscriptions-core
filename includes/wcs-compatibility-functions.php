@@ -681,17 +681,3 @@ function wcs_woocommerce_wp_select( $field_args, $object ) {
 		woocommerce_wp_select( $field_args, $object );
 	}
 }
-
-/**
- * Updates the HPOS feature setting.
- *
- * @param $value bool Whether to enable custom order tables.
- * @return void
- *
- * @since 7.5.0
- */
-function wcs_hpos_update( $value ) {
-	$features_controller = wc_get_container()->get( \Automattic\WooCommerce\Internal\Features\FeaturesController::class );
-	$features_controller->change_feature_enable( 'custom_order_tables', true );
-	update_option( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, wc_bool_to_string( $value ) );
-}

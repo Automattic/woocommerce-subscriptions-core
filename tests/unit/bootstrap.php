@@ -37,7 +37,9 @@ function _manually_load_plugin() {
 
 	if ( getenv( 'HPOS' ) ) {
 		// Turn on HPOS.  HPOS will be enabled with post table syncing turned off (by default).
-		wcs_hpos_update( true );
+		$features_controller = wc_get_container()->get( \Automattic\WooCommerce\Internal\Features\FeaturesController::class );
+		$features_controller->change_feature_enable( 'custom_order_tables', true );
+		update_option( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::CUSTOM_ORDERS_TABLE_USAGE_ENABLED_OPTION, wc_bool_to_string( true ) );
 	}
 
 	// Set a default currency to be used for the multi-currency tests because the default

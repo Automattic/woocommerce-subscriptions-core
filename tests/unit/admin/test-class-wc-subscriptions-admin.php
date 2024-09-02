@@ -10,20 +10,17 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	 *
 	 * @param bool        $is_admin     Whether the user is an admin or not.
 	 * @param string      $screen_id    Screen ID.
-	 * @param bool        $hpos_enabled Whether HPOS is enabled or not.
 	 * @param int|boolean $expected     Expected result.
 	 * @return void
 	 * @dataProvider provide_test_maybe_attach_and_unattach_gettext_callback
 	 */
-	public function test_maybe_attach_and_unattach_gettext_callback( $is_admin, $screen_id, $hpos_enabled, $expected ) {
+	public function test_maybe_attach_and_unattach_gettext_callback( $is_admin, $screen_id, $expected ) {
 		if ( $is_admin ) {
 			$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 			wp_set_current_user( $user_id );
 		}
 
 		set_current_screen( $screen_id );
-
-		wcs_hpos_update( $hpos_enabled );
 
 		$admin = new WC_Subscriptions_Admin();
 
@@ -42,28 +39,24 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	public function provide_test_maybe_attach_and_unattach_gettext_callback() {
 		return array(
 			'not an admin'                              => array(
-				'is admin'     => false,
-				'screen id'    => '',
-				'hpos enabled' => false,
-				'expected'     => false,
+				'is admin'  => false,
+				'screen id' => '',
+				'expected'  => false,
 			),
 			'invalid screen'                            => array(
-				'is admin'     => true,
-				'screen id'    => '',
-				'hpos enabled' => false,
-				'expected'     => false,
+				'is admin'  => true,
+				'screen id' => '',
+				'expected'  => false,
 			),
 			'hpos enabled, edit subscriptions page'     => array(
-				'is admin'     => true,
-				'screen id'    => 'woocommerce_page_wc-orders--shop_subscription',
-				'hpos enabled' => true,
-				'expected'     => 10,
+				'is admin'  => true,
+				'screen id' => 'woocommerce_page_wc-orders--shop_subscription',
+				'expected'  => 10,
 			),
 			'hpos enabled, not edit subscriptions page' => array(
-				'is admin'     => true,
-				'screen id'    => '',
-				'hpos enabled' => true,
-				'expected'     => false,
+				'is admin'  => true,
+				'screen id' => '',
+				'expected'  => false,
 			),
 		);
 	}
