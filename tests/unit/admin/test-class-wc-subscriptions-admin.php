@@ -38,22 +38,22 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	 */
 	public function provide_test_maybe_attach_and_unattach_gettext_callback() {
 		return array(
-			'not an admin'                              => array(
+			'not an admin'                               => array(
 				'is admin'  => false,
 				'screen id' => '',
 				'expected'  => false,
 			),
-			'invalid screen'                            => array(
+			'invalid screen'                             => array(
 				'is admin'  => true,
 				'screen id' => '',
 				'expected'  => false,
 			),
-			'hpos enabled, edit subscriptions page'     => array(
+			'hpos disabled, edit subscriptions page'     => array(
 				'is admin'  => true,
-				'screen id' => 'woocommerce_page_wc-orders--shop_subscription',
+				'screen id' => 'shop_subscription',
 				'expected'  => 10,
 			),
-			'hpos enabled, not edit subscriptions page' => array(
+			'hpos disabled, not edit subscriptions page' => array(
 				'is admin'  => true,
 				'screen id' => '',
 				'expected'  => false,
