@@ -1833,16 +1833,37 @@ class WC_Subscriptions_Admin {
 	public static function maybe_remove_formatted_order_total_filter( $formatted_total, $order ) {
 
 		// Check if we're on the Edit Order screen - get_current_screen() only exists on admin pages so order of operations matters here
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_order' == $screen->id ) {
-				remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10 );
-			}
+		if ( self::is_edit_order_page() ) {
+			remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10 );
 		}
 
 		return $formatted_total;
+	}
+
+	/**
+	 * Check if the current page is the Edit Order page
+	 *
+	 * @return boolean True if the current page is the Edit Order page
+	 *
+	 * @since 7.5.0
+	 */
+	private static function is_edit_order_page() {
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		if ( ! is_object( $screen ) ) {
+			return false;
+		}
+
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$orders_page_id = 'woocommerce_page_wc-orders';
+		} else {
+			$orders_page_id = 'shop_order';
+		}
+
+		return $orders_page_id === $screen->id;
 	}
 
 	/**
