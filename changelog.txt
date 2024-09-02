@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.5.0 - 2024-xx-xx =
+* Fix - Add support for the `maybe_remove_formatted_order_total_filter` function when HPOS is enabled.
 * Fix - Resolved two issues preventing the correct display of the "Subscription items can no longer be edited." message on the Edit Subscription page.
 * Fix - Checks for the existence of `wc_get_page_screen_id` before calling it on `wcs_get_page_screen_id`, and for the admin context before calling `list_table_primary_column` to prevent fatal errors.
 * Fix - Blocks the reactivation of a subscription when the end date is in the past.
