@@ -2,6 +2,14 @@
 
 class WCS_Compatibility_Functions_Test extends WP_UnitTestCase {
 	/**
+	 * @inheritDoc
+	 */
+	public function tear_down() {
+		parent::tear_down();
+
+		wcs_hpos_update( true );
+	}
+	/**
 	 * @covers ::wcs_get_objects_property
 	 */
 	public function test_wcs_get_objects_property() {
@@ -153,5 +161,20 @@ class WCS_Compatibility_Functions_Test extends WP_UnitTestCase {
 		$reloaded_product = wc_get_product( $simple_product->get_id() );
 		$this->assertEquals( $updated_name, $reloaded_product->get_name() );
 		$this->assertEquals( $updated_meta_value, $reloaded_product->get_meta( $meta_key ) );
+	}
+
+	/**
+	 * Test for `wcs_hpos_update` function.
+	 *
+	 * @return void
+	 */
+	public function test_wcs_hpos_update() {
+		// HPOS is enabled by default.
+		wcs_hpos_update( true );
+		$this->assertTrue( wcs_is_custom_order_tables_usage_enabled() );
+
+		// HPOS is disabled.
+		wcs_hpos_update( false );
+		$this->assertFalse( wcs_is_custom_order_tables_usage_enabled() );
 	}
 }

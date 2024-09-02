@@ -23,7 +23,6 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	 * @param int|boolean $expected     Expected result.
 	 * @return void
 	 * @dataProvider provide_test_maybe_attach_gettext_callback
-	 * @group test_maybe_attach_gettext_callback
 	 */
 	public function test_maybe_attach_gettext_callback( $is_admin, $screen_id, $hpos_enabled, $expected ) {
 		if ( $is_admin ) {
