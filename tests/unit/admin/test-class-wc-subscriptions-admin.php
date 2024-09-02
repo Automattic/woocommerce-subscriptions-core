@@ -88,4 +88,42 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 			),
 		);
 	}
+
+	/**
+	 * Test for `change_order_item_editable_text` method.
+	 *
+	 * @return void
+	 * @dataProvider provide_test_change_order_item_editable_text
+	 */
+	public function test_change_order_item_editable_text( $text, $expected ) {
+		$admin = new WC_Subscriptions_Admin();
+
+		$this->assertSame( $expected, $admin->change_order_item_editable_text( $text, $text, 'woocommerce-subscriptions' ) );
+	}
+
+	/**
+	 * Provider for `test_change_order_item_editable_text` values.
+	 *
+	 * @return array
+	 */
+	public function provide_test_change_order_item_editable_text() {
+		return array(
+			'This order is no longer editable.' => array(
+				'text'     => 'This order is no longer editable.',
+				'expected' => 'Subscription items can no longer be edited.',
+			),
+			'To edit this order change the status back to "Pending"' => array(
+				'text'     => 'To edit this order change the status back to "Pending"',
+				'expected' => 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.',
+			),
+			'To edit this order change the status back to "Pending payment"' => array(
+				'text'     => 'To edit this order change the status back to "Pending payment"',
+				'expected' => 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.',
+			),
+			'Random text.'                      => array(
+				'text'     => 'Random text.',
+				'expected' => 'Random text.',
+			),
+		);
+	}
 }
