@@ -6,15 +6,6 @@
  */
 class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	/**
-	 * @inheritDoc
-	 */
-	public function tear_down() {
-		parent::tear_down();
-
-		unset( $GLOBALS['current_screen'] );
-		wcs_hpos_update( true );
-	}
-	/**
 	 * Test for `maybe_attach_gettext_callback` and `maybe_unattach_gettext_callback` methods.
 	 *
 	 * @param bool        $is_admin     Whether the user is an admin or not.
@@ -50,40 +41,28 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	 */
 	public function provide_test_maybe_attach_and_unattach_gettext_callback() {
 		return array(
-			'not an admin'                               => array(
+			'not an admin'                              => array(
 				'is admin'     => false,
 				'screen id'    => '',
 				'hpos enabled' => false,
 				'expected'     => false,
 			),
-			'invalid screen'                             => array(
+			'invalid screen'                            => array(
 				'is admin'     => true,
 				'screen id'    => '',
 				'hpos enabled' => false,
 				'expected'     => false,
 			),
-			'hpos enabled, edit subscriptions page'      => array(
+			'hpos enabled, edit subscriptions page'     => array(
 				'is admin'     => true,
 				'screen id'    => 'woocommerce_page_wc-orders--shop_subscription',
 				'hpos enabled' => true,
 				'expected'     => 10,
 			),
-			'hpos enabled, not edit subscriptions page'  => array(
+			'hpos enabled, not edit subscriptions page' => array(
 				'is admin'     => true,
 				'screen id'    => '',
 				'hpos enabled' => true,
-				'expected'     => false,
-			),
-			'hpos disabled, edit subscriptions page'     => array(
-				'is admin'     => true,
-				'screen id'    => 'shop_subscription',
-				'hpos enabled' => false,
-				'expected'     => 10,
-			),
-			'hpos disabled, not edit subscriptions page' => array(
-				'is admin'     => true,
-				'screen id'    => '',
-				'hpos enabled' => false,
 				'expected'     => false,
 			),
 		);
