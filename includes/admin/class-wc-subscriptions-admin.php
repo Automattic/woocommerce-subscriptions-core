@@ -1870,33 +1870,6 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Check if the current page is the Edit Subscription page
-	 *
-	 * @return bool True if the current page is the Edit Subscription page
-	 *
-	 * @since 7.5.0
-	 */
-	public static function is_edit_subscription_page() {
-		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
-			return false;
-		}
-
-		$screen = get_current_screen();
-		if ( ! is_object( $screen ) ) {
-			return false;
-		}
-
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$subscriptions_page_id = 'woocommerce_page_wc-orders--shop_subscription';
-		} else {
-			$subscriptions_page_id = 'shop_subscription';
-		}
-
-		return $subscriptions_page_id === $screen->id;
-	}
-
-
-	/**
 	* When subscription items not editable (such as due to the payment gateway not supporting modifications),
 	* change the text to explain why
 	*
@@ -2268,5 +2241,31 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $delete_variations;
+	}
+
+	/**
+	 * Check if the current page is the Edit Subscription page
+	 *
+	 * @return bool True if the current page is the Edit Subscription page
+	 *
+	 * @since 7.5.0
+	 */
+	private static function is_edit_subscription_page() {
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		if ( ! is_object( $screen ) ) {
+			return false;
+		}
+
+		if ( wcs_is_custom_order_tables_usage_enabled() ) {
+			$subscriptions_page_id = 'woocommerce_page_wc-orders--shop_subscription';
+		} else {
+			$subscriptions_page_id = 'shop_subscription';
+		}
+
+		return $subscriptions_page_id === $screen->id;
 	}
 }
