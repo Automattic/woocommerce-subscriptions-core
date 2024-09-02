@@ -15,7 +15,7 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 		wcs_hpos_update( true );
 	}
 	/**
-	 * Test for `maybe_attach_gettext_callback` method.
+	 * Test for `maybe_attach_gettext_callback` and `maybe_unattach_gettext_callback` methods.
 	 *
 	 * @param bool        $is_admin     Whether the user is an admin or not.
 	 * @param string      $screen_id    Screen ID.
