@@ -1841,32 +1841,6 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Check if the current page is the Edit Order page
-	 *
-	 * @return boolean True if the current page is the Edit Order page
-	 *
-	 * @since 7.5.0
-	 */
-	private static function is_edit_order_page() {
-		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
-			return false;
-		}
-
-		$screen = get_current_screen();
-		if ( ! is_object( $screen ) ) {
-			return false;
-		}
-
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$orders_page_id = 'woocommerce_page_wc-orders';
-		} else {
-			$orders_page_id = 'shop_order';
-		}
-
-		return $orders_page_id === $screen->id;
-	}
-
-	/**
 	 * Only attach the gettext callback when on admin shop subscription screen
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
@@ -2272,6 +2246,30 @@ class WC_Subscriptions_Admin {
 	 * @since 7.5.0
 	 */
 	private static function is_edit_subscription_page() {
+		return self::is_page( 'shop_subscription', 'woocommerce_page_wc-orders--shop_subscription' );
+	}
+
+	/**
+	 * Check if the current page is the Edit Order page
+	 *
+	 * @return boolean True if the current page is the Edit Order page
+	 *
+	 * @since 7.5.0
+	 */
+	private static function is_edit_order_page() {
+		return self::is_page( 'shop_order', 'woocommerce_page_wc-orders' );
+	}
+
+	/**
+	 * Check if the current page is the provided page.
+	 *
+	 * @param string $legacy_page_id The legacy page ID.
+	 * @param string $hpos_page_id The HPOS page ID.
+	 * @return bool True if the current page is the provided page
+	 *
+	 * @since 7.5.0
+	 */
+	private static function is_page( $legacy_page_id, $hpos_page_id ) {
 		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
 			return false;
 		}
@@ -2282,11 +2280,9 @@ class WC_Subscriptions_Admin {
 		}
 
 		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$subscriptions_page_id = 'woocommerce_page_wc-orders--shop_subscription';
-		} else {
-			$subscriptions_page_id = 'shop_subscription';
+			return $hpos_page_id === $screen->id;
 		}
 
-		return $subscriptions_page_id === $screen->id;
+		return $legacy_page_id === $screen->id;
 	}
 }
