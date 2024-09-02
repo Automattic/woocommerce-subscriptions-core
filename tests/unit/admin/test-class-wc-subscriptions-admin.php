@@ -22,9 +22,9 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 	 * @param bool        $hpos_enabled Whether HPOS is enabled or not.
 	 * @param int|boolean $expected     Expected result.
 	 * @return void
-	 * @dataProvider provide_test_maybe_attach_gettext_callback
+	 * @dataProvider provide_test_maybe_attach_and_unattach_gettext_callback
 	 */
-	public function test_maybe_attach_gettext_callback( $is_admin, $screen_id, $hpos_enabled, $expected ) {
+	public function test_maybe_attach_and_unattach_gettext_callback( $is_admin, $screen_id, $hpos_enabled, $expected ) {
 		if ( $is_admin ) {
 			$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 			wp_set_current_user( $user_id );
@@ -35,17 +35,20 @@ class WC_Subscriptions_Admin_Test extends WP_UnitTestCase {
 		wcs_hpos_update( $hpos_enabled );
 
 		$admin = new WC_Subscriptions_Admin();
-		$admin->maybe_attach_gettext_callback();
 
+		$admin->maybe_attach_gettext_callback();
 		$this->assertSame( $expected, has_filter( 'gettext', [ WC_Subscriptions_Admin::class, 'change_order_item_editable_text' ] ) );
+
+		$admin->maybe_unattach_gettext_callback();
+		$this->assertSame( false, has_filter( 'gettext', [ WC_Subscriptions_Admin::class, 'change_order_item_editable_text' ] ) );
 	}
 
 	/**
-	 * Data provider for `test_maybe_attach_gettext_callback` method.
+	 * Generic data provider for `test_maybe_attach_gettext_callback` values.
 	 *
 	 * @return array
 	 */
-	public function provide_test_maybe_attach_gettext_callback() {
+	public function provide_test_maybe_attach_and_unattach_gettext_callback() {
 		return array(
 			'not an admin'                               => array(
 				'is admin'     => false,
