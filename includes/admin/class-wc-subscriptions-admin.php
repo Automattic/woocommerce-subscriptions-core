@@ -2260,12 +2260,6 @@ class WC_Subscriptions_Admin {
 			return false;
 		}
 
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			$subscriptions_page_id = 'woocommerce_page_wc-orders--shop_subscription';
-		} else {
-			$subscriptions_page_id = 'shop_subscription';
-		}
-
-		return $subscriptions_page_id === $screen->id;
+		return wcs_get_page_screen_id( 'shop_subscription' ) === $screen->id;
 	}
 }
