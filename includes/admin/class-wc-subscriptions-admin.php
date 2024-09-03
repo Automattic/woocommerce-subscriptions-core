@@ -2246,7 +2246,7 @@ class WC_Subscriptions_Admin {
 	 * @since 7.5.0
 	 */
 	private static function is_edit_subscription_page() {
-		return self::is_page( 'shop_subscription', 'woocommerce_page_wc-orders--shop_subscription' );
+		return self::is_page( 'shop_subscription' );
 	}
 
 	/**
@@ -2257,19 +2257,18 @@ class WC_Subscriptions_Admin {
 	 * @since 7.5.0
 	 */
 	private static function is_edit_order_page() {
-		return self::is_page( 'shop_order', 'woocommerce_page_wc-orders' );
+		return self::is_page( 'shop_order' );
 	}
 
 	/**
 	 * Check if the current page is the provided page.
 	 *
-	 * @param string $legacy_page_id The legacy page ID.
-	 * @param string $hpos_page_id The HPOS page ID.
+	 * @param string $page_id The page ID.
 	 * @return bool True if the current page is the provided page
 	 *
 	 * @since 7.5.0
 	 */
-	private static function is_page( $legacy_page_id, $hpos_page_id ) {
+	private static function is_page( $page_id ) {
 		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
 			return false;
 		}
@@ -2279,10 +2278,6 @@ class WC_Subscriptions_Admin {
 			return false;
 		}
 
-		if ( wcs_is_custom_order_tables_usage_enabled() ) {
-			return $hpos_page_id === $screen->id;
-		}
-
-		return $legacy_page_id === $screen->id;
+		return wcs_get_page_screen_id( $page_id ) === $screen->id;
 	}
 }
