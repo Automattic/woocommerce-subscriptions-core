@@ -185,8 +185,11 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *    with update time before the config got updated.
 	 * 3. Subscription S1 gets updated before it gets processed by the batch process.
 	 *
-	 * Thus, we update notifications for all subscriptions that are beign updated after notification config change time
+	 * Thus, we update notifications for all subscriptions that are being updated after notification config change time
 	 * and which have their update time before that.
+	 *
+	 * As this gets called on Subscription save, the modification timestamp should be updated, too, and thus
+	 * the currently updated subscription no longer needs to be processed by the batch process.
 	 *
 	 * @param $subscription
 	 * @param $subscription_data_store
