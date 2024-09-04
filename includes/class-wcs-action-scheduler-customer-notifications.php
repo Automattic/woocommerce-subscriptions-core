@@ -286,8 +286,12 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 				// Nothing, all notifications will be scheduled in the generic update_notifications().
 				break;
 			case 'pending-cancel':
-				// Unschedule all notifications?
+				// Unschedule all except expiration notification.
 				foreach ( $this->notification_actions as $action ) {
+					if ( 'woocommerce_scheduled_subscription_customer_notification_expiration' === $action ) {
+						continue;
+					}
+
 					$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
 				}
 				break;
