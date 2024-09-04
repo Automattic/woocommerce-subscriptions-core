@@ -253,7 +253,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	/**
-	 * This method needs to be here because of the abstract class, but is a noop here.
+	 * Schedule notifications if the date has changed.
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'payment_retry', 'end', 'end_of_prepaid_term' or a custom date type
@@ -266,7 +266,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	/**
-	 * This method needs to be here because of the abstract class, but is a noop here.
+	 * Schedule notifications if the date has been deleted.
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
