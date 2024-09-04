@@ -276,8 +276,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * When a subscription's status is updated, maybe schedule an event
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
-	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
-	 * @param string $datetime A MySQL formatted date/time string in the GMT/UTC timezone.
+	 * @param string $new_status New subscription status
+	 * @param string $old_status Previous subscription status
 	 */
 	public function update_status( $subscription, $new_status, $old_status ) {
 
@@ -311,7 +311,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Get the args to set on the scheduled action.
 	 *
-	 * @param string $date_type Can be 'trial_end', 'next_payment', 'expiration', 'end_of_prepaid_term' or a custom date type
 	 * @param object $subscription An instance of WC_Subscription to get the hook for
 	 *
 	 * @return array Array of name => value pairs stored against the scheduled action.
@@ -325,7 +324,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Get the args to set on the scheduled action.
 	 *
-	 * @param string $$action_hook Name of event used as the hook for the scheduled action.
+	 * @param string $action_hook Name of event used as the hook for the scheduled action.
 	 * @param array $action_args Array of name => value pairs stored against the scheduled action.
 	 */
 	protected function unschedule_actions( $action_hook, $action_args ) {
