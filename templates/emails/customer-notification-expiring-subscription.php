@@ -36,7 +36,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 				esc_html( get_bloginfo( 'name' ) ),
 				'<a href="' . esc_url( $subscription->get_checkout_payment_url() ) . '">' . esc_html__( 'Pay Now &raquo;', 'woocommerce-subscriptions' ) . '</a>'
 			),
-			array( 'a' => array( 'href' => true ) )
+			[ 'a' => [ 'href' => true ] ]
 		);
 		?>
 	</p>

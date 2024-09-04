@@ -20,12 +20,12 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * Just for reference.
 	 */
-	protected array $notification_actions = array(
+	protected array $notification_actions = [
 		'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_manual_renewal',
 		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
-	);
+	];
 
 	public function get_hours_offset( $subscription ) {
 		/**
@@ -47,10 +47,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		$setting_option     = get_option(
 			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-			array(
+			[
 				'number' => 3,
 				'unit'   => 'days',
-			)
+			]
 		);
 		$this->hours_offset = self::convert_offset_to_hours( $setting_option );
 
@@ -64,7 +64,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Calculate time offset in hours from the settings array.
 	 *
-	 * @param array $offset Format: array( 'number' => 3, 'unit' => 'days' )
+	 * @param array $offset Format: [ 'number' => 3, 'unit' => 'days' ]
 	 *
 	 * @return float|int
 	 */
@@ -313,7 +313,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
 	protected function get_action_args( $subscription ) {
-		$action_args = array( 'subscription_id' => $subscription->get_id() );
+		$action_args = [ 'subscription_id' => $subscription->get_id() ];
 
 		return $action_args;
 	}
