@@ -89,6 +89,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 				continue;
 			}
 
+			$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
+
 			$expected_result = $expected_results[ $status ];
 			$actual_result   = $subscription->can_be_updated_to( 'active' );
 
@@ -98,36 +100,55 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to wc-active.' );
 		}
 
-		// Subscriptions pending cancelation can only be reactivated if the subscription's end date is still in the future.
-		$subscription = $this->subscriptions['pending-cancel'];
-
-		// End date in the future
-		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
-		$expected       = true;
-		$can_be_updated = $subscription->can_be_updated_to( 'active' );
-
-		$this->assertEquals( $expected, $can_be_updated, '[FAILED]: pending-cancel to active.' );
-
-		$can_be_updated = $subscription->can_be_updated_to( 'wc-active' );
-		$this->assertEquals( $expected, $can_be_updated, '[FAILED]: pending-cancel to wc-active.' );
-
-		// End date in the past
-		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ] );
-		$expected       = false;
-		$can_be_updated = $subscription->can_be_updated_to( 'active' );
-
-		$this->assertEquals( $expected, $can_be_updated, '[FAILED]: pending-cancel to active.' );
-
-		$can_be_updated = $subscription->can_be_updated_to( 'wc-active' );
-		$this->assertEquals( $expected, $can_be_updated, '[FAILED]: pending-cancel to wc-active.' );
-
 		// Additional test cases checking the logic around WC_Subscription::payment_method_supports() function
 		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
 
-		$this->assertEquals( false, $this->subscriptions['on-hold']->can_be_updated_to( 'active' ), '[FAILED]: Should not be able to activate an on-hold subscription if the payment gateway does not support it.' );
-		$this->assertEquals( true, $this->subscriptions['pending']->can_be_updated_to( 'active' ), '[FAILED]: Should be able to update pending status to active if the payment method does not support subscription reactivation.' );
+		$this->assertFalse( $this->subscriptions['on-hold']->can_be_updated_to( 'active' ), '[FAILED]: Should not be able to activate an on-hold subscription if the payment gateway does not support it.' );
+		$this->assertTrue( $this->subscriptions['pending']->can_be_updated_to( 'active' ), '[FAILED]: Should be able to update pending status to active if the payment method does not support subscription reactivation.' );
 
 		remove_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'payment_method_supports_false' ] );
+	}
+
+	/**
+	 * Test for `can_be_updated_to` with the `active` status using different end dates.
+	 * `pending-cancel` and `on-hold` subscriptions cannot be reactivated when the end date is in the past.
+	 *
+	 * @param $status string The subscription status to test
+	 * @return void
+	 * @dataProvider provide_test_can_be_updated_to_active_with_different_end_dates
+	 */
+	public function test_can_be_updated_to_active_with_different_end_dates( $status ) {
+		$subscription = $this->subscriptions[ $status ];
+
+		// End date in the future
+		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
+		$can_be_updated = $subscription->can_be_updated_to( 'active' );
+
+		$this->assertTrue( $can_be_updated, '[FAILED]: ' . $status . ' to active.' );
+
+		$can_be_updated = $subscription->can_be_updated_to( 'wc-active' );
+		$this->assertTrue( $can_be_updated, '[FAILED]: ' . $status . ' to wc-active.' );
+
+		// End date in the past
+		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ] );
+		$can_be_updated = $subscription->can_be_updated_to( 'active' );
+
+		$this->assertFalse( $can_be_updated, '[FAILED]: ' . $status . ' to active.' );
+
+		$can_be_updated = $subscription->can_be_updated_to( 'wc-active' );
+		$this->assertFalse( $can_be_updated, '[FAILED]: ' . $status . ' to wc-active.' );
+	}
+
+	/**
+	 * Provider for `test_can_be_updated_to_active_with_different_end_dates`.
+	 *
+	 * @return array
+	 */
+	public function provide_test_can_be_updated_to_active_with_different_end_dates() {
+		return [
+			[ 'pending-cancel' ],
+			[ 'on-hold' ],
+		];
 	}
 
 	/**
@@ -1165,7 +1186,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 			if ( in_array( $status, $expected_to_pass, true ) ) {
 
-				if ( 'pending-cancel' === $status ) {
+				if ( 'pending-cancel' === $status || 'on-hold' === $status ) {
 					$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ) ] );
 				}
 
@@ -2059,6 +2080,11 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $order_id, $subscription->get_last_order( 'ids' ) );
 		$this->assertEquals( $order_id, $subscription->get_last_order() );
 		$this->assertEquals( wc_get_order( $order_id ), $subscription->get_last_order( 'all' ) );
+
+		// Test for the status filtering parameter
+		$order->update_status( 'failed' );
+		$order->save();
+		$this->assertFalse( $subscription->get_last_order( 'ids', array( 'parent', 'renewal' ), array( 'failed' ) ) );
 
 		$renewal    = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_id = wcs_get_objects_property( $renewal, 'id' );
