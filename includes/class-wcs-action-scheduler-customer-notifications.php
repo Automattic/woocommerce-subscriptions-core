@@ -192,6 +192,23 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	/**
+	 * Update notifications when subscription gets updated.
+	 *
+	 * To make batch processing easier, we need to handle the following use case:
+	 * 1. Subscription S1 gets updated.
+	 * 2. Notification config gets updated, a batch to fix all subscriptions is started and processes all subscriptions
+	 *    with update time before the config got updated.
+	 * 3. Subscription S1 gets updated before it gets processed by the batch process.
+	 *
+	 * Thus, we update notifications for all subscriptions that are beign updated after notification config change time
+	 * and which have their update time before that.
+	 *
+	 * @param $subscription
+	 * @param $subscription_data_store
+	 *
+	 * @return void
+	 */
 	public function update_notifications( $subscription, $subscription_data_store ) {
 		if ( ! $subscription->has_status( 'active' ) || ! $subscription->has_status( 'pending-cancel' ) ) {
 			return;
@@ -209,6 +226,17 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	/**
+	 * Schedule all notifications for a subscription based on the dates defined on the subscription.
+	 *
+	 * If there's a trial end, schedule free trial expiry notification.
+	 * If there's an end date, schedule expiry notification.
+	 * If there's a next payment date defined, schedule automated/manual renewal notification.
+	 *
+	 * @param $subscription
+	 *
+	 * @return void
+	 */
 	protected function schedule_all_notifications( $subscription ) {
 		if ( $subscription->get_date( 'trial_end' ) ) {
 			$this->schedule_trial_ending_notification( $subscription );
