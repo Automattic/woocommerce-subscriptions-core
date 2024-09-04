@@ -54,10 +54,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		);
 		$this->time_offset = self::convert_offset_to_seconds( $setting_option );
 
-		remove_action( 'woocommerce_subscription_date_updated', [ &$this, 'update_date' ], 10, 3 );
-
-		remove_action( 'woocommerce_subscription_date_deleted', [ &$this, 'delete_date' ], 10, 2 );
-
 		add_action( 'woocommerce_before_subscription_object_save', [ $this, 'update_notifications' ], 10, 2 );
 	}
 
@@ -198,7 +194,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @return void
 	 */
 	public function update_notifications( $subscription, $subscription_data_store ) {
-		if ( ! $subscription->has_status( 'active' ) || ! $subscription->has_status( 'pending-cancel' ) ) {
+		if ( ! $subscription->has_status( 'active' ) && ! $subscription->has_status( 'pending-cancel' ) ) {
 			return;
 		}
 
@@ -239,6 +235,16 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	public function set_date_types_to_schedule() {
+		$date_types_to_schedule = wcs_get_subscription_date_types();
+		unset(
+			$date_types_to_schedule['start'],
+			$date_types_to_schedule['cancelled'] // prevent scheduling end date when reactivating subscription.
+		);
+
+		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
+	}
+
 	/**
 	 * This method needs to be here because of the abstract class, but is a noop here.
 	 *
@@ -247,7 +253,9 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $datetime A MySQL formatted date/time string in the GMT/UTC timezone.
 	 */
 	public function update_date( $subscription, $date_type, $datetime ) {
-		// This method needs to be here because of the abstract class, but is a noop here.
+		if ( in_array( $date_type, $this->get_date_types_to_schedule(), true ) ) {
+			$this->schedule_all_notifications( $subscription );
+		}
 	}
 
 	/**
@@ -257,7 +265,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
 	public function delete_date( $subscription, $date_type ) {
-		// This method needs to be here because of the abstract class, but is a noop here.
+		$this->update_date( $subscription, $date_type, '0' );
 	}
 
 	/**
@@ -271,7 +279,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case 'active':
-				// Nothing, all notifications will be scheduled in the generic update_notifications().
+				$this->schedule_all_notifications( $subscription );
 				break;
 			case 'pending-cancel':
 				// Unschedule all except expiration notification.
@@ -288,7 +296,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			case 'switched':
 			case 'expired':
 			case 'trash':
-				// Unschedule all
+				// Unschedule all.
 				foreach ( $this->notification_actions as $action ) {
 					$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
 				}
