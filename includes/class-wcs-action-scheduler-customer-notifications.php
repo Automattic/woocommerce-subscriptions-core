@@ -53,6 +53,12 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			)
 		);
 		$this->hours_offset = self::convert_offset_to_hours( $setting_option );
+
+		remove_action( 'woocommerce_subscription_date_updated', [ &$this, 'update_date' ], 10, 3 );
+
+		remove_action( 'woocommerce_subscription_date_deleted', [ &$this, 'delete_date' ], 10, 2 );
+
+		add_action( 'woocommerce_before_subscription_object_save', [ $this, 'update_notifications' ], 10, 2 );
 	}
 
 	/**
@@ -186,6 +192,37 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	public function update_notifications( $subscription, $subscription_data_store ) {
+		if ( ! $subscription->has_status( 'active' ) || ! $subscription->has_status( 'pending-cancel' ) ) {
+			return;
+		}
+
+		$subscription_update_time_raw               = array_key_exists( 'date_modified', $subscription->get_data() ) ? $subscription->get_data()['date_modified'] : $subscription->get_date_created();
+		$notification_settings_update_utc_timestamp = get_option( 'wcs_notification_settings_update_time' );
+
+		$subscription_update_time_raw->setTimezone( new DateTimeZone( 'UTC' ) );
+
+		$subscription_update_utc_timestamp = $subscription_update_time_raw->getTimestamp();
+
+		if ( $subscription_update_utc_timestamp < $notification_settings_update_utc_timestamp ) {
+			$this->schedule_all_notifications( $subscription );
+		}
+	}
+
+	protected function schedule_all_notifications( $subscription ) {
+		if ( $subscription->get_date( 'trial_end' ) ) {
+			$this->schedule_trial_ending_notification( $subscription );
+		}
+
+		if ( $subscription->get_date( 'end' ) ) {
+			$this->schedule_expiry_notification( $subscription );
+		}
+
+		if ( $subscription->get_date( 'next_payment' ) ) {
+			$this->schedule_payment_notification( $subscription );
+		}
+	}
+
 	/**
 	 * Maybe set a schedule action if the new date is in the future
 	 *
@@ -194,21 +231,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $datetime A MySQL formatted date/time string in the GMT/UTC timezone.
 	 */
 	public function update_date( $subscription, $date_type, $datetime ) {
-
-		if ( in_array( $date_type, $this->get_date_types_to_schedule(), true ) ) {
-
-			if ( $subscription->get_date( 'trial_end' ) ) {
-				$this->schedule_trial_ending_notification( $subscription );
-			}
-
-			if ( $subscription->get_date( 'end' ) ) {
-				$this->schedule_expiry_notification( $subscription );
-			}
-
-			if ( $subscription->get_date( 'next_payment' ) ) {
-				$this->schedule_payment_notification( $subscription );
-			}
-		}
+		// This method needs to be here because of the abstract class, but is a noop here.
 	}
 
 	/**
@@ -232,18 +255,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case 'active':
-				if ( $subscription->get_date( 'trial_end' ) ) {
-					$this->schedule_trial_ending_notification( $subscription );
-				}
-
-				if ( $subscription->get_date( 'end' ) ) {
-					$this->schedule_expiry_notification( $subscription );
-				}
-
-				if ( $subscription->get_date( 'next_payment' ) ) {
-					$this->schedule_payment_notification( $subscription );
-				}
-
+				// Nothing, all notifications will be scheduled in the generic update_notifications().
 				break;
 			case 'pending-cancel':
 				// Unschedule all notifications?
