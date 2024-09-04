@@ -200,7 +200,7 @@ class WC_Subscriptions_Synchroniser {
 				'name' => __( 'Synchronisation', 'woocommerce-subscriptions' ),
 				'type' => 'title',
 				// translators: placeholders are opening and closing link tags
-				'desc' => sprintf( _x( 'Align subscription renewal to a specific day of the week, month or year. For example, the first day of the month. %1$sLearn more%2$s.', 'used in the general subscription options page', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'http://docs.woocommerce.com/document/subscriptions/renewal-synchronisation/' ) . '">', '</a>' ),
+				'desc' => sprintf( _x( 'Align subscription renewal to a specific day of the week, month or year. For example, the first day of the month. %1$sLearn more%2$s.', 'used in the general subscription options page', 'woocommerce-subscriptions' ), '<a href="' . esc_url( 'https://woocommerce.com/document/subscriptions/renewal-synchronisation/' ) . '">', '</a>' ),
 				'id'   => self::$setting_id . '_title',
 			),
 
@@ -686,8 +686,9 @@ class WC_Subscriptions_Synchroniser {
 					$month_number = gmdate( 'm', wcs_add_months( $from_timestamp, $interval ) );
 				}
 			}
+
 			// when a certain number of months are added and the first payment date moves to next year
-			if ( $month_number < gmdate( 'm', $from_timestamp ) ) {
+			if ( $month_number < gmdate( 'm', $from_timestamp ) || $interval >= 12 ) {
 				$year       = gmdate( 'Y', $from_timestamp );
 				$year++;
 				$first_payment_timestamp = wcs_strtotime_dark_knight( "{$payment_day} {$month} {$year}", $from_timestamp );

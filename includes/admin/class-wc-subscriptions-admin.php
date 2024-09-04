@@ -1926,7 +1926,7 @@ class WC_Subscriptions_Admin {
 
 				array(
 					// translators: placeholders are opening and closing link tags
-					'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %1$smanual subscription renewal payments%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
+					'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %1$smanual subscription renewal payments%2$s.', 'woocommerce-subscriptions' ), '<a href="https://woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
 					'id'   => self::$option_prefix . '_payment_gateways_additional',
 					'type' => 'informational',
 				),

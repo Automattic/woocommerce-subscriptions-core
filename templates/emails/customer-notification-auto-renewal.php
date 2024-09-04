@@ -35,7 +35,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 				_x( 'Your subscription for XYZ on %1$s will be renewed automatically. Thanks for being a loyal customer with us!', 'In customer renewal invoice email', 'woocommerce-subscriptions' ),
 				esc_html( get_bloginfo( 'name' ) )
 			),
-			array( 'a' => array( 'href' => true ) )
+			[ 'a' => [ 'href' => true ] ]
 		);
 		?>
 	</p>
