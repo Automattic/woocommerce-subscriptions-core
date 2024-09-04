@@ -11,7 +11,10 @@
  */
 class WC_Subscriptions_Email_Notifications {
 
-	public static string $offset_setting_string = '_customer_notifications_offset';
+	/**
+	 * @var string Setting option identifier.
+	 */
+	public static $offset_setting_string = '_customer_notifications_offset';
 
 	public static function init() {
 

@@ -11,9 +11,9 @@
 class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 	/**
-	 * @var int Time offset (in whole hours) between the notification and the action it's notifying about.
+	 * @var int Time offset (in whole seconds) between the notification and the action it's notifying about.
 	 */
-	protected int $hours_offset;
+	protected $time_offset;
 
 	/**
 	 * @var array|string[] Notifications scheduled by this class.
@@ -27,32 +27,32 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
 	];
 
-	public function get_hours_offset( $subscription ) {
+	public function get_time_offset( $subscription ) {
 		/**
 		 * Offset between a subscription event and related notification.
 		 *
 		 * @since 8.0.0
 		 *
-		 * @param int $hours_offset
+		 * @param int $time_offset
 		 */
-		return apply_filters( 'woocommerce_subscriptions_customer_notification_hours_offset', $this->hours_offset, $subscription );
+		return apply_filters( 'woocommerce_subscriptions_customer_notification_time_offset', $this->time_offset, $subscription );
 	}
 
-	public function set_hours_offset( $hours_offset ) {
-		$this->hours_offset = $hours_offset;
+	public function set_time_offset( $time_offset ) {
+		$this->time_offset = $time_offset;
 	}
 
 	public function __construct() {
 		parent::__construct();
 
-		$setting_option     = get_option(
+		$setting_option    = get_option(
 			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
 			[
 				'number' => 3,
 				'unit'   => 'days',
 			]
 		);
-		$this->hours_offset = self::convert_offset_to_hours( $setting_option );
+		$this->time_offset = self::convert_offset_to_seconds( $setting_option );
 
 		remove_action( 'woocommerce_subscription_date_updated', [ &$this, 'update_date' ], 10, 3 );
 
@@ -62,14 +62,14 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	/**
-	 * Calculate time offset in hours from the settings array.
+	 * Calculate time offset in seconds from the settings array.
 	 *
 	 * @param array $offset Format: [ 'number' => 3, 'unit' => 'days' ]
 	 *
 	 * @return float|int
 	 */
-	protected static function convert_offset_to_hours( $offset ) {
-		$default_offset = 3 * DAY_IN_SECONDS / HOUR_IN_SECONDS;
+	protected static function convert_offset_to_seconds( $offset ) {
+		$default_offset = 3 * DAY_IN_SECONDS;
 
 		if ( ! isset( $offset['unit'] ) || ! isset( $offset['number'] ) ) {
 			return $default_offset;
@@ -77,27 +77,16 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		switch ( $offset['unit'] ) {
 			case 'days':
-				return ( $offset['number'] * DAY_IN_SECONDS / HOUR_IN_SECONDS );
+				return ( $offset['number'] * DAY_IN_SECONDS );
 			case 'weeks':
-				return ( $offset['number'] * WEEK_IN_SECONDS / HOUR_IN_SECONDS );
+				return ( $offset['number'] * WEEK_IN_SECONDS );
 			case 'months':
-				return ( $offset['number'] * MONTH_IN_SECONDS / HOUR_IN_SECONDS );
+				return ( $offset['number'] * MONTH_IN_SECONDS );
 			case 'years':
-				return ( $offset['number'] * YEAR_IN_SECONDS / HOUR_IN_SECONDS );
+				return ( $offset['number'] * YEAR_IN_SECONDS );
 			default:
 				return $default_offset;
 		}
-	}
-
-	public function set_date_types_to_schedule() {
-		$date_types_to_schedule = wcs_get_subscription_date_types();
-		unset(
-			$date_types_to_schedule['start'],
-			$date_types_to_schedule['cancelled'] // prevent scheduling end date when reactivating subscription.
-		);
-
-		//TODO: filter?
-		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
 	}
 
 	protected function schedule_notification( $subscription, $action, $timestamp ) {
@@ -130,7 +119,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 	//TODO: check timezones
 	/*
-	 * Subtract time offset from given datetime based on the settings and subscription properties.
+	 * Subtract time offset from given datetime based on the settings and subscription properties and return resulting timestamp.
 	 *
 	 * @param string $datetime
 	 * @param WC_Subscription $subscription
@@ -139,9 +128,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 */
 	protected function sub_time_offset( $datetime, $subscription ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
-		$dt->sub( new DateInterval( "PT{$this->get_hours_offset( $subscription )}H" ) );
 
-		return $dt->getTimestamp();
+		return $dt->getTimestamp() - $this->time_offset;
 	}
 
 	public function schedule_trial_ending_notification( $subscription ) {
@@ -252,7 +240,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	/**
-	 * Maybe set a schedule action if the new date is in the future
+	 * This method needs to be here because of the abstract class, but is a noop here.
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'payment_retry', 'end', 'end_of_prepaid_term' or a custom date type
@@ -263,13 +251,13 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	/**
-	 * Delete a date from the action scheduler queue
+	 * This method needs to be here because of the abstract class, but is a noop here.
 	 *
 	 * @param object $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
 	public function delete_date( $subscription, $date_type ) {
-		$this->update_date( $subscription, $date_type, '0' );
+		// This method needs to be here because of the abstract class, but is a noop here.
 	}
 
 	/**
