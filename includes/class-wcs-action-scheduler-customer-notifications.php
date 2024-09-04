@@ -268,6 +268,16 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$this->update_date( $subscription, $date_type, '0' );
 	}
 
+	protected function unschedule_all_notifications( $subscription, $exceptions = [] ) {
+		foreach ( $this->notification_actions as $action ) {
+			if ( in_array( $action, $exceptions, true ) ) {
+				continue;
+			}
+
+			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
+		}
+	}
+
 	/**
 	 * When a subscription's status is updated, maybe schedule an event
 	 *
@@ -279,27 +289,21 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case 'active':
+				// Clean up previous notifications (e.g. the expiration might be still pending).
+				$this->unschedule_all_notifications( $subscription );
+				// Schedule new ones.
 				$this->schedule_all_notifications( $subscription );
 				break;
 			case 'pending-cancel':
 				// Unschedule all except expiration notification.
-				foreach ( $this->notification_actions as $action ) {
-					if ( 'woocommerce_scheduled_subscription_customer_notification_expiration' === $action ) {
-						continue;
-					}
-
-					$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
-				}
+				$this->unschedule_all_notifications( $subscription, [ 'woocommerce_scheduled_subscription_customer_notification_expiration' ] );
 				break;
 			case 'on-hold':
 			case 'cancelled':
 			case 'switched':
 			case 'expired':
 			case 'trash':
-				// Unschedule all.
-				foreach ( $this->notification_actions as $action ) {
-					$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
-				}
+				$this->unschedule_all_notifications( $subscription );
 				break;
 		}
 	}
