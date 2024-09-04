@@ -20,7 +20,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * Just for reference.
 	 */
-	protected array $notification_actions = [
+	protected $notification_actions = [
 		'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_manual_renewal',
@@ -198,12 +198,16 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
-		$subscription_update_time_raw               = array_key_exists( 'date_modified', $subscription->get_data() ) ? $subscription->get_data()['date_modified'] : $subscription->get_date_created();
+		// Here, we need the 'old' update timestamp for comparison, so can't use get_date_modified() method.
+		$subscription_update_time_raw = array_key_exists( 'date_modified', $subscription->get_data() ) ? $subscription->get_data()['date_modified'] : $subscription->get_date_created();
+		if ( ! $subscription_update_time_raw ) {
+			$subscription_update_utc_timestamp = 0;
+		} else {
+			$subscription_update_time_raw->setTimezone( new DateTimeZone( 'UTC' ) );
+			$subscription_update_utc_timestamp = $subscription_update_time_raw->getTimestamp();
+		}
+
 		$notification_settings_update_utc_timestamp = get_option( 'wcs_notification_settings_update_time' );
-
-		$subscription_update_time_raw->setTimezone( new DateTimeZone( 'UTC' ) );
-
-		$subscription_update_utc_timestamp = $subscription_update_time_raw->getTimestamp();
 
 		if ( $subscription_update_utc_timestamp < $notification_settings_update_utc_timestamp ) {
 			$this->schedule_all_notifications( $subscription );
