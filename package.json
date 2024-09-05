@@ -38,6 +38,7 @@
 		"lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
 		"start": "wp-scripts start assets/src/js/index.js",
 		"test:unit": "wp-scripts test-unit-js",
+		"test:php": "./vendor/bin/phpunit",
 		"makepot": "wp i18n make-pot . languages/woocommerce-subscriptions.pot",
 		"prearchive": "rm -rf woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core.zip",
 		"postarchive": "unzip woocommerce-subscriptions-core.zip -d woocommerce-subscriptions-core && rm woocommerce-subscriptions-core.zip && zip -r woocommerce-subscriptions-core.zip woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core"
