@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.4.3 - 2024-xx-xx =
+Fix - Exclude switch orders from the order_needs_payment logic to prevent errors during customer switch requests that result in $0 checkout scenarios.
+
 = 7.4.2 - 2024-08-27 =
 * Fix - Resolved an issue where simple product prices were incorrectly set to $0 when purchasing subscriptions and simple products with a coupon in WC 9.2.
 
