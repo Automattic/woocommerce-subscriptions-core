@@ -56,7 +56,7 @@ class WC_Subscriptions_Email_Notifications {
 			1
 		);
 		add_action(
-			'woocommerce_order_action_wcs_customer_notification_manual_renewal',
+			'woocommerce_order_action_wcs_customer_notification_renewal',
 			function ( $order ) {
 				/**
 				 * Send Manual renewal notification to the customer.
@@ -65,22 +65,7 @@ class WC_Subscriptions_Email_Notifications {
 				 *
 				 * @param int $subscription_id
 				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_manual_renewal', $order->get_id() );
-			},
-			10,
-			1
-		);
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_auto_renewal',
-			function ( $order ) {
-				/**
-				 * Send Automatic Renewal notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_auto_renewal', $order->get_id() );
+				do_action( 'woocommerce_scheduled_subscription_customer_notification_renewal', $order->get_id() );
 			},
 			10,
 			1
@@ -104,8 +89,7 @@ class WC_Subscriptions_Email_Notifications {
 	}
 
 	public static function hook_notification_emails() {
-		add_action( 'woocommerce_scheduled_subscription_customer_notification_auto_renewal', [ __CLASS__, 'send_notification' ] );
-		add_action( 'woocommerce_scheduled_subscription_customer_notification_manual_renewal', [ __CLASS__, 'send_notification' ] );
+		add_action( 'woocommerce_scheduled_subscription_customer_notification_renewal', [ __CLASS__, 'send_notification' ] );
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_trial_expiration', [ __CLASS__, 'send_notification' ] );
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_expiration', [ __CLASS__, 'send_notification' ] );
 	}
@@ -125,11 +109,13 @@ class WC_Subscriptions_Email_Notifications {
 		}
 		$notification = null;
 		switch ( current_action() ) {
-			case 'woocommerce_scheduled_subscription_customer_notification_auto_renewal':
-				$notification = $emails['WCS_Email_Customer_Notification_Auto_Renewal'];
-				break;
-			case 'woocommerce_scheduled_subscription_customer_notification_manual_renewal':
-				$notification = $emails['WCS_Email_Customer_Notification_Manual_Renewal'];
+			case 'woocommerce_scheduled_subscription_customer_notification_renewal':
+				$subscription = wcs_get_subscription( $subscription_id );
+				if ( $subscription->is_manual() ) {
+					$notification = $emails['WCS_Email_Customer_Notification_Manual_Renewal'];
+				} else {
+					$notification = $emails['WCS_Email_Customer_Notification_Auto_Renewal'];
+				}
 				break;
 			case 'woocommerce_scheduled_subscription_customer_notification_trial_expiration':
 				$notification = $emails['WCS_Email_Customer_Notification_Free_Trial_Expiration'];
@@ -207,9 +193,9 @@ class WC_Subscriptions_Email_Notifications {
 
 			if ( $subscription->get_date( 'next_payment' ) ) {
 				if ( $subscription->is_manual() ) {
-					$actions['wcs_customer_notification_manual_renewal'] = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
+					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
 				} else {
-					$actions['wcs_customer_notification_auto_renewal'] = esc_html__( 'Send Automatic Renewal notification', 'woocommerce-subscriptions' );
+					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send Automatic Renewal notification', 'woocommerce-subscriptions' );
 				}
 			}
 		}

@@ -23,8 +23,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	protected $notification_actions = [
 		'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
 		'woocommerce_scheduled_subscription_customer_notification_expiration',
-		'woocommerce_scheduled_subscription_customer_notification_manual_renewal',
-		'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
+		'woocommerce_scheduled_subscription_customer_notification_renewal',
 	];
 
 	public function get_time_offset( $subscription ) {
@@ -113,7 +112,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		as_schedule_single_action( $timestamp, $action, $action_args );
 	}
 
-	//TODO: check timezones
 	/*
 	 * Subtract time offset from given datetime based on the settings and subscription properties and return resulting timestamp.
 	 *
@@ -160,20 +158,14 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$next_payment = $subscription->get_date( 'next_payment' );
 		$timestamp    = $this->sub_time_offset( $next_payment, $subscription );
 
-		// Can manual vs automatic payment change until it runs?
-		if ( $subscription->is_manual() ) {
-			$this->schedule_notification(
-				$subscription,
-				'woocommerce_scheduled_subscription_customer_notification_manual_renewal',
-				$timestamp
-			);
-		} else {
-			$this->schedule_notification(
-				$subscription,
-				'woocommerce_scheduled_subscription_customer_notification_auto_renewal',
-				$timestamp
-			);
-		}
+		// Whether to send email for manual or automated renewal will be determined
+		// by the status of subscription at the time of sending the notification.
+		$this->schedule_notification(
+			$subscription,
+			'woocommerce_scheduled_subscription_customer_notification_renewal',
+			$timestamp
+		);
+
 	}
 
 	/**
