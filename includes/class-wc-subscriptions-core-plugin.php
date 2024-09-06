@@ -634,6 +634,7 @@ class WC_Subscriptions_Core_Plugin {
 	 */
 	public function init_notification_batch_processor() {
 		// Background processing for notifications
-		$notifications_batch_processor = new WCS_Notifications_Batch_Processor();
+		$notifications_batch_processor      = new WCS_Notifications_Batch_Processor();
+		$notifications_debug_tool_processor = new WCS_Notifications_Debug_Tool_Processor();
 	}
 }
