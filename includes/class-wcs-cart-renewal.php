@@ -1371,15 +1371,20 @@ class WCS_Cart_Renewal {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
 	 */
 	public function setup_discounts( $order ) {
-		$order_discount = $order->get_total_discount( ! $order->get_prices_include_tax() );
-		$coupon_items   = $order->get_items( 'coupon' );
+		$order_includes_tax = $order->get_prices_include_tax();
+		$order_discount     = $order->get_total_discount( ! $order_includes_tax );
+		$coupon_items       = $order->get_items( 'coupon' );
 
 		if ( empty( $order_discount ) && empty( $coupon_items ) ) {
 			return;
 		}
 
-		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) ) + floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
 		$coupons               = array();
+		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) );
+
+		if ( $order_includes_tax ) {
+			$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
+		}
 
 		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
 		$order_has_manual_discount = $order_discount !== $total_coupon_discount;
