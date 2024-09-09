@@ -1379,8 +1379,8 @@ class WCS_Cart_Renewal {
 			return;
 		}
 
-		$coupons               = array();
 		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) );
+		$coupons               = array();
 
 		if ( $order_includes_tax ) {
 			$total_coupon_discount += floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
