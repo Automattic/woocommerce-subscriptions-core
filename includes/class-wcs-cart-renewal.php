@@ -1383,7 +1383,7 @@ class WCS_Cart_Renewal {
 		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) );
 
 		if ( $order_includes_tax ) {
-			$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
+			$total_coupon_discount += floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
 		}
 
 		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
