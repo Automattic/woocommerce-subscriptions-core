@@ -341,7 +341,8 @@ class WC_Subscription extends WC_Order {
 			case 'active':
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
 					// If the subscription's end date is in the past, it cannot be reactivated.
-					if ( $this->get_time( 'end' ) && $this->get_time( 'end' ) < gmdate( 'U' ) ) {
+					$end_time = $this->get_time( 'end' );
+					if ( 0 !== $end_time && $end_time < gmdate( 'U' ) ) {
 						$can_be_updated = false;
 					} else {
 						$can_be_updated = true;
