@@ -154,6 +154,12 @@ class WC_Subscriptions_Email_Notifications {
 			$notification_enabled = false;
 		}
 
+		// If Customer notifications are disabled in the settings by a global switch, or there is no offset set, don't send notifications.
+		if ( 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string )
+			|| ! get_option( WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string ) ) {
+			$notification_enabled = false;
+		}
+
 		/**
 		 * Enables/disables all customer subscription notifications.
 		 *
