@@ -123,7 +123,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	protected function sub_time_offset( $datetime, $subscription ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
 
-		return $dt->getTimestamp() - $this->time_offset;
+		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
 	}
 
 	public function schedule_trial_ending_notification( $subscription ) {
