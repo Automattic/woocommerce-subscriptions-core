@@ -132,9 +132,6 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_payment_gateways_setting_column_renewals', array( __CLASS__, 'payment_gateways_renewal_support' ) );
 
-		// Do not display formatted order total on the Edit Order administration screen
-		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
-
 		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10, 1 );
 
 		// Change text for when order items cannot be edited
@@ -1826,21 +1823,6 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Do not display formatted order total on the Edit Order administration screen
-	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5.17
-	 */
-	public static function maybe_remove_formatted_order_total_filter( $formatted_total, $order ) {
-
-		// Check if we're on the Edit Order screen - get_current_screen() only exists on admin pages so order of operations matters here
-		if ( self::is_edit_order_page() ) {
-			remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10 );
-		}
-
-		return $formatted_total;
-	}
-
-	/**
 	 * Only attach the gettext callback when on admin shop subscription screen
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
@@ -2247,17 +2229,6 @@ class WC_Subscriptions_Admin {
 	 */
 	private static function is_edit_subscription_page() {
 		return self::is_page( 'shop_subscription' );
-	}
-
-	/**
-	 * Check if the current page is the Edit Order page
-	 *
-	 * @return boolean True if the current page is the Edit Order page
-	 *
-	 * @since 7.5.0
-	 */
-	private static function is_edit_order_page() {
-		return self::is_page( 'shop_order' );
 	}
 
 	/**
