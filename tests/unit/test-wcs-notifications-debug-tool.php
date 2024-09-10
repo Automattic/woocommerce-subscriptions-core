@@ -8,6 +8,7 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 * Test the "WCS_Notifications_Debug_Tool_Processor::process_batch()" method.
 	 *
 	 * @dataProvider process_batch_notifications_provider
+	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch
 	 *
 	 * @param array $data
 	 * @return bool
@@ -120,5 +121,96 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Test the WCS_Notifications_Debug_Tool_Processor tool state.
+	 */
+	public function test_tool_state() {
+
+		$processor = new WCS_Notifications_Debug_Tool_Processor();
+
+		// Get a reflection of private get_tool_state() method.
+		$reflection = new ReflectionClass( $processor );
+		$get_method = $reflection->getMethod( 'get_tool_state' );
+		$get_method->setAccessible( true );
+
+		// Get the update_tool_state() method.
+		$update_method = $reflection->getMethod( 'update_tool_state' );
+		$update_method->setAccessible( true );
+
+		// Get the delete_tool_state() method.
+		$delete_method = $reflection->getMethod( 'delete_tool_state' );
+		$delete_method->setAccessible( true );
+
+		// Test initial state of empty array.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertIsArray( $tool_state );
+		$this->assertFalse( isset( $tool_state['last_offset'] ) );
+
+		// Update the tool state.
+		$update_method->invoke( $processor, [ 'last_offset' => 10 ] );
+
+		// Test updated state.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertIsArray( $tool_state );
+		$this->assertTrue( isset( $tool_state['last_offset'] ) );
+
+		// Delete the tool state.
+		$delete_method->invoke( $processor );
+
+		// Test initial state of empty array.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertIsArray( $tool_state );
+		$this->assertFalse( isset( $tool_state['last_offset'] ) );
+	}
+
+	/**
+	 * Test the WCS_Notifications_Debug_Tool_Processor tool state.
+	 *
+	 * Hint: This tests is reusing the same subscriptions created in the previous test.
+	 *
+	 * @covers WCS_Notifications_Debug_Tool_Processor::get_next_batch_to_process
+	 *
+	 * @return void
+	 */
+	public function test_tool_state_while_processing() {
+
+		$processor = new WCS_Notifications_Debug_Tool_Processor();
+
+		// Get a reflection of private get_tool_state() method.
+		$reflection = new ReflectionClass( $processor );
+		$get_method = $reflection->getMethod( 'get_tool_state' );
+		$get_method->setAccessible( true );
+
+		$batch_1 = $processor->get_next_batch_to_process( 2 );
+
+		// Check the initial state.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertFalse( isset( $tool_state['last_offset'] ) );
+
+		// Process.
+		$processor->process_batch( $batch_1 );
+
+		// Check the state after processing.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertTrue( isset( $tool_state['last_offset'] ) );
+		$this->assertEquals( 2, $tool_state['last_offset'] );
+
+		$batch_2 = $processor->get_next_batch_to_process( 1 );
+		$processor->process_batch( $batch_2 );
+
+		// Check the state after processing.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertTrue( isset( $tool_state['last_offset'] ) );
+		$this->assertEquals( 3, $tool_state['last_offset'] );
+
+		$batch_3 = $processor->get_next_batch_to_process( 1 );
+		$this->assertEmpty( $batch_3 );
+
+		// Check the state after processing.
+		$tool_state = $get_method->invoke( $processor );
+		$this->assertIsArray( $tool_state );
+		$this->assertFalse( isset( $tool_state['last_offset'] ) );
 	}
 }
