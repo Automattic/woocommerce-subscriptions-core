@@ -94,6 +94,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
+		if ( WCS_Email_Customer_Notification::subscription_period_too_short( $subscription ) ) {
+			return;
+		}
+
 		$action_args = $this->get_action_args( $subscription );
 
 		$next_scheduled = as_next_scheduled_action( $action, $action_args );
