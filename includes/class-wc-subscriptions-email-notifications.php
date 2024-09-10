@@ -84,6 +84,8 @@ class WC_Subscriptions_Email_Notifications {
 
 	public static function update_update_time() {
 		update_option( 'wcs_notification_settings_update_time', time() );
+
+		WCS_Notifications_Batch_Processor::enqueue();
 	}
 
 	/**
