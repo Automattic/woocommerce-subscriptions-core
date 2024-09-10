@@ -2228,18 +2228,6 @@ class WC_Subscriptions_Admin {
 	 * @since 7.5.0
 	 */
 	private static function is_edit_subscription_page() {
-		return self::is_page( 'shop_subscription' );
-	}
-
-	/**
-	 * Check if the current page is the provided page.
-	 *
-	 * @param string $page_id The page ID.
-	 * @return bool True if the current page is the provided page
-	 *
-	 * @since 7.5.0
-	 */
-	private static function is_page( $page_id ) {
 		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
 			return false;
 		}
@@ -2249,6 +2237,6 @@ class WC_Subscriptions_Admin {
 			return false;
 		}
 
-		return wcs_get_page_screen_id( $page_id ) === $screen->id;
+		return wcs_get_page_screen_id( 'shop_subscription' ) === $screen->id;
 	}
 }
