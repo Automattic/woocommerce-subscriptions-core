@@ -94,6 +94,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
+		if ( WCS_Email_Customer_Notification::subscription_period_too_short( $subscription ) ) {
+			return;
+		}
+
 		$action_args = $this->get_action_args( $subscription );
 
 		$next_scheduled = as_next_scheduled_action( $action, $action_args );
@@ -123,7 +127,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	protected function sub_time_offset( $datetime, $subscription ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
 
-		return $dt->getTimestamp() - $this->time_offset;
+		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
 	}
 
 	public function schedule_trial_ending_notification( $subscription ) {

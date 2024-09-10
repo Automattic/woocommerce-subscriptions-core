@@ -12,9 +12,14 @@
 class WC_Subscriptions_Email_Notifications {
 
 	/**
-	 * @var string Setting option identifier.
+	 * @var string Offset setting option identifier.
 	 */
 	public static $offset_setting_string = '_customer_notifications_offset';
+
+	/**
+	 * @var string Enabled/disabled setting option identifier.
+	 */
+	public static $switch_setting_string = '_customer_notifications_enabled';
 
 	public static function init() {
 
@@ -155,6 +160,12 @@ class WC_Subscriptions_Email_Notifications {
 			$notification_enabled = false;
 		}
 
+		// If Customer notifications are disabled in the settings by a global switch, or there is no offset set, don't send notifications.
+		if ( 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string )
+			|| ! get_option( WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string ) ) {
+			$notification_enabled = false;
+		}
+
 		/**
 		 * Enables/disables all customer subscription notifications.
 		 *
@@ -225,6 +236,16 @@ class WC_Subscriptions_Email_Notifications {
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
 				/* translators: Link to WC Settings > Email. */
 				'desc' => sprintf( __( 'To enable and disable individual notifications, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
+			],
+			[
+				'name'     => __( 'Enable customer notifications', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Enable or disable all customer notification emails.', 'woocommerce-subscriptions' ),
+				'tip'      => '',
+				'id'       => WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string,
+				'desc_tip' => false,
+				'type'     => 'checkbox',
+				'default'  => 'no',
+				'autoload' => false,
 			],
 			[
 				'name'        => __( 'Time Offset', 'woocommerce-subscriptions' ),

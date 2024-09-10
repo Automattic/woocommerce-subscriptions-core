@@ -51,9 +51,26 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		);
 	}
 
+	/**
+	 * @param $subscription
+	 *
+	 * @return bool
+	 */
+	public static function subscription_period_too_short( $subscription ) {
+		$period   = $subscription->get_billing_period();
+		$interval = $subscription->get_billing_interval();
+
+		// By default, there are no shorter periods than days in WCS, so we ignore hours, minutes, etc.
+		if ( $period <= 2 && 'day' === $interval ) {
+			return true;
+		}
+
+		return false;
+	}
+
 
 	/**
-	 * trigger function.
+	 * Trigger function.
 	 *
 	 * @return void
 	 */
@@ -65,6 +82,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		if ( ! $this->is_enabled()
 			|| ! $this->get_recipient()
 			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
+			|| $this->subscription_period_too_short( $subscription )
 		) {
 			return;
 		}
