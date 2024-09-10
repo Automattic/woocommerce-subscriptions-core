@@ -340,7 +340,7 @@ class WC_Subscription extends WC_Order {
 			case 'completed': // core WC order status mapped internally to avoid exceptions
 			case 'active':
 				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
-					if ( $this->get_time( 'end' ) > gmdate( 'U' ) ) {
+					if ( 0 === $this->get_time( 'end' ) || $this->get_time( 'end' ) > gmdate( 'U' ) ) {
 						$can_be_updated = true;
 					} else {
 						$can_be_updated = false;
