@@ -15,34 +15,24 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 */
 	public function test_process_batch_notifications( $data ) {
 
-		// Enable feature.
-		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
-		update_option(
-			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-			[
-				'number' => '3',
-				'unit'   => 'days',
-			]
-		);
-
 		$subscription = $data['subscription'];
 		$action_name  = $data['action_name'];
 		$action_args  = [ 'subscription_id' => $subscription->get_id() ];
 
-		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args );
+		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 		$this->assertTrue( $has_notification );
 
 		// Remove.
 		as_unschedule_action( $action_name, $action_args );
 
-		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args );
+		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 		$this->assertFalse( $has_notification );
 
 		// Run the debug processor.
 		$processor = new WCS_Notifications_Debug_Tool_Processor();
 		$processor->process_batch( [ $subscription->get_id() ] );
 
-		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args );
+		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 		$this->assertTrue( $has_notification );
 	}
 
@@ -52,6 +42,16 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 * @return array
 	 */
 	public function process_batch_notifications_provider() {
+
+		// Enable feature.
+		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
+		update_option(
+			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
+			[
+				'number' => '3',
+				'unit'   => 'days',
+			]
+		);
 
 		/*
 		 * Create a simple subscription.
