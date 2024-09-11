@@ -7,41 +7,12 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	/**
 	 * Test the "WCS_Notifications_Debug_Tool_Processor::process_batch()" method.
 	 *
-	 * @dataProvider process_batch_notifications_provider
 	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch
 	 *
 	 * @param array $data
 	 * @return bool
 	 */
-	public function test_process_batch_notifications( $data ) {
-
-		$subscription = $data['subscription'];
-		$action_name  = $data['action_name'];
-		$action_args  = [ 'subscription_id' => $subscription->get_id() ];
-
-		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
-		$this->assertTrue( $has_notification );
-
-		// Remove.
-		as_unschedule_action( $action_name, $action_args );
-
-		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
-		$this->assertFalse( $has_notification );
-
-		// Run the debug processor.
-		$processor = new WCS_Notifications_Debug_Tool_Processor();
-		$processor->process_batch( [ $subscription->get_id() ] );
-
-		$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
-		$this->assertTrue( $has_notification );
-	}
-
-	/**
-	 * Data provider for the "test_process_batch_notifications()" method.
-	 *
-	 * @return array
-	 */
-	public function process_batch_notifications_provider() {
+	public function test_process_batch_notifications() {
 
 		// Enable feature.
 		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
@@ -52,6 +23,38 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 				'unit'   => 'days',
 			]
 		);
+
+		$batches = $this->notification_subscription_provider();
+
+		foreach ( $batches as $batch ) {
+			$subscription = $batch['subscription'];
+			$action_name  = $batch['action_name'];
+			$action_args  = [ 'subscription_id' => $subscription->get_id() ];
+
+			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
+			$this->assertTrue( $has_notification );
+
+			// Remove.
+			as_unschedule_action( $action_name, $action_args );
+
+			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
+			$this->assertFalse( $has_notification );
+
+			// Run the debug processor.
+			$processor = new WCS_Notifications_Debug_Tool_Processor();
+			$processor->process_batch( [ $subscription->get_id() ] );
+
+			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
+			$this->assertTrue( $has_notification );
+		}
+	}
+
+	/**
+	 * Data provider for the "test_process_batch_notifications()" method.
+	 *
+	 * @return array
+	 */
+	protected function notification_subscription_provider() {
 
 		/*
 		 * Create a simple subscription.
@@ -104,22 +107,16 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 		return [
 			[
-				[
-					'subscription' => $simple_subscription,
-					'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_renewal',
-				],
+				'subscription' => $simple_subscription,
+				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_renewal',
 			],
 			[
-				[
-					'subscription' => $free_trial_subscription,
-					'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
-				],
+				'subscription' => $free_trial_subscription,
+				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
 			],
 			[
-				[
-					'subscription' => $expiry_subscription,
-					'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_expiration',
-				],
+				'subscription' => $expiry_subscription,
+				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_expiration',
 			],
 		];
 	}
@@ -177,6 +174,7 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 */
 	public function test_tool_state_while_processing() {
 
+		$this->notification_subscription_provider();
 		$processor = new WCS_Notifications_Debug_Tool_Processor();
 
 		// Get a reflection of private get_tool_state() method.
