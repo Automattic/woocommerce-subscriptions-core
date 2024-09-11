@@ -15,14 +15,15 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 */
 	public function test_process_batch_notifications( $data ) {
 
-		// Hint: This should be required here (?)
-		// update_option(
-		//  WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
-		//  array(
-		//      'number' => '3',
-		//      'unit'   => 'days',
-		//  )
-		// );
+		// Enable feature.
+		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
+		update_option(
+			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
+			[
+				'number' => '3',
+				'unit'   => 'days',
+			]
+		);
 
 		$subscription = $data['subscription'];
 		$action_name  = $data['action_name'];
