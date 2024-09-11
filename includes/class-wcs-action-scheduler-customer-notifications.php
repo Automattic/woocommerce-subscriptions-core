@@ -105,7 +105,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
-		if ( WCS_Email_Customer_Notification::subscription_period_too_short( $subscription ) ) {
+		if ( WC_Subscriptions_Email_Notifications::subscription_period_too_short( $subscription ) ) {
 			return;
 		}
 
@@ -180,7 +180,6 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			'woocommerce_scheduled_subscription_customer_notification_renewal',
 			$timestamp
 		);
-
 	}
 
 	/**

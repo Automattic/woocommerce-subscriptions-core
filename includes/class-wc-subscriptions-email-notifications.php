@@ -186,6 +186,23 @@ class WC_Subscriptions_Email_Notifications {
 	}
 
 	/**
+	 * @param $subscription
+	 *
+	 * @return bool
+	 */
+	public static function subscription_period_too_short( $subscription ) {
+		$period   = $subscription->get_billing_period();
+		$interval = $subscription->get_billing_interval();
+
+		// By default, there are no shorter periods than days in WCS, so we ignore hours, minutes, etc.
+		if ( $period <= 2 && 'day' === $interval ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Adds actions to the admin edit subscriptions page.
 	 *
 	 * @param array $actions An array of available actions
