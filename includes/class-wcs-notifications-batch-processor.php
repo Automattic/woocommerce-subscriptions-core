@@ -168,12 +168,15 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	 * @param array $batch Batch to process, as returned by 'get_next_batch_to_process'.
 	 */
 	public function process_batch( array $batch ): void {
-		// This is a bit unnecessary. Perhaps convert `update_status` to static to avoid instantiating the class?
 		$subscriptions_notifications = new WCS_Action_Scheduler_Customer_Notifications();
 
 		foreach ( $batch as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
-			$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
+			if ( WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
+				$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
+			} else {
+				$subscriptions_notifications->unschedule_all_notifications( $subscription );
+			}
 
 			// Update the subscription's update time to mark it as updated.
 			$subscription->set_date_modified( time() );
@@ -193,11 +196,11 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	}
 
 	/**
-	 * Start the background process for coupon data conversion.
+	 * Start the background process for updating notifications.
 	 *
 	 * @return string Informative string to show after the tool is triggered in UI.
 	 */
-	public function enqueue(): string {
+	public static function enqueue(): string {
 		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
 		if ( $batch_processor->is_enqueued( self::class ) ) {
 			return __( 'Background process for updating subscritpion notifications already started, nothing done.', 'woocommerce-subscriptions' );
@@ -208,11 +211,11 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	}
 
 	/**
-	 * Stop the background process for coupon data conversion.
+	 * Stop the background process for updating notifications.
 	 *
 	 * @return string Informative string to show after the tool is triggered in UI.
 	 */
-	public function dequeue(): string {
+	public static function dequeue(): string {
 		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
 		if ( ! $batch_processor->is_enqueued( self::class ) ) {
 			return __( 'Background process for updating subscritpion notifications not started, nothing done.', 'woocommerce-subscriptions' );
