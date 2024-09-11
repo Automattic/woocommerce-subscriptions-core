@@ -243,6 +243,8 @@ class WC_Subscriptions_Core_Plugin {
 		add_action( 'init', array( $this, 'activate_plugin' ) );
 
 		add_filter( 'action_scheduler_queue_runner_batch_size', array( $this, 'reduce_multisite_action_scheduler_batch_size' ) );
+
+		add_action( 'init', array( $this, 'init_notification_batch_processor' ) );
 	}
 
 	/**
@@ -623,5 +625,16 @@ class WC_Subscriptions_Core_Plugin {
 		}
 
 		return $batch_size;
+	}
+
+	/**
+	 * Initialize batch processing for subscription notifications.
+	 *
+	 * @return void
+	 */
+	public function init_notification_batch_processor() {
+		// Background processing for notifications
+		$notifications_batch_processor      = new WCS_Notifications_Batch_Processor();
+		$notifications_debug_tool_processor = new WCS_Notifications_Debug_Tool_Processor();
 	}
 }

@@ -77,6 +77,15 @@ class WC_Subscriptions_Email_Notifications {
 		);
 
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
+
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
+	}
+
+	public static function update_update_time() {
+		update_option( 'wcs_notification_settings_update_time', time() );
+
+		WCS_Notifications_Batch_Processor::enqueue();
 	}
 
 	/**
@@ -135,6 +144,11 @@ class WC_Subscriptions_Email_Notifications {
 		}
 	}
 
+	public static function notifications_globally_enabled() {
+		return ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string )
+				&& get_option( WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string ) );
+	}
+
 	/**
 	 * Should the emails be sent out?
 	 *
@@ -155,8 +169,7 @@ class WC_Subscriptions_Email_Notifications {
 		}
 
 		// If Customer notifications are disabled in the settings by a global switch, or there is no offset set, don't send notifications.
-		if ( 'yes' !== get_option( WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string )
-			|| ! get_option( WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string ) ) {
+		if ( ! self::notifications_globally_enabled() ) {
 			$notification_enabled = false;
 		}
 

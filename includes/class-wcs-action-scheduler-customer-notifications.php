@@ -278,7 +278,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$this->update_date( $subscription, $date_type, '0' );
 	}
 
-	protected function unschedule_all_notifications( $subscription, $exceptions = [] ) {
+	public function unschedule_all_notifications( $subscription, $exceptions = [] ) {
 		foreach ( $this->notification_actions as $action ) {
 			if ( in_array( $action, $exceptions, true ) ) {
 				continue;
