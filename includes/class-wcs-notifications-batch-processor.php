@@ -5,10 +5,6 @@ use Automattic\WooCommerce\Internal\BatchProcessing\BatchProcessorInterface;
 
 class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 
-	public function __construct() {
-		add_filter( 'woocommerce_debug_tools', array( $this, 'handle_woocommerce_debug_tools' ), 999, 1 );
-	}
-
 	/**
 	 * Get a user-friendly name for this processor.
 	 *
@@ -227,45 +223,5 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 
 		$batch_processor->remove_processor( self::class );
 		return __( 'Background process for updating subscritpion notifications stopped', 'woocommerce-subscriptions' );
-	}
-
-	/**
-	 * Add the tool to start or stop the background process that manages notification batch processing.
-	 *
-	 * @param array $tools Old tools array.
-	 * @return array Updated tools array.
-	 */
-	public function handle_woocommerce_debug_tools( array $tools ): array {
-		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
-		$pending_count   = $this->get_total_pending_count();
-
-		if ( 0 === $pending_count ) {
-			$tools['start_add_subscription_notifications'] = array(
-				'name'     => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'   => __( 'Add notifications', 'woocommerce-subscriptions' ),
-				'disabled' => true,
-				'desc'     => __( 'This tool will add notifications to pending, active and on-hold subscriptions. This will happen overtime in the background (via Action Scheduler). There are currently no entries to convert.', 'woocommerce-subscriptions' ),
-			);
-		} elseif ( $batch_processor->is_enqueued( self::class ) ) {
-			$tools['stop_add_subscription_notifications'] = array(
-				'name'     => __( 'Stop adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'   => __( 'Stop adding notifications', 'woocommerce-subscriptions' ),
-				'desc'     =>
-				/* translators: %d=count of entries pending conversion */
-					sprintf( __( 'This will stop the background process that adds notifications to pending, active and on-hold subscriptions. There are currently %d entries that can be converted.', 'woocommerce-subscriptions' ), $pending_count ),
-				'callback' => array( $this, 'dequeue' ),
-			);
-		} else {
-			$tools['start_add_subscription_notifications'] = array(
-				'name'     => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'   => __( 'Add notifications', 'woocommerce-subscriptions' ),
-				'desc'     =>
-				/* translators: %d=count of entries pending conversion */
-					sprintf( __( 'This tool will add notifications to pending, active and on-hold subscriptions. This will happen overtime in the background (via Action Scheduler). There are currently %d entries that can be converted.', 'woocommerce-subscriptions' ), $pending_count ),
-				'callback' => array( $this, 'enqueue' ),
-			);
-		}
-
-		return $tools;
 	}
 }
