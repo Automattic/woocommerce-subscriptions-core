@@ -1823,6 +1823,18 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Do not display formatted order total on the Edit Order administration screen
+	 *
+	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5.17
+	 * @deprecated 7.5.0
+	 */
+	public static function maybe_remove_formatted_order_total_filter( $formatted_total, $order ) {
+		wcs_deprecated_function( __METHOD__, '7.5.0' );
+
+		return $formatted_total;
+	}
+
+	/**
 	 * Only attach the gettext callback when on admin shop subscription screen
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
