@@ -92,6 +92,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	protected function schedule_notification( $subscription, $action, $timestamp ) {
+		if ( ! WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
+			return;
+		}
+
 		if (
 			! (
 				$subscription->has_status( 'active' )

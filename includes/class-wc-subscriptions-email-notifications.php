@@ -246,7 +246,7 @@ class WC_Subscriptions_Email_Notifications {
 			],
 			[
 				'name'     => __( 'Enable customer notifications', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Enable or disable all customer notification emails.', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Enable all customer notification emails.', 'woocommerce-subscriptions' ),
 				'tip'      => '',
 				'id'       => WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string,
 				'desc_tip' => false,
