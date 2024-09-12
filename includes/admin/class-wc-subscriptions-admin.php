@@ -132,9 +132,6 @@ class WC_Subscriptions_Admin {
 
 		add_action( 'woocommerce_payment_gateways_setting_column_renewals', array( __CLASS__, 'payment_gateways_renewal_support' ) );
 
-		// Do not display formatted order total on the Edit Order administration screen
-		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
-
 		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10, 1 );
 
 		// Change text for when order items cannot be edited
@@ -1829,18 +1826,10 @@ class WC_Subscriptions_Admin {
 	 * Do not display formatted order total on the Edit Order administration screen
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5.17
+	 * @deprecated 7.5.0
 	 */
 	public static function maybe_remove_formatted_order_total_filter( $formatted_total, $order ) {
-
-		// Check if we're on the Edit Order screen - get_current_screen() only exists on admin pages so order of operations matters here
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_order' == $screen->id ) {
-				remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10 );
-			}
-		}
+		wcs_deprecated_function( __METHOD__, '7.5.0' );
 
 		return $formatted_total;
 	}
