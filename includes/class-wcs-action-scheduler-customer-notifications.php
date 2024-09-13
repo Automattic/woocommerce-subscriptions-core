@@ -109,7 +109,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
-		$action_args = $this->get_action_args( $subscription );
+		$action_args = self::get_action_args( $subscription );
 
 		$next_scheduled = as_next_scheduled_action( $action, $action_args, $this->notifications_as_group );
 
@@ -252,7 +252,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$date_types_to_schedule = wcs_get_subscription_date_types();
 		unset(
 			$date_types_to_schedule['start'],
-			$date_types_to_schedule['cancelled'] // prevent scheduling end date when reactivating subscription.
+			$date_types_to_schedule['cancelled'], // prevent scheduling end date when reactivating subscription.
+			$date_types_to_schedule['last_payment'],
 		);
 
 		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
@@ -287,7 +288,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 				continue;
 			}
 
-			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
+			$this->unschedule_actions( $action, self::get_action_args( $subscription ) );
 		}
 	}
 
@@ -328,7 +329,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
-	protected function get_action_args( $subscription ) {
+	public static function get_action_args( $subscription ) {
 		$action_args = [ 'subscription_id' => $subscription->get_id() ];
 
 		return $action_args;
