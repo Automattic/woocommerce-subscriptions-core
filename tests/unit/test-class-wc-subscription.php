@@ -18,8 +18,8 @@ class WC_Subscription_Test extends WP_UnitTestCase {
 	public function test_update_status( $from, $to, $expected ) {
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => $from,
-				'requires_manual_renewal' => true // Required to allow the subscription status to be updated.
+				'status'                  => $from,
+				'requires_manual_renewal' => true, // Required to allow the subscription status to be updated.
 			)
 		);
 		$subscription->update_dates( [ 'end' => gmdate( 'Y-m-d H:i:s', wcs_add_months( time(), 1 ) ) ] );
@@ -38,11 +38,11 @@ class WC_Subscription_Test extends WP_UnitTestCase {
 	public function provide_test_update_status() {
 		return array(
 			'pending-cancel => active' => array(
-				'from' => 'pending-cancel',
-				'to' => 'active',
+				'from'     => 'pending-cancel',
+				'to'       => 'active',
 				'expected' => array(
 					'cancelled_email_sent' => 'false',
-				)
+				),
 			),
 		);
 	}
