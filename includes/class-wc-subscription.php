@@ -515,6 +515,11 @@ class WC_Subscription extends WC_Order {
 								// In case plugins want to run some code when the subscription was reactivated, but the next payment date was not recalculated.
 								do_action( 'woocommerce_subscription_activation_next_payment_not_recalculated', $stored_next_payment, $old_status, $this );
 							}
+
+							// If the subscription was cancelled, reset the cancelled email sent flag so the customer can be notified of a future cancellation
+							if ( 'cancelled' === $old_status ) {
+								$this->set_cancelled_email_sent( 'false' );
+							}
 						}
 
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
