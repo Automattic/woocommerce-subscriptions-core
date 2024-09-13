@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.5.1 - xxxx-xx-xx =
+* Fix - Clear the `cancelled_email_sent` meta when a subscription is reactivated to allow the customer to receive future cancellation emails.
+
 = 7.5.0 - 2024-09-12 =
 * Dev - Removing the unused method `maybe_remove_formatted_order_total_filter` hooked to `woocommerce_get_formatted_order_total` which was deprecated.
 * Fix - Resolved two issues preventing the correct display of the "Subscription items can no longer be edited." message on the Edit Subscription page.
