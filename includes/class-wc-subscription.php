@@ -497,6 +497,9 @@ class WC_Subscription extends WC_Order {
 								'trial_end'    => $this->meta_exists( 'trial_end_pre_cancellation' ) ? $this->get_meta( 'trial_end_pre_cancellation' ) : 0,
 								'next_payment' => $this->get_date( 'end' ),
 							) );
+
+							// If the subscription was cancelled, reset the cancelled email sent flag so the customer can be notified of a future cancellation
+							$this->set_cancelled_email_sent( 'false' );
 						} else {
 							// Recalculate and set next payment date
 							$stored_next_payment = $this->get_time( 'next_payment' );
@@ -514,11 +517,6 @@ class WC_Subscription extends WC_Order {
 							} else {
 								// In case plugins want to run some code when the subscription was reactivated, but the next payment date was not recalculated.
 								do_action( 'woocommerce_subscription_activation_next_payment_not_recalculated', $stored_next_payment, $old_status, $this );
-							}
-
-							// If the subscription was cancelled, reset the cancelled email sent flag so the customer can be notified of a future cancellation
-							if ( 'cancelled' === $old_status ) {
-								$this->set_cancelled_email_sent( 'false' );
 							}
 						}
 
