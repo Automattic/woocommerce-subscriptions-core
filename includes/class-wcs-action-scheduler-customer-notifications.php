@@ -164,10 +164,17 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	public function schedule_payment_notification( $subscription ) {
+		// Only schedule payment notifications if trial already ended.
+		$trial_end = $subscription->get_date( 'trial_end' );
+		if ( $trial_end ) {
+			$trial_end_dt        = new DateTime( $trial_end, new DateTimeZone( 'UTC' ) );
+			$trial_end_timestamp = $trial_end_dt->getTimestamp();
 
-		//TODO: For end of trial, should we schedule payment notification? Let's say no.
-		if ( $subscription->get_date( 'trial_end' ) ) {
-			return;
+			if ( $trial_end_timestamp > time() ) {
+				// This is needed because if the code first adds 'next_payment' date and only then adds 'trial_end', we only want to keep the trial expiry.
+				$this->unschedule_actions( 'woocommerce_scheduled_subscription_customer_notification_renewal', $this->get_action_args( $subscription ) );
+				return;
+			}
 		}
 
 		$next_payment = $subscription->get_date( 'next_payment' );
@@ -252,7 +259,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$date_types_to_schedule = wcs_get_subscription_date_types();
 		unset(
 			$date_types_to_schedule['start'],
-			$date_types_to_schedule['cancelled'] // prevent scheduling end date when reactivating subscription.
+			$date_types_to_schedule['cancelled'], // prevent scheduling end date when reactivating subscription.
 		);
 
 		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
@@ -328,7 +335,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
-	protected function get_action_args( $subscription ) {
+	public static function get_action_args( $subscription ) {
 		$action_args = [ 'subscription_id' => $subscription->get_id() ];
 
 		return $action_args;
