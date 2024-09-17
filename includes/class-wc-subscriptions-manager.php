@@ -454,10 +454,28 @@ class WC_Subscriptions_Manager {
 				$order->update_status( 'failed', __( 'Subscription sign up failed.', 'woocommerce-subscriptions' ) );
 			}
 
+			$new_status = 'on-hold';
+
+			// Get last order note
+			$latest_notes = wc_get_order_notes(
+				array(
+					'order_id' => $order->get_id(),
+					'limit'    => 1,
+					'orderby'  => 'date_created_gmt',
+				)
+			);
+
+			$latest_note = current( $latest_notes );
+
+			// If the last note contains the dispute message, set the status to cancelled
+			if ( isset( $latest_note->content ) && false !== strpos( $latest_note->content, 'The dispute was lost or accepted.' ) ) {
+				$new_status = 'cancelled';
+			}
+
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					$subscription->payment_failed();
+					$subscription->payment_failed( $new_status );
 
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message
