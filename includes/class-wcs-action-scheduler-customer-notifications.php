@@ -109,7 +109,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
-		$action_args = $this->get_action_args( $subscription );
+		$action_args = self::get_action_args( $subscription );
 
 		$next_scheduled = as_next_scheduled_action( $action, $action_args, $this->notifications_as_group );
 
@@ -294,7 +294,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 				continue;
 			}
 
-			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
+			$this->unschedule_actions( $action, self::get_action_args( $subscription ) );
 		}
 	}
 
