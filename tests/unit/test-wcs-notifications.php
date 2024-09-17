@@ -1038,6 +1038,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 				}
 			} elseif ( ! array_key_exists( $key, $array2 )
 						|| $array2[ $key ] != $value ) { // @phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
+						// Need to use weak comparison as the instance isn't the same.
 				$difference[ $key ] = $value;
 			}
 		}
