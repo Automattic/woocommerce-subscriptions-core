@@ -385,7 +385,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_args();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the notification is in the correct group.',
@@ -394,7 +394,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_group();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the date is correct.',
@@ -408,11 +408,11 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_schedule()->get_date();
-							}
+							},
 						],
 					],
 				],
-			'Test 2: Simple subscription with manual renewal.'                =>
+			'Test 2: Simple subscription with manual renewal.' =>
 				[
 					'callback'          => [ self::class, 'create_simple_subscription' ],
 					'params'            => [ 'true' ],
@@ -421,8 +421,8 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message'  => 'Check that exactly one notification is created.',
 							'expected' => 1,
 							'actual'   => function ( $subscription, $new_actions ) {
-								return count( array_values( $new_actions )[0]);
-							}
+								return count( array_values( $new_actions )[0] );
+							},
 						],
 						[
 							'message'  => 'Check that the correct hook is used.',
@@ -431,7 +431,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_hook();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct args are used.',
@@ -442,7 +442,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_args();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the notification is in the correct group.',
@@ -451,7 +451,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_group();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the date is correct.',
@@ -465,9 +465,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_schedule()->get_date();
-							}
+							},
 						],
-					]
+					],
 				],
 			'Test 3: Free trial with automatic renewal, within trial period.' =>
 				[
@@ -479,7 +479,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 1,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct hook is used.',
@@ -488,7 +488,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_hook();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct args are used.',
@@ -499,7 +499,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_args();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the notification is in the correct group.',
@@ -508,7 +508,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_group();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the date is correct.',
@@ -522,11 +522,11 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_schedule()->get_date();
-							}
+							},
 						],
-					]
+					],
 				],
-			'Test 4: Free trial with manual renewal, within trial period.'    =>
+			'Test 4: Free trial with manual renewal, within trial period.' =>
 				[
 					'callback'          => [ self::class, 'create_free_trial_subscription' ],
 					'params'            => [ [], 'true' ],
@@ -536,7 +536,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 1,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct hook is used.',
@@ -545,7 +545,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_hook();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct args are used.',
@@ -556,7 +556,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_args();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the notification is in the correct group.',
@@ -565,7 +565,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_group();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the date is correct.',
@@ -579,11 +579,11 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_schedule()->get_date();
-							}
+							},
 						],
-					]
+					],
 				],
-			'Test 5: Free trial with automatic renewal, after trial period.'  =>
+			'Test 5: Free trial with automatic renewal, after trial period.' =>
 				[
 					'callback'          => [ self::class, 'create_free_trial_subscription' ],
 					'params'            => [ [], 'false', false ],
@@ -593,7 +593,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 1,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct hook is used.',
@@ -602,7 +602,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_hook();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct args are used.',
@@ -613,7 +613,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_args();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the notification is in the correct group.',
@@ -622,7 +622,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_group();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the date is correct.',
@@ -636,11 +636,11 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_schedule()->get_date();
-							}
+							},
 						],
-					]
+					],
 				],
-			'Test 6: Free trial with manual renewal, after trial period.'     =>
+			'Test 6: Free trial with manual renewal, after trial period.' =>
 				[
 					'callback'          => [ self::class, 'create_free_trial_subscription' ],
 					'params'            => [ [], 'true', false ],
@@ -650,7 +650,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 1,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct hook is used.',
@@ -659,7 +659,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_hook();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the correct args are used.',
@@ -670,7 +670,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_args();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the notification is in the correct group.',
@@ -679,7 +679,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_group();
-							}
+							},
 						],
 						[
 							'message'  => 'Check that the date is correct.',
@@ -693,11 +693,11 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								$new_action = array_values( $new_actions )[0][0];
 
 								return $new_action->get_schedule()->get_date();
-							}
+							},
 						],
-					]
+					],
 				],
-			'Test 7: Expiring subscription.'                                  =>
+			'Test 7: Expiring subscription.' =>
 				[
 					'callback'          => [ self::class, 'create_expiring_subscription' ],
 					'params'            => [],
@@ -707,7 +707,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 2,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message' => 'Check that one expiration and one renewal notifications are created.',
@@ -729,7 +729,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return array_sum( $expected_actions ) === 0;
-							}
+							},
 						],
 						[
 							'message' => 'Check that the correct args are used.',
@@ -747,7 +747,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return true;
-							}
+							},
 						],
 						[
 							'message' => 'Check that the notifications are in the correct group.',
@@ -762,7 +762,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return true;
-							}
+							},
 						],
 						[
 							'message'  => 'Check the subscription expiry notification date is correct.',
@@ -779,7 +779,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 										return $new_action->get_schedule()->get_date();
 									}
 								}
-							}
+							},
 						],
 						[
 							'message'  => 'Check the next payment date notification is correct.',
@@ -796,11 +796,11 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 										return $new_action->get_schedule()->get_date();
 									}
 								}
-							}
+							},
 						],
-					]
+					],
 				],
-			'Test 8: Expiring subscription with trial, within trial.'         =>
+			'Test 8: Expiring subscription with trial, within trial.' =>
 				[
 					'callback'          => [ self::class, 'create_expiring_subscription_with_trial' ],
 					'params'            => [],
@@ -810,7 +810,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 2,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message' => 'Check that one expiration and one trial expiration notifications are created.',
@@ -832,7 +832,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return array_sum( $expected_actions ) === 0;
-							}
+							},
 						],
 						[
 							'message' => 'Check that the correct args are used.',
@@ -850,7 +850,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return true;
-							}
+							},
 						],
 						[
 							'message' => 'Check that the notifications have the correct group.',
@@ -865,7 +865,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return true;
-							}
+							},
 						],
 						[
 							'message'  => 'Check the subscription expiry notification date is correct.',
@@ -883,7 +883,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 										return $new_action->get_schedule()->get_date();
 									}
 								}
-							}
+							},
 						],
 						[
 							'message'  => 'Check the trial expiry notification date is correct.',
@@ -901,7 +901,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 										return $new_action->get_schedule()->get_date();
 									}
 								}
-							}
+							},
 						],
 					],
 				],
@@ -916,7 +916,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'expected' => 2,
 							'actual'   => function ( $subscription, $new_actions ) {
 								return count( array_values( $new_actions )[0] );
-							}
+							},
 						],
 						[
 							'message' => 'Check that one expiration and one renewal notifications are created.',
@@ -938,7 +938,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return array_sum( $expected_actions ) === 0;
-							}
+							},
 						],
 						[
 							'message' => 'Check that the correct args are used.',
@@ -956,7 +956,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return true;
-							}
+							},
 						],
 						[
 							'message' => 'Check that the notifications are in the correct group.',
@@ -971,7 +971,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 								}
 
 								return true;
-							}
+							},
 						],
 						[
 							'message'  => 'Check the subscription expiry notification date is correct.',
@@ -989,7 +989,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 										return $new_action->get_schedule()->get_date();
 									}
 								}
-							}
+							},
 						],
 						[
 							'message'  => 'Check the next payment date notification is correct.',
@@ -1007,7 +1007,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 										return $new_action->get_schedule()->get_date();
 									}
 								}
-							}
+							},
 						],
 					],
 				],
@@ -1037,7 +1037,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 					}
 				}
 			} elseif ( ! array_key_exists( $key, $array2 )
-			           || $array2[ $key ] != $value ) { // need to use weak equality here as the instances won't be the same, just their values are.
+						|| $array2[ $key ] != $value ) { // @phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 				$difference[ $key ] = $value;
 			}
 		}
@@ -1065,7 +1065,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						1 => ActionScheduler_Store::STATUS_PENDING,
 						2 => ActionScheduler_Store::STATUS_RUNNING,
 						3 => ActionScheduler_Store::STATUS_FAILED,
-					]
+					],
 				]
 			);
 
@@ -1089,14 +1089,13 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						1 => ActionScheduler_Store::STATUS_PENDING,
 						2 => ActionScheduler_Store::STATUS_RUNNING,
 						3 => ActionScheduler_Store::STATUS_FAILED,
-					]
+					],
 				]
 			);
 
 			foreach ( $actions_tmp as $action ) {
 				$actions_after[ $action->get_args()['subscription_id'] ][] = $action;
 			}
-
 		}
 
 		$new_actions = $this->recursive_array_diff( $actions_after, $actions_before );
@@ -1112,7 +1111,6 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 					$expected = $assertion['expected'] ?? $subscription; // Default to using the result of the callback
 				}
 			}
-
 
 			if ( is_callable( $assertion['actual'] ) ) {
 				$actual = $assertion['actual']( $subscription, $new_actions ); // Invoke the callable with $result as an argument
