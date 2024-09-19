@@ -456,19 +456,8 @@ class WC_Subscriptions_Manager {
 
 			$new_status = 'on-hold';
 
-			// Get last order note
-			$latest_notes = wc_get_order_notes(
-				array(
-					'order_id' => $order->get_id(),
-					'limit'    => 1,
-					'orderby'  => 'date_created_gmt',
-				)
-			);
-
-			$latest_note = current( $latest_notes );
-
-			// If the last note contains the dispute message, set the status to cancelled
-			if ( isset( $latest_note->content ) && false !== strpos( $latest_note->content, 'The dispute was lost or accepted.' ) ) {
+			// If the order dispute status meta is set to lost, cancel the subscription
+			if ( $order->get_meta( '_dispute_closed_status' ) === 'lost' ) {
 				$new_status = 'cancelled';
 			}
 
