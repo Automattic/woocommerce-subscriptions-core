@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.6.0 - xxxx-xx-xx =
+* Fix - Correctly updates a subscription status to `cancelled` when a dispute is lost.
 * Fix - Clear the `cancelled_email_sent` meta when a subscription is reactivated to allow the customer to receive future cancellation emails.
 * Fix - Prevent deprecation notices after updating to WooCommerce 9.3.
 * Dev - Only initialise the `WCS_WC_Admin_Manager` class on stores running WC 9.2 or older. This class handled integration with the Woo Navigation feature that was removed in WC 9.3.
