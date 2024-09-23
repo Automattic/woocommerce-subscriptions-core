@@ -23,6 +23,11 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 		return 'WooCommerce Notifications Batch Processor';
 	}
 
+	/**
+	 * Get the subscription statuses that should be processed.
+	 *
+	 * @return array Subscription statuses that should be processed.
+	 */
 	protected function get_subscription_statuses() {
 		$allowed_statuses = array(
 			'active',
@@ -33,9 +38,18 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 		return array_map( 'wcs_sanitize_subscription_status_key', $allowed_statuses );
 	}
 
+	/**
+	 * Get the timestamp of the last time the notification settings were updated.
+	 *
+	 * @return string Datetime of the last time the notification settings were updated.
+	 */
 	public function get_notification_settings_update_time() {
-		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time' );
-		$notification_settings_update_time      = new DateTime( "@$notification_settings_update_timestamp", new DateTimeZone( 'UTC' ) );
+		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time', 0 );
+		if ( 0 === $notification_settings_update_timestamp ) {
+			return '';
+		}
+
+		$notification_settings_update_time = new DateTime( "@$notification_settings_update_timestamp", new DateTimeZone( 'UTC' ) );
 		return $notification_settings_update_time->format( 'Y-m-d H:i:s' );
 	}
 
@@ -50,6 +64,10 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	 */
 	public function get_total_pending_count(): int {
 		global $wpdb;
+
+		if ( empty( $this->get_notification_settings_update_time() ) ) {
+			return 0;
+		}
 
 		$allowed_statuses = $this->get_subscription_statuses();
 		$placeholders     = implode( ', ', array_fill( 0, count( $allowed_statuses ), '%s' ) );
@@ -107,6 +125,10 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	 */
 	public function get_next_batch_to_process( int $size ): array {
 		global $wpdb;
+
+		if ( empty( $this->get_notification_settings_update_time() ) ) {
+			return [];
+		}
 
 		$allowed_statuses = $this->get_subscription_statuses();
 		$placeholders     = implode( ', ', array_fill( 0, count( $allowed_statuses ), '%s' ) );
