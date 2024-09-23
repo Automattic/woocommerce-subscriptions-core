@@ -454,17 +454,10 @@ class WC_Subscriptions_Manager {
 				$order->update_status( 'failed', __( 'Subscription sign up failed.', 'woocommerce-subscriptions' ) );
 			}
 
-			$new_status = 'on-hold';
-
-			// If the order dispute status meta is set to lost, cancel the subscription
-			if ( $order->get_meta( '_dispute_closed_status' ) === 'lost' ) {
-				$new_status = 'cancelled';
-			}
-
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					$subscription->payment_failed( $new_status );
+					$subscription->payment_failed( $subscription->has_status( 'pending-cancel' ) ? 'cancelled' : 'on-hold' );
 
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message

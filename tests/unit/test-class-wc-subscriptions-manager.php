@@ -7,19 +7,20 @@ class WC_Subscriptions_Manager_Test extends WP_UnitTestCase {
 	/**
 	 * Test for `failed_subscription_sign_ups_for_order` method.
 	 *
-	 * @param string $dispute_meta Dispute meta.
+	 * @param string $initial_status Initial subscription status.
 	 * @param string $expected_status Expected subscription status.
 	 * @return void
 	 * @dataProvider provide_test_failed_subscription_sign_ups_for_order
+	 * @group test_failed_subscription_sign_ups_for_order
 	 */
-	public function test_failed_subscription_sign_ups_for_order( $dispute_meta, $expected_status ) {
+	public function test_failed_subscription_sign_ups_for_order( $initial_status, $expected_status ) {
 		$order = WC_Helper_Order::create_order();
 		$order->set_status( 'failed' );
-		$order->update_meta_data( '_dispute_closed_status', $dispute_meta );
 		$order->save();
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
+				'status'   => $initial_status,
 				'order_id' => $order->get_id(),
 			]
 		);
@@ -39,11 +40,11 @@ class WC_Subscriptions_Manager_Test extends WP_UnitTestCase {
 	public function provide_test_failed_subscription_sign_ups_for_order() {
 		return [
 			'order failed, dispute won'  => [
-				'dispute meta'    => 'won',
+				'initial status'  => 'active',
 				'expected status' => 'on-hold',
 			],
 			'order failed, dispute lost' => [
-				'dispute meta'    => 'lost',
+				'initial status'  => 'pending-cancel',
 				'expected status' => 'cancelled',
 			],
 		];
