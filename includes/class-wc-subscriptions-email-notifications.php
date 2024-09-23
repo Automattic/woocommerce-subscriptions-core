@@ -21,6 +21,9 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static $switch_setting_string = '_customer_notifications_enabled';
 
+	/**
+	 * Init.
+	 */
 	public static function init() {
 
 		add_action( 'woocommerce_email_classes', __CLASS__ . '::add_emails', 10, 1 );
@@ -82,6 +85,9 @@ class WC_Subscriptions_Email_Notifications {
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
 	}
 
+	/**
+	 * Stores the timestamp that the self::$offset_setting_string was last updated.
+	 */
 	public static function update_update_time() {
 		update_option( 'wcs_notification_settings_update_time', time() );
 
@@ -102,12 +108,20 @@ class WC_Subscriptions_Email_Notifications {
 		return $email_classes;
 	}
 
+	/**
+	 * Hook the notification emails with our custom trigger.
+	 */
 	public static function hook_notification_emails() {
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_renewal', [ __CLASS__, 'send_notification' ] );
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_trial_expiration', [ __CLASS__, 'send_notification' ] );
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_expiration', [ __CLASS__, 'send_notification' ] );
 	}
 
+	/**
+	 * Send the notification emails.
+	 *
+	 * @param int $subscription_id Subscription ID.
+	 */
 	public static function send_notification( $subscription_id ) {
 
 		// Init email classes.
@@ -144,6 +158,11 @@ class WC_Subscriptions_Email_Notifications {
 		}
 	}
 
+	/**
+	 * Is the notifications feature enabled?
+	 *
+	 * @return bool
+	 */
 	public static function notifications_globally_enabled() {
 		return ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string )
 				&& get_option( WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string ) );
@@ -186,8 +205,9 @@ class WC_Subscriptions_Email_Notifications {
 	}
 
 	/**
-	 * @param $subscription
+	 * Check if the subscription period is too short to send a renewal notification.
 	 *
+	 * @param $subscription
 	 * @return bool
 	 */
 	public static function subscription_period_too_short( $subscription ) {
@@ -195,7 +215,7 @@ class WC_Subscriptions_Email_Notifications {
 		$interval = $subscription->get_billing_interval();
 
 		// By default, there are no shorter periods than days in WCS, so we ignore hours, minutes, etc.
-		if ( $period <= 2 && 'day' === $interval ) {
+		if ( $interval <= 2 && 'day' === $period ) {
 			return true;
 		}
 
