@@ -49,7 +49,7 @@ class WC_Helper_Order {
 		WC_Helper_Shipping::create_simple_flat_rate();
 
 		$order_data = array(
-			'status'        => 'pending',
+			'status'        => WC_Subscription::STATUS_PENDING,
 			'customer_id'   => $customer_id,
 			'customer_note' => '',
 			'total'         => '',

@@ -39,7 +39,7 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 		// Create a test subscription with 'pending' status
 		$subscription1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'      => 'pending',
+				'status'      => WC_Subscription::STATUS_PENDING,
 				'start_date'  => '2015-07-14 00:00:00',
 				'customer_id' => $user_id1,
 			)
@@ -55,7 +55,7 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', 'any' ) );
 
 		// Test for pending status
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', 'pending' ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', WC_Subscription::STATUS_PENDING ) );
 
 		// Test for active status
 		$this->assertFalse( wcs_user_has_subscription( $user_id1, '', 'active' ) );

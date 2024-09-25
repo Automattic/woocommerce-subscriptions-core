@@ -519,7 +519,7 @@ class WC_Subscriptions_Manager {
 			// Make sure the subscription is pending and start date is set correctly
 			wp_update_post( array(
 				'ID'          => $subscription->get_id(),
-				'post_status' => 'wc-' . apply_filters( 'woocommerce_default_subscription_status', 'pending' ),
+				'post_status' => 'wc-' . apply_filters( 'woocommerce_default_subscription_status', WC_Subscription::STATUS_PENDING ),
 				'post_date'   => get_date_from_gmt( $args['start_date'] ),
 			) );
 
@@ -645,7 +645,7 @@ class WC_Subscriptions_Manager {
 	 * @param string $status (optional) A status to change the subscriptions in an order to. Default is 'active'.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
-	public static function update_users_subscriptions_for_order( $order, $status = 'pending' ) {
+	public static function update_users_subscriptions_for_order( $order, $status = WC_Subscription::STATUS_PENDING ) {
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscriptions::update_status()' );
 
 		if ( ! is_object( $order ) ) {
@@ -672,7 +672,7 @@ class WC_Subscriptions_Manager {
 					_deprecated_argument( __METHOD__, '2.0', 'The "failed" status value is deprecated.' );
 					self::failed_subscription_signup( $order->get_user_id(), $subscription_id );
 					break;
-				case 'pending':
+				case WC_Subscription::STATUS_PENDING:
 					_deprecated_argument( __METHOD__, '2.0', 'The "pending" status value is deprecated.' );
 				default:
 					self::create_pending_subscription_for_order( $order );
@@ -1169,7 +1169,7 @@ class WC_Subscriptions_Manager {
 			case 'expired':
 				$status_string = _x( 'Expired', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'pending':
+			case WC_Subscription::STATUS_PENDING:
 				$status_string = _x( 'Pending', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case 'failed':
@@ -2157,7 +2157,7 @@ class WC_Subscriptions_Manager {
 			return false;
 		}
 
-		if ( ! $subscription->has_status( 'pending' ) && ! $subscription->can_be_updated_to( 'active' ) ) {
+		if ( ! $subscription->has_status( WC_Subscription::STATUS_PENDING ) && ! $subscription->can_be_updated_to( 'active' ) ) {
 
 			do_action( 'unable_to_activate_subscription', $user_id, $subscription_key );
 

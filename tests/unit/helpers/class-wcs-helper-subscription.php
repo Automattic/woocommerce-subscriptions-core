@@ -149,7 +149,7 @@ class WCS_Helper_Subscription {
 		WC_Helper_Shipping::create_simple_flat_rate();
 
 		$default_order_data = [
-			'status'        => 'pending',
+			'status'        => WC_Subscription::STATUS_PENDING,
 			'customer_id'   => 1,
 			'customer_note' => '',
 			'parent'        => null,

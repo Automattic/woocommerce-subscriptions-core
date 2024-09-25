@@ -655,7 +655,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function wcs_get_subscription_status_name_provider() {
 		return array(
 			array( 'wc-pending', 'Pending' ),
-			array( 'pending', 'Pending' ),
+			array( WC_Subscription::STATUS_PENDING, 'Pending' ),
 			array( 'foo', 'foo' ),
 			array( '42', '42' ),
 			array( '', '' ),
@@ -672,7 +672,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function wcs_sanitize_status_key_provider() {
 		return array(
-			array( 'pending', 'wc-pending' ),
+			array( WC_Subscription::STATUS_PENDING, 'wc-pending' ),
 			array( 'wc-pending', 'wc-pending' ),
 			array( 'foo', 'wc-foo' ),
 			array( '', '' ),
@@ -823,13 +823,13 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 
@@ -885,7 +885,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Pending
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'pending' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_PENDING ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
@@ -1121,7 +1121,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		// Create a test subscription with 'pending' status
 		$subscription1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'      => 'pending',
+				'status'      => WC_Subscription::STATUS_PENDING,
 				'start_date'  => '2015-07-14 00:00:00',
 				'customer_id' => $user_id1,
 			)
@@ -1152,7 +1152,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 		$subscription_1->save();
@@ -1226,7 +1226,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function test_3_wcs_get_subscriptions_for_product() {
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 		$subscription_1->save();
@@ -1288,7 +1288,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 
@@ -1502,7 +1502,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 

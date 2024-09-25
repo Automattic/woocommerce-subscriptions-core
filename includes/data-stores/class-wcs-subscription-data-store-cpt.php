@@ -115,7 +115,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		$subscription_status = $subscription->get_status( 'edit' );
 
 		if ( ! $subscription_status ) {
-			$subscription->set_status( 'wc' . apply_filters( 'woocommerce_default_subscription_status', 'pending' ) );
+			$subscription->set_status( 'wc' . apply_filters( 'woocommerce_default_subscription_status', WC_Subscription::STATUS_PENDING ) );
 		}
 
 		/**

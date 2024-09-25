@@ -274,7 +274,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public static function create_pending_parent_action_request( $subscription ) {
 
-		if ( ! $subscription->has_status( array( 'pending', 'on-hold' ) ) ) {
+		if ( ! $subscription->has_status( array( WC_Subscription::STATUS_PENDING, 'on-hold' ) ) ) {
 			$subscription->update_status( 'on-hold' );
 		}
 

@@ -480,7 +480,7 @@ class WC_Subscriptions_Order {
 		$was_activated   = false;
 		$order           = wc_get_order( $order_id );
 		$paid_statuses   = array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' );
-		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order );
+		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( WC_Subscription::STATUS_PENDING, 'on-hold', 'failed' ), $order );
 		$order_completed = in_array( $new_order_status, $paid_statuses, true ) && in_array( $old_order_status, $unpaid_statuses, true );
 
 		/**

@@ -105,7 +105,7 @@ function wcs_create_subscription( $args = array() ) {
 	$order = ( isset( $args['order_id'] ) ) ? wc_get_order( $args['order_id'] ) : null;
 
 	$default_args = array(
-		'status'             => apply_filters( 'woocommerce_default_subscription_status', 'pending' ),
+		'status'             => apply_filters( 'woocommerce_default_subscription_status', WC_Subscription::STATUS_PENDING ),
 		'order_id'           => 0,
 		'customer_note'      => null,
 		'customer_id'        => null,
@@ -640,7 +640,7 @@ function wcs_get_line_items_with_a_trial( $subscription_id ) {
 function wcs_can_items_be_removed( $subscription ) {
 	$allow_remove = false;
 
-	if ( sizeof( $subscription->get_items() ) > 1 && $subscription->payment_method_supports( 'subscription_amount_changes' ) && $subscription->has_status( array( 'active', 'on-hold', 'pending' ) ) ) {
+	if ( sizeof( $subscription->get_items() ) > 1 && $subscription->payment_method_supports( 'subscription_amount_changes' ) && $subscription->has_status( array( 'active', 'on-hold', WC_Subscription::STATUS_PENDING ) ) ) {
 		$allow_remove = true;
 	}
 

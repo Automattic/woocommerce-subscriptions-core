@@ -48,7 +48,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_can_be_updated_to_pending() {
 
 		$expected_results = [
-			'pending'        => false,
+			WC_Subscription::STATUS_PENDING        => false,
 			'active'         => false,
 			'on-hold'        => false,
 			'cancelled'      => false,
@@ -59,7 +59,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		foreach ( $this->subscriptions as $status => $subscription ) {
 			$expected_result = $expected_results[ $status ];
-			$actual_result   = $subscription->can_be_updated_to( 'pending' );
+			$actual_result   = $subscription->can_be_updated_to( WC_Subscription::STATUS_PENDING );
 			$this->assertEquals( $expected_result, $actual_result, '[FAILED]: ' . $status . ' to pending.' );
 
 			$actual_result = $subscription->can_be_updated_to( 'wc-pending' );
@@ -75,7 +75,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_can_be_updated_to_active() {
 
 		$expected_results = [
-			'pending'   => true,
+			WC_Subscription::STATUS_PENDING   => true,
 			'active'    => false,
 			'on-hold'   => true,
 			'cancelled' => false,
@@ -158,7 +158,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_onhold() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => true,
 			'on-hold'        => false,
 			'cancelled'      => false,
@@ -193,7 +193,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_cancelled() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => true,
 			'on-hold'        => true,
 			'cancelled'      => false,
@@ -230,7 +230,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_switched() {
 		$expected_results = [
-			'pending'        => false,
+			WC_Subscription::STATUS_PENDING        => false,
 			'active'         => false,
 			'on-hold'        => false,
 			'cancelled'      => false,
@@ -254,7 +254,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_expired() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => true,
 			'on-hold'        => true,
 			'cancelled'      => false,
@@ -278,7 +278,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_pending_cancellation() {
 		$expected_results = [
-			'pending'        => false,
+			WC_Subscription::STATUS_PENDING        => false,
 			'active'         => true,
 			'on-hold'        => true,
 			'cancelled'      => true,
@@ -309,7 +309,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_trash() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => true,
 			'on-hold'        => true,
 			'cancelled'      => true,
@@ -342,7 +342,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_deleted() {
 		$expected_results = [
-			'pending'        => false,
+			WC_Subscription::STATUS_PENDING        => false,
 			'active'         => false,
 			'on-hold'        => false,
 			'cancelled'      => false,
@@ -367,7 +367,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_be_updated_to_other() {
 		$expected_results = [
-			'pending'        => false,
+			WC_Subscription::STATUS_PENDING        => false,
 			'active'         => false,
 			'on-hold'        => false,
 			'cancelled'      => false,
@@ -393,7 +393,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_start_date_be_updated() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => false,
 			'on-hold'        => false,
 			'cancelled'      => false,
@@ -418,7 +418,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_date_be_updated() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => true,
 			'on-hold'        => true,
 			'cancelled'      => false,
@@ -460,7 +460,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_can_end_and_next_payment_date_be_updated() {
 		$expected_results = [
-			'pending'        => true,
+			WC_Subscription::STATUS_PENDING        => true,
 			'active'         => true,
 			'on-hold'        => true,
 			'cancelled'      => false,
@@ -556,7 +556,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_calculate_trial_end_date() {
 		$now                  = time();
 		$active_subscription  = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
-		$pending_subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'pending' ] );
+		$pending_subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_PENDING ] );
 
 		$trial_end = gmdate( 'Y-m-d H:i:s', wcs_add_months( $now, 1 ) );
 		$this->assertEquals( $trial_end, $active_subscription->calculate_date( 'trial_end' ) );
@@ -646,7 +646,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'       => 'pending',
+				'status'       => WC_Subscription::STATUS_PENDING,
 				'start_date'   => $start_date,
 				'order_id'     => $parent_order_id,
 				'date_created' => $start_date,
@@ -688,7 +688,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		// set a date for the pending subscription to test against
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			]
 		);
 
@@ -712,7 +712,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'     => 'pending',
+				'status'     => WC_Subscription::STATUS_PENDING,
 				'start_date' => $start_date,
 			]
 		);
@@ -732,7 +732,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'     => 'pending',
+				'status'     => WC_Subscription::STATUS_PENDING,
 				'start_date' => $expected_result,
 			]
 		);
@@ -840,7 +840,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$start_date = current_time( 'mysql', true );
 		$statuses   = [
-			'pending',
+			WC_Subscription::STATUS_PENDING,
 			'cancelled',
 			'on-hold',
 			'switched',
@@ -948,7 +948,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_none() {
-		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
+		foreach ( [ 'active', 'on-hold', WC_Subscription::STATUS_PENDING ] as $status ) {
 			$completed_payments = $this->subscriptions[ $status ]->get_payment_count();
 			$this->assertEmpty( $completed_payments );
 		}
@@ -1008,7 +1008,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$order->set_status( 'wc-failed' );
 		$order->save();
 
-		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
+		foreach ( [ 'active', 'on-hold', WC_Subscription::STATUS_PENDING ] as $status ) {
 
 			WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 
@@ -1037,7 +1037,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$orders[] = $order;
 		}
 
-		foreach ( [ 'active', 'on-hold', 'pending' ] as $status ) {
+		foreach ( [ 'active', 'on-hold', WC_Subscription::STATUS_PENDING ] as $status ) {
 
 			$expected_count = 0;
 			foreach ( $orders as $order ) {
@@ -1180,7 +1180,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_update_status_to_active() {
 
 		// list of subscription that will not throw a "cannot update status" exception
-		$expected_to_pass = [ 'pending', 'pending-cancel', 'on-hold', 'active' ];
+		$expected_to_pass = [ WC_Subscription::STATUS_PENDING, 'pending-cancel', 'on-hold', 'active' ];
 
 		foreach ( WCS_Helper_Subscription::create_subscriptions() as $status => $subscription ) {
 
@@ -1247,7 +1247,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_onhold() {
-		$expected_to_pass = [ 'pending', 'active' ];
+		$expected_to_pass = [ WC_Subscription::STATUS_PENDING, 'active' ];
 		$subscriptions    = WCS_Helper_Subscription::create_subscriptions();
 
 		foreach ( $subscriptions as $status => $subscription ) {
@@ -1289,7 +1289,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_expired() {
-		$expected_to_pass = [ 'active', 'pending', 'pending-cancel', 'on-hold' ];
+		$expected_to_pass = [ 'active', WC_Subscription::STATUS_PENDING, 'pending-cancel', 'on-hold' ];
 		$now              = time();
 
 		$subscriptions = WCS_Helper_Subscription::create_subscriptions(
@@ -1338,7 +1338,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_cancelled() {
-		$expected_to_pass = [ 'active', 'pending', 'pending-cancel', 'on-hold' ];
+		$expected_to_pass = [ 'active', WC_Subscription::STATUS_PENDING, 'pending-cancel', 'on-hold' ];
 		$now              = time();
 		$subscriptions    = WCS_Helper_Subscription::create_subscriptions(
 			[
@@ -1388,7 +1388,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$user_id      = wp_create_user( 'susan', 'testuser', 'susan@example.com' );
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'      => 'pending',
+				'status'      => WC_Subscription::STATUS_PENDING,
 				'start_date'  => '2015-07-14 00:00:00',
 				'customer_id' => $user_id,
 			]
@@ -1438,7 +1438,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$user_id      = wp_create_user( 'susan', 'testuser', 'susan@example.com' );
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'      => 'pending',
+				'status'      => WC_Subscription::STATUS_PENDING,
 				'start_date'  => '2015-07-14 00:00:00',
 				'customer_id' => $user_id,
 			]
@@ -1482,7 +1482,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_update_status_exception_thrown_one() {
 		$this->setExpectedException( 'Exception', 'Unable to change subscription status to "pending".' );
-		$this->subscriptions['active']->update_status( 'pending' );
+		$this->subscriptions['active']->update_status( WC_Subscription::STATUS_PENDING );
 	}
 
 	/**
@@ -1553,7 +1553,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_needs_payment_pending_failed( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ 'pending', 'failed' ], true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_PENDING, 'failed' ], true ) ) {
 			$subscription->set_total( 0 );
 			$this->assertFalse( $subscription->needs_payment() ); // pending or failed subscriptions with $0 total don't need paying for
 
@@ -1577,7 +1577,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$order->set_total( 100 );
 
-		if ( in_array( $status, [ 'pending', 'failed' ], true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_PENDING, 'failed' ], true ) ) {
 			$subscription->set_total( 0 );
 		}
 
@@ -1599,13 +1599,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_needs_payment_renewal_orders( $status ) {
 
 		// For pending status, the renewal order checks are by passed anyway as parent::needs_payment() evaluates true
-		if ( 'pending' === $status ) {
+		if ( WC_Subscription::STATUS_PENDING === $status ) {
 			$this->markTestSkipped( 'Test not required' );
 		}
 
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ 'pending', 'failed' ], true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_PENDING, 'failed' ], true ) ) {
 			$subscription->set_total( 100 );
 		}
 		$subscription->set_parent_id( 0 );
@@ -1640,7 +1640,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_has_ended_statuses( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ 'active', 'pending', 'on-hold' ], true ) ) {
+		if ( in_array( $status, [ 'active', WC_Subscription::STATUS_PENDING, 'on-hold' ], true ) ) {
 			$this->assertFalse( $subscription->has_status( wcs_get_subscription_ended_statuses() ) );
 
 			add_filter( 'wcs_subscription_ended_statuses', [ $this, 'filter_has_ended_statuses' ] );
@@ -1685,13 +1685,13 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 
 		// Confirm that a draft subscription when loaded has a pending status.
-		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
+		$this->assertEquals( WC_Subscription::STATUS_PENDING, wcs_get_subscription( $subscription->get_id() )->get_status() );
 
 		$subscription->set_status( 'auto-draft' );
 		$subscription->save();
 
 		// Confirm that a draft subscription when loaded has a pending status.
-		$this->assertEquals( 'pending', wcs_get_subscription( $subscription->get_id() )->get_status() );
+		$this->assertEquals( WC_Subscription::STATUS_PENDING, wcs_get_subscription( $subscription->get_id() )->get_status() );
 	}
 
 	/**
@@ -1709,12 +1709,12 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_result, $subscription->get_paid_order_statuses() );
 
 		add_filter( 'woocommerce_payment_complete_order_status', [ $this, 'custom_paid_order_status_test_1' ] );
-		array_push( $expected_result, 'pending', 'wc-pending' );
+		array_push( $expected_result, WC_Subscription::STATUS_PENDING, 'wc-pending' );
 		$this->assertEquals( $expected_result, $subscription->get_paid_order_statuses() );
 	}
 
 	public function custom_paid_order_status_test_1( $subscription ) {
-		return 'pending';
+		return WC_Subscription::STATUS_PENDING;
 	}
 
 	/**
@@ -2008,7 +2008,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		//create a pending subscription and check it gets updated to cancelled rather than pending-cancelled
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'     => 'pending',
+				'status'     => WC_Subscription::STATUS_PENDING,
 				'start_date' => gmdate( 'Y-m-d H:i:s', strtotime( '-1 day' ) ),
 			],
 			[
@@ -2028,10 +2028,10 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			[ 'active', false, true, true ],
 			[ 'active', false, false, false ],
 
-			[ 'pending', true, true, true ],
-			[ 'pending', true, false, true ],
-			[ 'pending', false, true, true ],
-			[ 'pending', false, false, true ],
+			[ WC_Subscription::STATUS_PENDING, true, true, true ],
+			[ WC_Subscription::STATUS_PENDING, true, false, true ],
+			[ WC_Subscription::STATUS_PENDING, false, true, true ],
+			[ WC_Subscription::STATUS_PENDING, false, false, true ],
 
 			[ 'on-hold', true, true, true ],
 			[ 'on-hold', true, false, true ],
@@ -2770,7 +2770,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function subscription_status_data_provider() {
 		return [
 			[ 'active' ],
-			[ 'pending' ],
+			[ WC_Subscription::STATUS_PENDING ],
 			[ 'on-hold' ],
 			[ 'cancelled' ],
 			[ 'pending-cancel' ],

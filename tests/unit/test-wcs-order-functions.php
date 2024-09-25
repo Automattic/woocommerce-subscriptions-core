@@ -156,7 +156,7 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		$order_pending = wc_create_order(
 			array(
-				'status' => 'pending',
+				'status' => WC_Subscription::STATUS_PENDING,
 			)
 		);
 
