@@ -5,6 +5,35 @@ use PHPUnit\Framework\TestCase;
 class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 	/**
+	 * Sanity check the controller first.
+	 *
+	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch
+	 *
+	 * @param array $data
+	 * @return bool
+	 */
+	public function test_batch_processesing_controller() {
+
+		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+
+		$batch_processor = WCS_Batch_Processing_Controller::instance();
+		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+
+		// Enqueue the processor.
+		$batch_processor->enqueue_processor( WCS_Notifications_Debug_Tool_Processor::class );
+
+		$this->assertTrue( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+
+		// Process.
+		$reflection                              = new ReflectionClass( $batch_processor );
+		$process_next_batch_for_single_processor = $reflection->getMethod( 'process_next_batch_for_single_processor' );
+		$process_next_batch_for_single_processor->setAccessible( true );
+		$process_next_batch_for_single_processor->invoke( $batch_processor, WCS_Notifications_Debug_Tool_Processor::class );
+
+		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+	}
+
+	/**
 	 * Test the "WCS_Notifications_Debug_Tool_Processor::process_batch()" method.
 	 *
 	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch

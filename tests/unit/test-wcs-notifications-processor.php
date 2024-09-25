@@ -1,19 +1,17 @@
 <?php
 
-use Automattic\WooCommerce\Internal\BatchProcessing\BatchProcessingController;
-
 class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 
 	/**
 	 * Test processor queued when notifications are enabled.
 	 */
 	public function test_processor_queued() {
-		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
+		$batch_processor = WCS_Batch_Processing_Controller::instance();
 
 		// Test initial state.
 		$this->assertTrue( $batch_processor->is_enqueued( WCS_Notifications_Batch_Processor::class ) );
 		// Run.
-		do_action( 'wc_run_batch_process', WCS_Notifications_Batch_Processor::class );
+		do_action( 'wcs_run_batch_process', WCS_Notifications_Batch_Processor::class );
 
 		// Check that is dequeued.
 		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Batch_Processor::class ) );
@@ -31,7 +29,7 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 		$this->assertTrue( $batch_processor->is_enqueued( WCS_Notifications_Batch_Processor::class ) );
 
 		// Run.
-		do_action( 'wc_run_batch_process', WCS_Notifications_Batch_Processor::class );
+		do_action( 'wcs_run_batch_process', WCS_Notifications_Batch_Processor::class );
 
 		// Check that is dequeued.
 		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Batch_Processor::class ) );
