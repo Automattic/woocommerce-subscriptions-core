@@ -457,7 +457,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					$subscription->payment_failed( $subscription->has_status( 'pending-cancel' ) ? 'cancelled' : 'on-hold' );
+					$subscription->payment_failed();
 
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message
