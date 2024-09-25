@@ -12,8 +12,6 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 */
 	public function test_batch_processesing_controller() {
 
-		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
-
 		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
 
