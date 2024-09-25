@@ -210,7 +210,7 @@ class WCS_Notifications_Debug_Tool_Processor implements BatchProcessorInterface 
 	 * @param array $batch Batch to process, as returned by 'get_next_batch_to_process'.
 	 */
 	public function process_batch( array $batch ): void {
-		// This is a bit unnecessary. Perhaps convert `update_status` to static to avoid instantiating the class?
+
 		$subscriptions_notifications = new WCS_Action_Scheduler_Customer_Notifications();
 
 		foreach ( $batch as $subscription_id ) {
