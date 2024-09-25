@@ -220,7 +220,7 @@ class WC_Subscriptions_Email_Notifications {
 			$allowed_statuses = [
 				'active',
 				'on-hold',
-				'pending-cancellation',
+				'pending-cancel',
 			];
 
 			if ( ! in_array( $subscription->get_status(), $allowed_statuses, true ) ) {
