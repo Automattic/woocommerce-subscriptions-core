@@ -215,8 +215,7 @@ class WC_Subscriptions_Email_Notifications {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
-			$subscription = $theorder;
-			//TODO: confirm if these statuses make sense.
+			$subscription     = $theorder;
 			$allowed_statuses = [
 				'active',
 				'on-hold',
