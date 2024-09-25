@@ -14,16 +14,6 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 */
 	public function test_process_batch_notifications() {
 
-		// Enable feature.
-		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
-		update_option(
-			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-			[
-				'number' => '3',
-				'unit'   => 'days',
-			]
-		);
-
 		$batches   = $this->notification_subscription_data_provider();
 		$processor = new WCS_Notifications_Debug_Tool_Processor();
 

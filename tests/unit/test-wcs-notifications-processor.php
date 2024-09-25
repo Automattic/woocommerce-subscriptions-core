@@ -1,6 +1,5 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use Automattic\WooCommerce\Internal\BatchProcessing\BatchProcessingController;
 
 class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
@@ -11,12 +10,8 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 	public function test_processor_queued() {
 		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
 
-		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Batch_Processor::class ) );
-
-		$this->enable_notifications_globally();
-
+		// Test initial state.
 		$this->assertTrue( $batch_processor->is_enqueued( WCS_Notifications_Batch_Processor::class ) );
-
 		// Run.
 		do_action( 'wc_run_batch_process', WCS_Notifications_Batch_Processor::class );
 
@@ -47,15 +42,19 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 	 */
 	public function test_get_total_pending_count_and_flow() {
 		$this->notification_subscription_data_provider();
-		$processor = new WCS_Notifications_Batch_Processor();
-
-		// Test that the feature is disabled.
+		$processor     = new WCS_Notifications_Batch_Processor();
 		$pending_count = $processor->get_total_pending_count();
 		$this->assertEquals( 0, $pending_count );
 
-		// Important: Give some time to diff the update timestamp with the post_modified fields.
+		// Change it.
+		// Give some time to differenciate the creation timestamp from the setting timestamp.
 		sleep( 1 );
-		$this->enable_notifications_globally();
+		$this->enable_notifications_globally(
+			[
+				'number' => '4',
+				'unit'   => 'days',
+			],
+		);
 
 		// Test again.
 		$pending_count = $processor->get_total_pending_count();
@@ -89,10 +88,6 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 		$batches   = $this->notification_subscription_data_provider();
 		$processor = new WCS_Notifications_Debug_Tool_Processor();
 
-		// Important: Give some time to differentiate the update timestamp with the post_modified fields.
-		sleep( 1 );
-		$this->enable_notifications_globally();
-
 		// Test that the notifications are scheduled.
 		foreach ( $batches as $batch ) {
 			$subscription = $batch['subscription'];
@@ -100,8 +95,11 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 			$action_args  = [ 'subscription_id' => $subscription->get_id() ];
 
 			// First iteration doesn't have the notification scheduled, since the feature was disabled during the creation.
-			$empty_notification = false === as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
-			$this->assertTrue( $empty_notification );
+			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
+			$this->assertTrue( $has_notification );
+
+			// Unschedule the notification.
+			as_unschedule_action( $action_name, $action_args, 'wcs_customer_notifications' );
 
 			$processor->process_batch( [ $subscription->get_id() ] );
 

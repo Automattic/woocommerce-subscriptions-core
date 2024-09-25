@@ -529,16 +529,9 @@ class WC_Subscriptions_Core_Plugin {
 				update_option( WC_Subscriptions_admin::$option_prefix . '_paypal_debugging_default_set', 'true' );
 			}
 
-			// If this is the first time activating WooCommerce Subscription we want to enable the customer email notifications (default to 3 days before.)
-			if ( '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', '0' ) && false === get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, false ) ) {
+			// Enable customer notifications by default.
+			if ( '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', '0' ) && 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'no' ) ) {
 				update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
-				update_option(
-					WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-					[
-						'number' => '3',
-						'unit'   => 'days',
-					]
-				);
 			}
 
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', true );

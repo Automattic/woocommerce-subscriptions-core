@@ -10,12 +10,12 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	public function test_should_send_notification() {
 		add_filter( 'woocommerce_subscriptions_is_duplicate_site', '__return_false' );
 		$should = WC_Subscriptions_Email_Notifications::should_send_notification();
-		$this->assertFalse( $should );
+		$this->assertTrue( $should );
 
-		$this->enable_notifications_globally();
+		$this->disable_notifications_globally();
 
 		$should = WC_Subscriptions_Email_Notifications::should_send_notification();
-		$this->assertTrue( $should );
+		$this->assertFalse( $should );
 		remove_filter( 'woocommerce_subscriptions_is_duplicate_site', '__return_false' );
 	}
 
@@ -25,7 +25,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	public function test_update_time_sync() {
 
 		// Test installation provisioning.
-		$notification_settings_update_timestamp = get_option( 'woocommerce_notification_settings_update_time' );
+		$notification_settings_update_timestamp = get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$update_time_setting_string );
 		$this->assertTrue( is_numeric( $notification_settings_update_timestamp ) );
 
 		// Update the timestamp.
@@ -36,7 +36,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$notification_settings_update_timestamp = get_option( 'woocommerce_notification_settings_update_time' );
+		$notification_settings_update_timestamp = get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$update_time_setting_string );
 		$this->assertTrue( is_numeric( $notification_settings_update_timestamp ) );
 		$this->assertLessThanOrEqual( time(), $notification_settings_update_timestamp );
 	}
@@ -83,11 +83,11 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	 */
 	public function test_notifications_globally_enabled() {
 		$enabled = WC_Subscriptions_Email_Notifications::notifications_globally_enabled();
-		$this->assertFalse( $enabled );
-
-		$this->enable_notifications_globally();
-		$enabled = WC_Subscriptions_Email_Notifications::notifications_globally_enabled();
 		$this->assertTrue( $enabled );
+
+		$this->disable_notifications_globally();
+		$enabled = WC_Subscriptions_Email_Notifications::notifications_globally_enabled();
+		$this->assertFalse( $enabled );
 	}
 
 	/**
