@@ -35,8 +35,8 @@ class WC_Subscriptions_Email_Notifications {
 
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
 	}
 
 	/**
@@ -66,7 +66,17 @@ class WC_Subscriptions_Email_Notifications {
 		}
 	}
 
-	public static function update_update_time() {
+	/**
+	 * Sets the update time when any of the settings that affect notifications change and triggers update of subscriptions.
+	 *
+	 * When time offset or global on/off switch change values, this method gets triggered and it:
+	 * 1. Updates the wcs_notification_settings_update_time option so that the code knows which subscriptions to update
+	 * 2. Triggers rescheduling/unscheduling of existing notifications.
+	 * 3. Adds a notice with info about the actions that got triggered to the store manager.
+	 *
+	 * @return void
+	 */
+	public static function set_notification_settings_update_time() {
 		update_option( 'wcs_notification_settings_update_time', time() );
 
 		// Shortcut to unschedule all notifications more efficiently instead of processing them subscription by subscription.
