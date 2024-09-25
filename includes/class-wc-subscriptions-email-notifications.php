@@ -3,7 +3,6 @@
 /**
  * Subscriptions Email Notifications Class
  *
- * Some details to enlighten your exploration of this code.
  *
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Email
