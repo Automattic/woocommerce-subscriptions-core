@@ -35,6 +35,7 @@ class WC_Subscriptions_Email_Notifications {
 
 		add_action( 'woocommerce_init', __CLASS__ . '::hook_notification_emails' );
 
+		// Add notification actions to the admin edit subscriptions page.
 		add_filter( 'woocommerce_order_actions', [ __CLASS__, 'add_notification_actions' ], 10, 1 );
 
 		// TODO this is a bit ugly...
@@ -99,7 +100,6 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static function add_emails( $email_classes ) {
 
-		// Customer notifications.
 		$email_classes['WCS_Email_Customer_Notification_Free_Trial_Expiration']   = new WCS_Email_Customer_Notification_Free_Trial_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Subscription_Expiration'] = new WCS_Email_Customer_Notification_Subscription_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Manual_Renewal']          = new WCS_Email_Customer_Notification_Manual_Renewal();

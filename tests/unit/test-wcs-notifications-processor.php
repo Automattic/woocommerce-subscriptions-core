@@ -89,7 +89,7 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 		$batches   = $this->notification_subscription_data_provider();
 		$processor = new WCS_Notifications_Debug_Tool_Processor();
 
-		// Important: Give some time to diff the update timestamp with the post_modified fields.
+		// Important: Give some time to differentiate the update timestamp with the post_modified fields.
 		sleep( 1 );
 		$this->enable_notifications_globally();
 
