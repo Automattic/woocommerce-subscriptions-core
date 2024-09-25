@@ -23,7 +23,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	public function test_update_time_sync() {
 
 		// Test installation provisioning.
-		$notification_settings_update_timestamp = get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$update_time_setting_string );
+		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time' );
 		$this->assertTrue( is_numeric( $notification_settings_update_timestamp ) );
 
 		// Update the timestamp.
@@ -34,7 +34,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$notification_settings_update_timestamp = get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$update_time_setting_string );
+		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time' );
 		$this->assertTrue( is_numeric( $notification_settings_update_timestamp ) );
 		$this->assertLessThanOrEqual( time(), $notification_settings_update_timestamp );
 	}

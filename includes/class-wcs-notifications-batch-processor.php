@@ -48,7 +48,7 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 	 * @return string Datetime of the last time the notification settings were updated.
 	 */
 	public function get_notification_settings_update_time() {
-		$notification_settings_update_timestamp = get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$update_time_setting_string, 0 );
+		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time', 0 );
 		if ( 0 === $notification_settings_update_timestamp ) {
 			return '';
 		}

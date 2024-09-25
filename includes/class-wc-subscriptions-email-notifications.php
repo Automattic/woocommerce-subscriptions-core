@@ -21,11 +21,6 @@ class WC_Subscriptions_Email_Notifications {
 	public static $switch_setting_string = '_customer_notifications_enabled';
 
 	/**
-	 * @var string Update time option identifier.
-	 */
-	public static $update_time_setting_string = '_notification_settings_update_time';
-
-	/**
 	 * Init.
 	 */
 	public static function init() {
