@@ -222,7 +222,7 @@ class WC_Subscriptions_Email_Notifications {
 				'pending-cancel',
 			];
 
-			if ( ! in_array( $subscription->get_status(), $allowed_statuses, true ) ) {
+			if ( ! $subscription->has_status( $allowed_statuses ) ) {
 				return $actions;
 			}
 
