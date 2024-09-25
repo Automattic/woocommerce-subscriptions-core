@@ -231,7 +231,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			$subscription_update_utc_timestamp = $subscription_update_time_raw->getTimestamp();
 		}
 
-		$notification_settings_update_utc_timestamp = get_option( 'wcs_notification_settings_update_time' );
+		$notification_settings_update_utc_timestamp = get_option( 'wcs_notification_settings_update_time', 0 );
 
 		if ( $subscription_update_utc_timestamp < $notification_settings_update_utc_timestamp ) {
 			$this->schedule_all_notifications( $subscription );
