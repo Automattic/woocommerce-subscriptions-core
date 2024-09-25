@@ -1,7 +1,5 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-
 class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 	/**
