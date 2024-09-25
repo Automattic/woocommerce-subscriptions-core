@@ -28,57 +28,42 @@ class WC_Subscriptions_Email_Notifications {
 
 		add_filter( 'woocommerce_order_actions', [ __CLASS__, 'add_notification_actions' ], 10, 1 );
 
-		// TODO this is a bit ugly...
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_free_trial_expiration',
-			function ( $order ) {
-				/**
-				 * Send Trial expiration notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_trial_expiration', $order->get_id() );
-			},
-			10,
-			1
-		);
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_subscription_expiration',
-			function ( $order ) {
-				/**
-				 * Send Subscription expiration notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_expiration', $order->get_id() );
-			},
-			10,
-			1
-		);
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_renewal',
-			function ( $order ) {
-				/**
-				 * Send Manual renewal notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_renewal', $order->get_id() );
-			},
-			10,
-			1
-		);
+		// Trigger actions from Edit order screen.
+		add_action( 'woocommerce_order_action_wcs_customer_notification_free_trial_expiration', [ __CLASS__, 'forward_action' ], 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_customer_notification_subscription_expiration', [ __CLASS__, 'forward_action' ], 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_customer_notification_renewal', [ __CLASS__, 'forward_action' ], 10, 1 );
 
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
+	}
+
+	/**
+	 * Map and forward Edit order screen action to the correct reminder.
+	 *
+	 * @param $order
+	 *
+	 * @return void
+	 */
+	public static function forward_action( $order ) {
+		$trigger_action = '';
+		$current_action = current_action();
+		switch ( $current_action ) {
+			case 'woocommerce_order_action_wcs_customer_notification_free_trial_expiration':
+				$trigger_action = 'woocommerce_scheduled_subscription_customer_notification_trial_expiration';
+				break;
+			case 'woocommerce_order_action_wcs_customer_notification_subscription_expiration':
+				$trigger_action = 'woocommerce_scheduled_subscription_customer_notification_expiration';
+				break;
+			case 'woocommerce_order_action_wcs_customer_notification_renewal':
+				$trigger_action = 'woocommerce_scheduled_subscription_customer_notification_renewal';
+				break;
+		}
+
+		if ( $trigger_action ) {
+			do_action( $trigger_action, $order->get_id() );
+		}
 	}
 
 	public static function update_update_time() {
