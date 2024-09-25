@@ -3,7 +3,6 @@
 /**
  * Subscriptions Email Notifications Class
  *
- * The main controller for handling customer notifications. This class is responsible for registering the email classes and admin settings.
  *
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Email
