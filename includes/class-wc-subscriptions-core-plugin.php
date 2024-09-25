@@ -164,10 +164,14 @@ class WC_Subscriptions_Core_Plugin {
 		add_action( 'plugins_loaded', 'WCS_Related_Order_Store::instance' );
 		add_action( 'plugins_loaded', 'WCS_Customer_Store::instance' );
 
+		// Initialise the batch processing controller.
+		add_action( 'init', 'WCS_Batch_Processing_Controller::instance' );
+
 		// Initialise the scheduler.
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
 
+		// Custom notifications scheduler.
 		$this->notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
 
 		// Initialise the cache.
