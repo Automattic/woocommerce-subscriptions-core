@@ -289,7 +289,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$this->update_date( $subscription, $date_type, '0' );
 	}
 
-	public function unschedule_all_notifications( $subscription, $exceptions = [] ) {
+	public function unschedule_all_notifications( $subscription = null, $exceptions = [] ) {
 		foreach ( $this->notification_actions as $action ) {
 			if ( in_array( $action, $exceptions, true ) ) {
 				continue;
@@ -332,11 +332,15 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Get the args to set on the scheduled action.
 	 *
-	 * @param object $subscription An instance of WC_Subscription to get the hook for
+	 * @param WC_Subscription|null $subscription An instance of WC_Subscription to get the hook for
 	 *
 	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
 	public static function get_action_args( $subscription ) {
+		if ( ! $subscription ) {
+			return [];
+		}
+
 		$action_args = [ 'subscription_id' => $subscription->get_id() ];
 
 		return $action_args;
@@ -348,7 +352,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $action_hook Name of event used as the hook for the scheduled action.
 	 * @param array $action_args Array of name => value pairs stored against the scheduled action.
 	 */
-	protected function unschedule_actions( $action_hook, $action_args ) {
+	protected function unschedule_actions( $action_hook, $action_args = [] ) {
 		as_unschedule_all_actions( $action_hook, $action_args, $this->notifications_as_group );
 	}
 }

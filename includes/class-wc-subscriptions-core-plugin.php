@@ -26,6 +26,13 @@ class WC_Subscriptions_Core_Plugin {
 	protected $scheduler = null;
 
 	/**
+	 * Notification scheduler instance.
+	 *
+	 * @var WCS_Action_Scheduler_Customer_Notifications
+	 */
+	public $notifications_scheduler = null;
+
+	/**
 	 * The plugin's autoloader instance.
 	 *
 	 * @var WCS_Autoloader
@@ -161,7 +168,7 @@ class WC_Subscriptions_Core_Plugin {
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
 
-		$notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
+		$this->notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
 
 		// Initialise the cache.
 		$this->cache = WCS_Cache_Manager::get_instance();
@@ -520,6 +527,18 @@ class WC_Subscriptions_Core_Plugin {
 				$paypal_settings['debug'] = 'yes';
 				update_option( 'woocommerce_paypal_settings', $paypal_settings );
 				update_option( WC_Subscriptions_admin::$option_prefix . '_paypal_debugging_default_set', 'true' );
+			}
+
+			// If this is the first time activating WooCommerce Subscription we want to enable the customer email notifications (default to 3 days before.)
+			if ( '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', '0' ) && false === get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, false ) ) {
+				update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
+				update_option(
+					WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
+					[
+						'number' => '3',
+						'unit'   => 'days',
+					]
+				);
 			}
 
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', true );
