@@ -3,7 +3,7 @@
 /**
  * Subscriptions Email Notifications Class
  *
- * Some details to enlighten your exploration of this code.
+ * The main controller for handling customer notifications. This class is responsible for registering the email classes and admin settings.
  *
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Email
@@ -20,6 +20,11 @@ class WC_Subscriptions_Email_Notifications {
 	 * @var string Enabled/disabled setting option identifier.
 	 */
 	public static $switch_setting_string = '_customer_notifications_enabled';
+
+	/**
+	 * @var string Update time option identifier.
+	 */
+	public static $update_time_setting_string = '_notification_settings_update_time';
 
 	/**
 	 * Init.
@@ -79,19 +84,14 @@ class WC_Subscriptions_Email_Notifications {
 			1
 		);
 
+		// Add settings UI.
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
-	}
-
-	/**
-	 * Stores the timestamp that the self::$offset_setting_string was last updated.
-	 */
-	public static function update_update_time() {
-		update_option( 'wcs_notification_settings_update_time', time() );
-
-		WCS_Notifications_Batch_Processor::enqueue();
+		// Update the timestamp when the settings are updated.
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, __CLASS__ . '::update_settings_timestamp' );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, __CLASS__ . '::update_settings_timestamp' );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, __CLASS__ . '::update_settings_timestamp' );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, __CLASS__ . '::update_settings_timestamp' );
 	}
 
 	/**
@@ -156,6 +156,14 @@ class WC_Subscriptions_Email_Notifications {
 		if ( $notification ) {
 			$notification->trigger( $subscription_id );
 		}
+	}
+
+	/**
+	 * Stores the timestamp that the settings were last updated.
+	 */
+	public static function update_settings_timestamp() {
+		update_option( WC_Subscriptions_Admin::$option_prefix . self::$update_time_setting_string, time() );
+		WCS_Notifications_Batch_Processor::enqueue();
 	}
 
 	/**

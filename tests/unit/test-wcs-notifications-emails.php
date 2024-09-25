@@ -23,15 +23,28 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	 * Test the update time sync.
 	 */
 	public function test_update_time_sync() {
-		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time' );
+		$notification_settings_update_timestamp = get_option( 'woocommerce_notification_settings_update_time' );
 		$this->assertFalse( $notification_settings_update_timestamp );
 
 		// Update the timestamp.
 		$this->enable_notifications_globally();
 
-		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time' );
+		$notification_settings_update_timestamp = get_option( 'woocommerce_notification_settings_update_time' );
 		$this->assertTrue( is_numeric( $notification_settings_update_timestamp ) );
 		$this->assertLessThanOrEqual( time(), $notification_settings_update_timestamp );
+
+		// Update the timestamp again.
+		$this->enable_notifications_globally(
+			[
+				'number' => '4',
+				'unit'   => 'days',
+			]
+		);
+
+		$notification_settings_update_timestamp2 = get_option( 'woocommerce_notification_settings_update_time' );
+		$this->assertTrue( is_numeric( $notification_settings_update_timestamp2 ) );
+		$this->assertLessThanOrEqual( time(), $notification_settings_update_timestamp2 );
+		$this->assertGreaterThan( $notification_settings_update_timestamp, $notification_settings_update_timestamp2 );
 	}
 
 	/**
