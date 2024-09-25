@@ -141,24 +141,31 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
 	}
 
-	public function schedule_trial_ending_notification( $subscription ) {
-		$trial_end = $subscription->get_date( 'trial_end' );
-		$timestamp = $this->sub_time_offset( $trial_end, $subscription );
+	protected function get_action_from_date_type( $date_type ) {
+		$action = '';
 
-		$this->schedule_notification(
-			$subscription,
-			'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
-			$timestamp
-		);
+		switch ( $date_type ) {
+			case 'trial_end':
+				$action = 'woocommerce_scheduled_subscription_customer_notification_trial_expiration';
+				break;
+			case 'next_payment':
+				$action = 'woocommerce_scheduled_subscription_customer_notification_renewal';
+				break;
+			case 'end':
+				$action = 'woocommerce_scheduled_subscription_customer_notification_expiration';
+				break;
+		}
+
+		return $action;
 	}
 
-	public function schedule_expiry_notification( $subscription ) {
-		$subscription_end = $subscription->get_date( 'end' );
-		$timestamp        = $this->sub_time_offset( $subscription_end, $subscription );
+	public function schedule_expiry_notification( $subscription, $date_type ) {
+		$end_date  = $subscription->get_date( $date_type );
+		$timestamp = $this->sub_time_offset( $end_date, $subscription );
 
 		$this->schedule_notification(
 			$subscription,
-			'woocommerce_scheduled_subscription_customer_notification_expiration',
+			$this->get_action_from_date_type( $date_type ),
 			$timestamp
 		);
 	}
@@ -244,11 +251,11 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 */
 	protected function schedule_all_notifications( $subscription ) {
 		if ( $subscription->get_date( 'trial_end' ) ) {
-			$this->schedule_trial_ending_notification( $subscription );
+			$this->schedule_expiry_notification( $subscription, 'trial_end' );
 		}
 
 		if ( $subscription->get_date( 'end' ) ) {
-			$this->schedule_expiry_notification( $subscription );
+			$this->schedule_expiry_notification( $subscription, 'end' );
 		}
 
 		if ( $subscription->get_date( 'next_payment' ) ) {
@@ -286,7 +293,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
 	public function delete_date( $subscription, $date_type ) {
-		$this->update_date( $subscription, $date_type, '0' );
+		$action = $this->get_action_from_date_type( $date_type );
+		if ( $action ) {
+			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
+		}
 	}
 
 	public function unschedule_all_notifications( $subscription = null, $exceptions = [] ) {
