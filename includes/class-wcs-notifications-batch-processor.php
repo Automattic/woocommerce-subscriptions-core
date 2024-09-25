@@ -168,7 +168,8 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	 * @param array $batch Batch to process, as returned by 'get_next_batch_to_process'.
 	 */
 	public function process_batch( array $batch ): void {
-		$subscriptions_notifications = new WCS_Action_Scheduler_Customer_Notifications();
+		// Instantiating this again would hook another set of hooks for update_status and update_date. No bueno.
+		$subscriptions_notifications = WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler;
 
 		foreach ( $batch as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );

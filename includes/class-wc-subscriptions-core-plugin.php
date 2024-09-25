@@ -26,6 +26,13 @@ class WC_Subscriptions_Core_Plugin {
 	protected $scheduler = null;
 
 	/**
+	 * Notification scheduler instance.
+	 *
+	 * @var WCS_Action_Scheduler_Customer_Notifications
+	 */
+	public $notifications_scheduler = null;
+
+	/**
 	 * The plugin's autoloader instance.
 	 *
 	 * @var WCS_Autoloader
@@ -161,7 +168,7 @@ class WC_Subscriptions_Core_Plugin {
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
 
-		$notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
+		$this->notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
 
 		// Initialise the cache.
 		$this->cache = WCS_Cache_Manager::get_instance();
