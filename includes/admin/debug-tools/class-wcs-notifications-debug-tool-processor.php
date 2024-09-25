@@ -255,7 +255,7 @@ class WCS_Notifications_Debug_Tool_Processor implements BatchProcessorInterface 
 	}
 
 	/**
-	 * Stop the background process for coupon data conversion.
+	 * Stop the background process for batch processing subscription notifications updates.
 	 *
 	 * @return string Informative string to show after the tool is triggered in UI.
 	 */
