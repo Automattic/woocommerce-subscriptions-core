@@ -2168,12 +2168,12 @@ class WC_Subscription extends WC_Order {
 
 			$payment_method_to_display = __( 'Manual Renewal', 'woocommerce-subscriptions' );
 
-			// Use the current title of the payment gateway when available
+		// Use the current title of the payment gateway when available
 		} elseif ( false !== ( $payment_gateway = wc_get_payment_gateway_by_order( $this ) ) ) {
 
 			$payment_method_to_display = $payment_gateway->get_title();
 
-			// Fallback to the title of the payment method when the subscription was created
+		// Fallback to the title of the payment method when the subscription was created
 		} else {
 
 			$payment_method_to_display = $this->get_payment_method_title();
@@ -2228,7 +2228,7 @@ class WC_Subscription extends WC_Order {
 
 					// Set the payment gateway ID depending on whether we have a string or WC_Payment_Gateway or string key
 					if ( is_a( $payment_method, 'WC_Payment_Gateway' ) ) {
-						$payment_gateway = $payment_method;
+						$payment_gateway  = $payment_method;
 					} else {
 						$payment_gateways = WC()->payment_gateways->payment_gateways();
 						$payment_gateway  = isset( $payment_gateways[ $payment_method_id ] ) ? $payment_gateways[ $payment_method_id ] : null;
@@ -2290,7 +2290,7 @@ class WC_Subscription extends WC_Order {
 	 * @return bool
 	 */
 	public function is_download_permitted() {
-		$sending_email         = did_action( 'woocommerce_email_header' ) > did_action( 'woocommerce_email_footer' );
+		$sending_email = did_action( 'woocommerce_email_header' ) > did_action( 'woocommerce_email_footer' );
 		$is_download_permitted = $this->has_status( self::STATUS_ACTIVE ) || $this->has_status( self::STATUS_PENDING_CANCEL );
 
 		// WC Emails are sent before the subscription status is updated to active etc. so we need a way to ensure download links are added to the emails before being sent
@@ -2448,8 +2448,8 @@ class WC_Subscription extends WC_Order {
 				if ( $subscription_order_count < 2 && 0 != ( $next_payment_timestamp = $this->get_time( 'next_payment' ) ) ) {
 					$from_timestamp = $next_payment_timestamp;
 
-					// when we have a sync'd subscription after its 1st payment, we need to base the calculations for the next payment on the last payment timestamp.
-				} elseif ( ! ( $subscription_order_count > 2 ) && 0 != ( $last_payment_timestamp = $this->get_time( 'last_order_date_created' ) ) ) {
+				// when we have a sync'd subscription after its 1st payment, we need to base the calculations for the next payment on the last payment timestamp.
+				} else if ( ! ( $subscription_order_count > 2 ) && 0 != ( $last_payment_timestamp = $this->get_time( 'last_order_date_created' ) ) ) {
 					$from_timestamp = $last_payment_timestamp;
 				}
 			}
@@ -2552,7 +2552,7 @@ class WC_Subscription extends WC_Order {
 
 					$timestamps[ $date_type ] = wcs_date_to_time( $datetime );
 				}
-				// otherwise get the current subscription time
+			// otherwise get the current subscription time
 			} else {
 				$timestamps[ $date_type ] = $this->get_time( $date_type );
 			}
@@ -2644,23 +2644,19 @@ class WC_Subscription extends WC_Order {
 	protected function get_valid_date_types() {
 
 		if ( empty( $this->valid_date_types ) ) {
-			$this->valid_date_types = apply_filters(
-				'woocommerce_subscription_valid_date_types',
-				array_merge(
-					array_keys( wcs_get_subscription_date_types() ),
-					array(
-						'date_created',
-						'date_modified',
-						'date_paid',
-						'date_completed',
-						'last_order_date_created',
-						'last_order_date_paid',
-						'last_order_date_completed',
-						'payment_retry',
-					)
-				),
-				$this
-			);
+			$this->valid_date_types = apply_filters( 'woocommerce_subscription_valid_date_types', array_merge(
+				array_keys( wcs_get_subscription_date_types() ),
+				array(
+					'date_created',
+					'date_modified',
+					'date_paid',
+					'date_completed',
+					'last_order_date_created',
+					'last_order_date_paid',
+					'last_order_date_completed',
+					'payment_retry',
+				)
+			), $this );
 		}
 
 		return $this->valid_date_types;
