@@ -1680,7 +1680,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Tests that subscriptions loaded from the database with draft or auto-draft status are treated as pending.
 	 */
 	public function test_draft_subscription_statuses() {
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_ACTIVE ] );
 		$subscription->set_status( 'draft' );
 		$subscription->save();
 
@@ -1830,7 +1830,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_last_payment_date() {
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_ACTIVE ] );
 
 		$this->assertEquals( 0, PHPUnit_Utils::call_method( $subscription, 'get_last_payment_date' ) );
 
@@ -1887,7 +1887,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_update_last_payment_date() {
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'     => 'active',
+				'status'     => WC_Subscription::STATUS_ACTIVE,
 				'start_date' => '2015-01-01 10:19:40', // make sure we have a start date before all the test dates
 			]
 		);
@@ -2520,7 +2520,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$order = wc_get_order( $order_id ); // With WC 3.0, we need to reinit the order to make sure we have the correct status.
 
-		$this->assertEquals( 'active', $subscription->get_status() );
+		$this->assertEquals( WC_Subscription::STATUS_ACTIVE, $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
 			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
@@ -2599,7 +2599,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_date( $dates_to_set, $input, $expected_outcome ) {
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_ACTIVE ] );
 
 		// We need an order to set the last payment date on
 		if ( isset( $dates_to_set['last_order_date_created'] ) || isset( $input['last_order_date_created'] ) ) {

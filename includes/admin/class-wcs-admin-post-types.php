@@ -703,7 +703,7 @@ class WCS_Admin_Post_Types {
 
 			// Custom handling for `Next payment` date column.
 			if ( 'next_payment_date' === $column ) {
-				$subscription_is_active = $subscription->has_status( 'active' );
+				$subscription_is_active = $subscription->has_status( WC_Subscription::STATUS_ACTIVE );
 
 				$tooltip_message = '';
 				$tooltip_classes = 'woocommerce-help-tip';

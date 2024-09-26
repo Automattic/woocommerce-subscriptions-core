@@ -36,7 +36,7 @@ function wcs_make_user_inactive( $user_id ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_maybe_make_user_inactive( $user_id ) {
-	if ( ! wcs_user_has_subscription( $user_id, '', 'active' ) ) {
+	if ( ! wcs_user_has_subscription( $user_id, '', WC_Subscription::STATUS_ACTIVE ) ) {
 		wcs_update_users_role( $user_id, 'default_inactive_role' );
 	}
 }

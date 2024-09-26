@@ -693,7 +693,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 		}
 
 		// Don't allow if there are no remaining payments or the subscription is not active.
-		if ( $subscription->get_time( 'next_payment' ) <= 0 || ! $subscription->has_status( 'active' ) ) {
+		if ( $subscription->get_time( 'next_payment' ) <= 0 || ! $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 			return false;
 		}
 

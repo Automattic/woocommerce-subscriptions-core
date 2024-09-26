@@ -12,7 +12,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 	public function test_wcs_is_subscription() {
 		// test cases
-		$subscription_object    = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		$subscription_object    = WCS_Helper_Subscription::create_subscription( array( 'status' => WC_Subscription::STATUS_ACTIVE ) );
 		$subscription_id_int    = $subscription_object->get_id();
 		$subscription_id_float  = (float) $subscription_id_int;
 		$subscription_id_string = (string) $subscription_id_int;
@@ -44,14 +44,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function test_wcs_do_subscriptions_exist() {
 		$this->assertEquals( false, wcs_do_subscriptions_exist(), 'Subscriptions should not exist, yet wcs_do_subscriptions_exist is reporting they do' );
 
-		WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		WCS_Helper_Subscription::create_subscription( array( 'status' => WC_Subscription::STATUS_ACTIVE ) );
 
 		$this->assertEquals( true, wcs_do_subscriptions_exist(), 'There should be a subscription, yet wcs_do_subscriptions_exist is reporting they do not.' );
 	}
 
 
 	public function test_wcs_get_subscription() {
-		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		$subscription_object     = WCS_Helper_Subscription::create_subscription( array( 'status' => WC_Subscription::STATUS_ACTIVE ) );
 		$non_subscription_object = $this->factory->post->create_and_get();
 
 		$this->assertEquals( $subscription_object, wcs_get_subscription( $subscription_object ) );
@@ -583,7 +583,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 				array(
 					'billing_period'   => 'day',
 					'billing_interval' => 9,
-					'status'           => 'active',
+					'status'           => WC_Subscription::STATUS_ACTIVE,
 					'customer_note'    => 'This is a test',
 					'created_via'      => 'Woo Subs 2 test case',
 					'customer_id'      => 2,
@@ -1159,7 +1159,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
@@ -1233,7 +1233,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 
@@ -1282,7 +1282,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function test_4_wcs_get_subscriptions_for_product() {
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 

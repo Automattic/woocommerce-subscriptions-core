@@ -52,7 +52,7 @@ function wcs_is_product_limited_for_user( $product, $user_id = 0 ) {
 	$product_limitation  = wcs_get_product_limitation( $product );
 
 	// If the subscription is limited to 1 active and the customer has a subscription to this product on-hold.
-	if ( 'active' == $product_limitation && wcs_user_has_subscription( $user_id, $product->get_id(), 'on-hold' ) ) {
+	if ( 'active' == $product_limitation && wcs_user_has_subscription( $user_id, $product->get_id(), WC_Subscription::STATUS_ON_HOLD ) ) {
 		$is_limited_for_user = true;
 	} elseif ( 'no' !== $product_limitation ) {
 		$is_limited_for_user = wcs_user_has_subscription( $user_id, $product->get_id(), $product_limitation );
@@ -67,7 +67,7 @@ function wcs_is_product_limited_for_user( $product, $user_id = 0 ) {
 			) );
 
 			foreach ( $user_subscriptions as $subscription ) {
-				if ( ! $subscription->has_status( 'cancelled' ) || 0 !== $subscription->get_payment_count() ) {
+				if ( ! $subscription->has_status( WC_Subscription::STATUS_CANCELLED ) || 0 !== $subscription->get_payment_count() ) {
 					$is_limited_for_user = true;
 					break;
 				}

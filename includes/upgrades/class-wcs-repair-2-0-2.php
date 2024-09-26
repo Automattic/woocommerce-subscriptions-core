@@ -247,7 +247,7 @@ class WCS_Repair_2_0_2 {
 		global $wpdb;
 
 		// the subscription doesn't have a next payment date set, let's see if it should
-		if ( 0 == $subscription->get_time( 'next_payment' ) && $subscription->has_status( 'active' ) ) {
+		if ( 0 == $subscription->get_time( 'next_payment' ) && $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 
 			$old_hook_args = array(
 				'user_id'          => (int) $subscription->get_user_id(),
@@ -373,7 +373,7 @@ class WCS_Repair_2_0_2 {
 					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: payment method does not support "subscription_date_changes" and total > 0, setting "_wcs_repaired_2_0_2_needs_failed_payment" post meta flag.', $subscription->get_id() ) );
 				}
 
-				if ( 'active' == $former_order_item_meta['_wcs_migrated_subscription_status'][0] && $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
+				if ( WC_Subscription::STATUS_ACTIVE == $former_order_item_meta['_wcs_migrated_subscription_status'][0] && $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
 					$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 				}
 

@@ -973,7 +973,7 @@ class WC_Subscriptions_Admin {
 	public static function user_column_values( $value, $column_name, $user_id ) {
 
 		if ( 'woocommerce_active_subscriber' == $column_name ) {
-			if ( wcs_user_has_subscription( $user_id, '', 'active' ) ) {
+			if ( wcs_user_has_subscription( $user_id, '', WC_Subscription::STATUS_ACTIVE ) ) {
 				$value = '<div class="active-subscriber"></div>';
 			} else {
 				$value = '<div class="inactive-subscriber">-</div>';
@@ -1650,7 +1650,7 @@ class WC_Subscriptions_Admin {
 		$attributes = shortcode_atts(
 			array(
 				'user_id' => 0,
-				'status'  => 'active',
+				'status'  => WC_Subscription::STATUS_ACTIVE,
 			),
 			$attributes,
 			'subscriptions'

@@ -343,7 +343,7 @@ class WC_Subscriptions_Order {
 
 			if ( $subscription_count ) {
 				foreach ( $subscriptions as $subscription ) {
-					if ( ! $subscription->has_status( 'active' ) ) {
+					if ( ! $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 						$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 						break;
 					}

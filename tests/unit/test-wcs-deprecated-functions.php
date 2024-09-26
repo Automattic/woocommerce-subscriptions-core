@@ -56,7 +56,7 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'   => 'active',
+				'status'   => WC_Subscription::STATUS_ACTIVE,
 				'order_id' => wcs_get_objects_property( $order, 'id' ),
 			)
 		);
@@ -98,7 +98,7 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'   => 'active',
+				'status'   => WC_Subscription::STATUS_ACTIVE,
 				'order_id' => wcs_get_objects_property( $order, 'id' ),
 			)
 		);
@@ -137,7 +137,7 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'   => 'active',
+				'status'   => WC_Subscription::STATUS_ACTIVE,
 				'order_id' => wcs_get_objects_property( $order, 'id' ),
 			)
 		);
@@ -157,7 +157,7 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( 0, $deprecated_subscription['variation_id'] );
 
 		$this->assertArrayHasKey( 'status', $deprecated_subscription );
-		$this->assertEquals( 'active', $deprecated_subscription['status'] );
+		$this->assertEquals( WC_Subscription::STATUS_ACTIVE, $deprecated_subscription['status'] );
 
 		$this->assertArrayHasKey( 'period', $deprecated_subscription );
 		$this->assertEquals( 'month', $deprecated_subscription['period'] );

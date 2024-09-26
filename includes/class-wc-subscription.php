@@ -1325,7 +1325,7 @@ class WC_Subscription extends WC_Order {
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
 		// Don't display next payment date when the subscription is inactive
-		if ( 'next_payment' == $date_type && ! $this->has_status( 'active' ) ) {
+		if ( 'next_payment' == $date_type && ! $this->has_status( self::STATUS_ACTIVE ) ) {
 			$timestamp_gmt = 0;
 		}
 
@@ -1894,8 +1894,8 @@ class WC_Subscription extends WC_Order {
 		$this->add_order_note( __( 'Payment status marked complete.', 'woocommerce-subscriptions' ) );
 
 		// $this->update_status() only calls save if the status has changed.
-		if ( 'active' !== $this->get_status( 'edit' ) ) {
-			$this->update_status( 'active' );
+		if ( self::STATUS_ACTIVE !== $this->get_status( 'edit' ) ) {
+			$this->update_status( self::STATUS_ACTIVE );
 		} else {
 			$this->save();
 		}

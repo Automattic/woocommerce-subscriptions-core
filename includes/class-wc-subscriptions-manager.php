@@ -113,7 +113,7 @@ class WC_Subscriptions_Manager {
 
 		$order_note = _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' );
 
-		$renewal_order = self::process_renewal( $subscription_id, 'active', $order_note );
+		$renewal_order = self::process_renewal( $subscription_id, WC_Subscription::STATUS_ACTIVE, $order_note );
 
 		// Backward compatibility with Subscriptions < 2.2.12 where we returned false for an unknown reason
 		if ( false === $renewal_order ) {
@@ -338,7 +338,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					$subscription->update_status( 'active' );
+					$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message
 					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
@@ -2150,14 +2150,14 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( 'active' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
 			return false;
 		}
 
-		if ( ! $subscription->has_status( WC_Subscription::STATUS_PENDING ) && ! $subscription->can_be_updated_to( 'active' ) ) {
+		if ( ! $subscription->has_status( WC_Subscription::STATUS_PENDING ) && ! $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
 
 			do_action( 'unable_to_activate_subscription', $user_id, $subscription_key );
 
@@ -2165,7 +2165,7 @@ class WC_Subscriptions_Manager {
 
 		} else {
 
-			$subscription->update_status( 'active' );
+			$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 
 			do_action( 'activated_subscription', $user_id, $subscription_key );
 
