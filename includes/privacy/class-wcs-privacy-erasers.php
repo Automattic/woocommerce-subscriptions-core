@@ -103,8 +103,8 @@ class WCS_Privacy_Erasers {
 		do_action( 'woocommerce_privacy_before_remove_subscription_personal_data', $subscription );
 
 		// Cancel the subscription before removing personal data so payment gateways still have access to that data.
-		if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-			$subscription->update_status( 'cancelled' );
+		if ( $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
+			$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 		}
 
 		/**

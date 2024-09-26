@@ -1393,13 +1393,13 @@ class WCS_Admin_Post_Types {
 			}
 
 			// Trashing and deleting requires specific user capabilities.
-			if ( in_array( $status, array( 'trash', 'deleted' ), true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
+			if ( in_array( $status, array( WC_Subscription::STATUS_TRASH, 'deleted' ), true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
 				continue;
 			}
 
-			if ( 'trash' === $status ) {
+			if ( WC_Subscription::STATUS_TRASH === $status ) {
 				// If the subscription is already trashed, add an untrash action instead.
-				if ( 'trash' === $subscription->get_status() ) {
+				if ( WC_Subscription::STATUS_TRASH === $subscription->get_status() ) {
 					$untrash_url        = $is_hpos_enabled ? esc_url( add_query_arg( 'action', 'untrash_subscriptions', $action_url ) ) : wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $subscription->get_id() ) ), 'untrash-post_' . $subscription->get_id() );
 					$actions['untrash'] = sprintf(
 						'<a title="%s" href="%s">%s</a>',
@@ -1411,7 +1411,7 @@ class WCS_Admin_Post_Types {
 					$actions['trash'] = sprintf(
 						'<a class="submitdelete" title="%s" href="%s">%s</a>',
 						esc_attr( __( 'Move this item to the Trash', 'woocommerce-subscriptions' ) ),
-						esc_url( $this->get_trash_or_delete_subscription_link( $subscription->get_id(), $action_url, 'trash' ) ),
+						esc_url( $this->get_trash_or_delete_subscription_link( $subscription->get_id(), $action_url, WC_Subscription::STATUS_TRASH ) ),
 						$label
 					);
 				}
@@ -1421,7 +1421,7 @@ class WCS_Admin_Post_Types {
 			}
 
 			// The delete action is only shown on already trashed subscriptions, or where there is no trash period.
-			if ( 'deleted' === $status && ( 'trash' === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) ) {
+			if ( 'deleted' === $status && ( WC_Subscription::STATUS_TRASH === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) ) {
 				$actions['delete'] = sprintf(
 					'<a class="submitdelete" title="%s" href="%s">%s</a>',
 					esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ),
@@ -1434,7 +1434,7 @@ class WCS_Admin_Post_Types {
 			}
 
 			// Modify the label for canceling if the subscription is pending cancel.
-			if ( 'cancelled' === $status && 'pending-cancel' === $subscription->get_status() ) {
+			if ( WC_Subscription::STATUS_CANCELLED === $status && WC_Subscription::STATUS_PENDING_CANCEL === $subscription->get_status() ) {
 				$label = __( 'Cancel Now', 'woocommerce-subscriptions' );
 			}
 
@@ -1444,7 +1444,7 @@ class WCS_Admin_Post_Types {
 		if ( WC_Subscription::STATUS_PENDING === $subscription->get_status() ) {
 			unset( $actions['active'] );
 			unset( $actions['trash'] );
-		} elseif ( ! in_array( $subscription->get_status(), array( 'cancelled', 'pending-cancel', 'expired', 'switched', 'suspended' ), true ) ) {
+		} elseif ( ! in_array( $subscription->get_status(), array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_SUSPENDED ), true ) ) {
 			unset( $actions['trash'] );
 		}
 
@@ -1504,7 +1504,7 @@ class WCS_Admin_Post_Types {
 			$note         = _x( 'Subscription status changed by bulk edit:', 'Used in order note. Reason why status changed.', 'woocommerce-subscriptions' );
 
 			try {
-				if ( 'cancelled' === $new_status ) {
+				if ( WC_Subscription::STATUS_CANCELLED === $new_status ) {
 					$subscription->cancel_order( $note );
 				} else {
 					$subscription->update_status( $new_status, $note, true );
@@ -1543,7 +1543,7 @@ class WCS_Admin_Post_Types {
 			$subscription->delete( $force_delete );
 			$updated_subscription = wcs_get_subscription( $id );
 
-			if ( ( $force_delete && false === $updated_subscription ) || ( ! $force_delete && $updated_subscription->get_status() === 'trash' ) ) {
+			if ( ( $force_delete && false === $updated_subscription ) || ( ! $force_delete && $updated_subscription->get_status() === WC_Subscription::STATUS_TRASH ) ) {
 				$sendback_args['changed']++;
 			}
 		}
@@ -1761,7 +1761,7 @@ class WCS_Admin_Post_Types {
 			return;
 		}
 
-		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $subscription_id ) || in_array( $post_status, array( 'cancelled', 'trash', 'wc-expired' ), true ) ) {
+		if ( 'shop_subscription' !== WC_Data_Store::load( 'subscription' )->get_order_type( $subscription_id ) || in_array( $post_status, array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_TRASH, 'wc-expired' ), true ) ) {
 			return;
 		}
 

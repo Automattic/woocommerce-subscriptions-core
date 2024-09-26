@@ -235,7 +235,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 */
 	public function get_recurring_cart_key( $cart_key, $cart_item ) {
 		$subscription = $this->get_order( $cart_item );
-		if ( false !== $subscription && $subscription->has_status( 'pending-cancel' ) ) {
+		if ( false !== $subscription && $subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL ) ) {
 			remove_filter( 'woocommerce_subscriptions_recurring_cart_key', array( &$this, 'get_recurring_cart_key' ), 10 );
 			$cart_key = WC_Subscriptions_Cart::get_recurring_cart_key( $cart_item, $subscription->get_time( 'end' ) );
 			add_filter( 'woocommerce_subscriptions_recurring_cart_key', array( &$this, 'get_recurring_cart_key' ), 10, 2 );
@@ -315,10 +315,10 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			$order = wc_get_order( $order_id );
 
 			foreach ( wcs_get_subscriptions_for_resubscribe_order( $order_id ) as $subscription ) {
-				if ( $subscription->has_status( 'pending-cancel' ) ) {
+				if ( $subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL ) ) {
 					// translators: %s: order number.
 					$cancel_note = sprintf( __( 'Customer resubscribed in order #%s', 'woocommerce-subscriptions' ), $order->get_order_number() );
-					$subscription->update_status( 'cancelled', $cancel_note );
+					$subscription->update_status( WC_Subscription::STATUS_CANCELLED, $cancel_note );
 				}
 			}
 		}
@@ -350,7 +350,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 	 * @return bool
 	 */
 	private function is_pre_cancelled_resubscribe( $subscription ) {
-		return is_a( $subscription, 'WC_Subscription' ) && $subscription->has_status( 'pending-cancel' ) && $subscription->get_time( 'end' ) > gmdate( 'U' );
+		return is_a( $subscription, 'WC_Subscription' ) && $subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL ) && $subscription->get_time( 'end' ) > gmdate( 'U' );
 	}
 
 	/**

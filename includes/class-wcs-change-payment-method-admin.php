@@ -134,7 +134,7 @@ class WCS_Change_Payment_Method_Admin {
 
 		if ( ! $subscription->is_manual() && ( '' == $payment_gateway || $subscription->get_payment_method() != $payment_gateway->id ) ) {
 			// Before updating to a new payment gateway make sure the subscription status is updated with the current gateway
-			$gateway_status           = apply_filters( 'wcs_gateway_status_payment_changed', 'cancelled', $subscription, $payment_gateway );
+			$gateway_status           = apply_filters( 'wcs_gateway_status_payment_changed', WC_Subscription::STATUS_CANCELLED, $subscription, $payment_gateway );
 			$payment_gateways_handler = WC_Subscriptions_Core_Plugin::instance()->get_gateways_handler_class();
 
 			$payment_gateways_handler::trigger_gateway_status_updated_hook( $subscription, $gateway_status );

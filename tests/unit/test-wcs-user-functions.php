@@ -114,7 +114,7 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 		// Create a third test subscription with 'expired' status
 		$subscription3 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'      => 'expired',
+				'status'      => WC_Subscription::STATUS_EXPIRED,
 				'start_date'  => '2017-06-01 00:00:00',
 				'customer_id' => $user_id2,
 			)

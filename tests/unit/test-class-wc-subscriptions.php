@@ -1966,7 +1966,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_cancel_order_data_provider( $status ) {
-		if ( in_array( $status, [ 'cancelled', 'expired' ], true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED ], true ) ) {
 			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}
@@ -1979,7 +1979,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		);
 
 		$subscription->cancel_order();
-		$this->assertTrue( $subscription->has_status( 'cancelled' ) );
+		$this->assertTrue( $subscription->has_status( WC_Subscription::STATUS_CANCELLED ) );
 
 	}
 
@@ -2121,7 +2121,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_is_download_permitted( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ 'active', 'pending-cancel' ], true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL ], true ) ) {
 			$this->assertTrue( $subscription->is_download_permitted() );
 		} else {
 			$this->assertFalse( $subscription->is_download_permitted() );
@@ -2439,7 +2439,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 */
 	public function test_payment_failed_statuses( $status ) {
 
-		if ( in_array( $status, [ 'expired', 'pending-cancel', 'cancelled' ], true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ], true ) ) {
 			// Test not required for these statuses.
 			$this->markTestSkipped( 'Test not required' );
 		}

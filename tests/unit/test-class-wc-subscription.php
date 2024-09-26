@@ -38,8 +38,8 @@ class WC_Subscription_Test extends WP_UnitTestCase {
 	public function provide_test_update_status() {
 		return array(
 			'pending-cancel => active' => array(
-				'from'     => 'pending-cancel',
-				'to'       => 'active',
+				'from'     => WC_Subscription::STATUS_PENDING_CANCEL,
+				'to'       => WC_Subscription::STATUS_ACTIVE,
 				'expected' => array(
 					'cancelled_email_sent' => 'false',
 				),

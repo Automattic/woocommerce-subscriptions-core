@@ -344,7 +344,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		$id     = $subscription->get_id();
 		$status = $subscription->get_status();
 
-		if ( 'trash' !== $status ) {
+		if ( WC_Subscription::STATUS_TRASH !== $status ) {
 			wc_get_logger()->warning(
 				sprintf(
 					/* translators: 1: subscription ID, 2: subscription status */

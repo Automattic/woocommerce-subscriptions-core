@@ -707,7 +707,7 @@ function wcs_get_canonical_product_id( $item_or_product ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscription_ended_statuses() {
-	return apply_filters( 'wcs_subscription_ended_statuses', array( 'cancelled', 'trash', 'expired', 'switched', 'pending-cancel' ) );
+	return apply_filters( 'wcs_subscription_ended_statuses', array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_TRASH, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_PENDING_CANCEL ) );
 }
 
 /**

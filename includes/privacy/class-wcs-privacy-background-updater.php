@@ -121,7 +121,7 @@ class WCS_Privacy_Background_Updater {
 		$batch_size = 20;
 
 		// Get the ended_statuses and removes pending-cancel.
-		$subscription_ended_statuses = array_diff( wcs_get_subscription_ended_statuses(), array( 'pending-cancel' ) );
+		$subscription_ended_statuses = array_diff( wcs_get_subscription_ended_statuses(), array( WC_Subscription::STATUS_PENDING_CANCEL ) );
 
 		$subscriptions = wcs_get_subscriptions( array(
 			'subscriptions_per_page' => $batch_size,

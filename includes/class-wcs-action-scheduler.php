@@ -64,7 +64,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					}
 
 					// Only schedule it if it's valid. It's active, it's a payment retry or it's pending cancelled and the end date being updated.
-					if ( 'payment_retry' === $date_type || $subscription->has_status( 'active' ) || ( $subscription->has_status( 'pending-cancel' ) && 'end' === $date_type ) ) {
+					if ( 'payment_retry' === $date_type || $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) || ( $subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL ) && 'end' === $date_type ) ) {
 						$this->schedule_action( $timestamp, $action_hook, $action_args );
 					}
 				}
@@ -195,7 +195,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				break;
 			case 'end':
 				// End dates may need either an expiration or end of prepaid term hook, depending on the status
-				if ( $subscription->has_status( array( 'cancelled', 'pending-cancel' ) ) ) {
+				if ( $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_PENDING_CANCEL ) ) ) {
 					$hook = 'woocommerce_scheduled_subscription_end_of_prepaid_term';
 				} elseif ( $subscription->has_status( 'active' ) ) {
 					$hook = 'woocommerce_scheduled_subscription_expiration';

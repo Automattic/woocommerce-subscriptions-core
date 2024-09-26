@@ -115,7 +115,7 @@ class WCS_PayPal_Standard_Request {
 
 			if ( $resubscribe_cart_item = wcs_cart_contains_resubscribe() ) {
 				$resubscribed_subscription = wcs_get_subscription( $resubscribe_cart_item['subscription_resubscribe']['subscription_id'] );
-				$is_early_resubscribe      = wcs_is_subscription( $resubscribed_subscription ) && $resubscribed_subscription->has_status( 'pending-cancel' );
+				$is_early_resubscribe      = wcs_is_subscription( $resubscribed_subscription ) && $resubscribed_subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL );
 			}
 
 			if ( $is_synced_subscription ) {

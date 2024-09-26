@@ -57,7 +57,7 @@ class WCS_Upgrade_2_2_7 {
 
 					self::log( sprintf( 'Subscription %d end date is in the past - cancelling now', $subscription_id ) );
 
-					$subscription->update_status( 'cancelled', __( 'Subscription end date in the past', 'woocommerce-subscriptions' ) );
+					$subscription->update_status( WC_Subscription::STATUS_CANCELLED, __( 'Subscription end date in the past', 'woocommerce-subscriptions' ) );
 				} else {
 					$action_args      = array( 'subscription_id' => $subscription_id );
 					$scheduled_action = as_next_scheduled_action( $end_of_prepaid_term_hook, $action_args );

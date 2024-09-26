@@ -68,10 +68,10 @@ class WCS_Upgrade_2_0 {
 				$original_order = wc_get_order( $old_subscription['order_id'] );
 
 				// If we're still in a prepaid term, the new subscription has the new pending cancellation status
-				if ( 'cancelled' == $old_subscription['status'] && false != as_next_scheduled_action( 'scheduled_subscription_end_of_prepaid_term', array( 'user_id' => $old_subscription['user_id'], 'subscription_key' => $old_subscription['subscription_key'] ) ) ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
-					$subscription_status = 'pending-cancel';
-				} elseif ( 'trash' == $old_subscription['status'] ) {
-					$subscription_status = 'cancelled'; // we'll trash it properly after migrating it
+				if ( WC_Subscription::STATUS_CANCELLED == $old_subscription['status'] && false != as_next_scheduled_action( 'scheduled_subscription_end_of_prepaid_term', array( 'user_id' => $old_subscription['user_id'], 'subscription_key' => $old_subscription['subscription_key'] ) ) ) { // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+					$subscription_status = WC_Subscription::STATUS_PENDING_CANCEL;
+				} elseif ( WC_Subscription::STATUS_TRASH == $old_subscription['status'] ) {
+					$subscription_status = WC_Subscription::STATUS_CANCELLED; // we'll trash it properly after migrating it
 				} else {
 					$subscription_status = $old_subscription['status'];
 				}
@@ -125,7 +125,7 @@ class WCS_Upgrade_2_0 {
 					self::migrate_switch_meta( $new_subscription, $original_order, $subscription_item_id );
 
 					// If the subscription was in the trash, now that we've set on the meta on it, we need to trash it
-					if ( 'trash' == $old_subscription['status'] ) {
+					if ( WC_Subscription::STATUS_TRASH == $old_subscription['status'] ) {
 						wp_trash_post( $new_subscription->get_id() );
 					}
 

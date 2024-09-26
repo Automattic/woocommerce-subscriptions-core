@@ -387,7 +387,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case self::STATUS_CANCELLED:
-				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( 'pending-cancel' ) || ! $this->has_status( wcs_get_subscription_ended_statuses() ) ) ) {
+				if ( $this->payment_method_supports( 'subscription_cancellation' ) && ( $this->has_status( self::STATUS_PENDING_CANCEL ) || ! $this->has_status( wcs_get_subscription_ended_statuses() ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -512,7 +512,7 @@ class WC_Subscription extends WC_Order {
 
 					case self::STATUS_COMPLETED: // core WC order status mapped internally to avoid exceptions
 					case self::STATUS_ACTIVE:
-						if ( 'pending-cancel' === $old_status ) {
+						if ( self::STATUS_PENDING_CANCEL === $old_status ) {
 							$this->update_dates(
 								array(
 									'cancelled'    => 0,
@@ -1809,17 +1809,17 @@ class WC_Subscription extends WC_Order {
 		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation unless there is a pending renewal order.
 		if ( apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && ( $this->has_status( self::STATUS_ACTIVE ) || $this->has_status( self::STATUS_ON_HOLD ) && ! $this->needs_payment() ) ) {
 
-			$this->update_status( 'pending-cancel', $note );
+			$this->update_status( self::STATUS_PENDING_CANCEL, $note );
 
 			// If the subscription has already ended or can't be cancelled for some other reason, just record the note.
-		} elseif ( ! $this->can_be_updated_to( 'cancelled' ) ) {
+		} elseif ( ! $this->can_be_updated_to( self::STATUS_CANCELLED ) ) {
 
 			$this->add_order_note( $note );
 
 			// Cancel for real if we're already pending cancellation
 		} else {
 
-			$this->update_status( 'cancelled', $note );
+			$this->update_status( self::STATUS_CANCELLED, $note );
 
 		}
 	}
@@ -1936,9 +1936,9 @@ class WC_Subscription extends WC_Order {
 		$this->add_order_note( __( 'Payment failed.', 'woocommerce-subscriptions' ) );
 
 		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
-		if ( 'cancelled' == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
-			if ( $this->can_be_updated_to( 'cancelled' ) ) {
-				$this->update_status( 'cancelled', __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
+		if ( self::STATUS_CANCELLED == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
+			if ( $this->can_be_updated_to( self::STATUS_CANCELLED ) ) {
+				$this->update_status( self::STATUS_CANCELLED, __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
 			}
 		} elseif ( $this->can_be_updated_to( $new_status ) ) {
 			$this->update_status( $new_status );
@@ -2291,7 +2291,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function is_download_permitted() {
 		$sending_email         = did_action( 'woocommerce_email_header' ) > did_action( 'woocommerce_email_footer' );
-		$is_download_permitted = $this->has_status( 'active' ) || $this->has_status( 'pending-cancel' );
+		$is_download_permitted = $this->has_status( self::STATUS_ACTIVE ) || $this->has_status( self::STATUS_PENDING_CANCEL );
 
 		// WC Emails are sent before the subscription status is updated to active etc. so we need a way to ensure download links are added to the emails before being sent
 		if ( $sending_email && ! $is_download_permitted ) {
@@ -2481,7 +2481,7 @@ class WC_Subscription extends WC_Order {
 		// WC Emails are sent before the subscription status is updated to active etc. so we need a way to ensure download links are added to the emails before being sent
 		$sending_email = did_action( 'woocommerce_email_before_order_table' ) > did_action( 'woocommerce_email_after_order_table' );
 
-		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( 'active', 'pending-cancel' ) ) ) || $sending_email ) {
+		if ( $this->has_status( apply_filters( 'woocommerce_subscription_item_download_statuses', array( self::STATUS_ACTIVE, self::STATUS_PENDING_CANCEL ) ) ) || $sending_email ) {
 			$files = parent::get_item_downloads( $item );
 		}
 

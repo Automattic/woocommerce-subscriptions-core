@@ -196,19 +196,19 @@ class WC_Subscriptions_Core_Payment_Gateways {
 		}
 
 		switch ( $new_status ) {
-			case 'active':
+			case WC_Subscription::STATUS_ACTIVE:
 				$hook_prefix = 'woocommerce_subscription_activated_';
 				break;
-			case 'on-hold':
+			case WC_Subscription::STATUS_ON_HOLD:
 				$hook_prefix = 'woocommerce_subscription_on-hold_';
 				break;
-			case 'pending-cancel':
+			case WC_Subscription::STATUS_PENDING_CANCEL:
 				$hook_prefix = 'woocommerce_subscription_pending-cancel_';
 				break;
-			case 'cancelled':
+			case WC_Subscription::STATUS_CANCELLED:
 				$hook_prefix = 'woocommerce_subscription_cancelled_';
 				break;
-			case 'expired':
+			case WC_Subscription::STATUS_EXPIRED:
 				$hook_prefix = 'woocommerce_subscription_expired_';
 				break;
 			default:
@@ -362,7 +362,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function trigger_gateway_activated_subscription_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
-		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'active' );
+		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_ACTIVE );
 	}
 
 	/**
@@ -372,7 +372,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function trigger_gateway_reactivated_subscription_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
-		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'active' );
+		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_ACTIVE );
 	}
 
 	/**
@@ -382,7 +382,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function trigger_gateway_subscription_put_on_hold_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
-		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'on-hold' );
+		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_ON_HOLD);
 	}
 
 	/**
@@ -392,7 +392,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function trigger_gateway_cancelled_subscription_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
-		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'cancelled' );
+		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_CANCELLED );
 	}
 
 	/**
@@ -402,6 +402,6 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function trigger_gateway_subscription_expired_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
-		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), 'expired' );
+		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_EXPIRED );
 	}
 }

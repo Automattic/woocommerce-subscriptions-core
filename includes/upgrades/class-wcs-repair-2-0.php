@@ -101,7 +101,7 @@ class WCS_Repair_2_0 {
 		WCS_Upgrade_Logger::add( '-- Repairing order_id for subscription that is missing order id: Status changed to trash' );
 		WCS_Upgrade_Logger::add( '-- Shop owner: please review new trashed subscriptions. There is at least one with missing order id.' );
 
-		$subscription['status'] = 'trash';
+		$subscription['status'] = WC_Subscription::STATUS_TRASH;
 
 		return $subscription;
 	}
@@ -216,11 +216,11 @@ class WCS_Repair_2_0 {
 		// if expiry_date and end_date are within 4 minutes (arbitrary), let it be expired
 		if ( array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && array_key_exists( 'end_date', $subscription ) && ! empty( $subscription['end_date'] ) && ( 4 * MINUTE_IN_SECONDS ) >= self::time_diff( $subscription['expiry_date'], $subscription['end_date'] ) ) {
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: there are end dates and expiry dates, they are close to each other, setting status to "expired" and returning.', $subscription['order_id'] ) );
-			$subscription['status'] = 'expired';
+			$subscription['status'] = WC_Subscription::STATUS_EXPIRED;
 		} else {
 			// default to cancelled
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting the default to "cancelled".', $subscription['order_id'] ) );
-			$subscription['status'] = 'cancelled';
+			$subscription['status'] = WC_Subscription::STATUS_CANCELLED;
 		}
 		self::log_store_owner_review( $subscription );
 		WCS_Upgrade_Logger::add( sprintf( '-- For order %d: returning the status with %s', $subscription['order_id'], $subscription['status'] ) );
@@ -257,7 +257,7 @@ class WCS_Repair_2_0 {
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting default subscription period to month.', $subscription['order_id'] ) );
 			self::log_store_owner_review( $subscription );
 			$subscription['period'] = 'month';
-			$subscription['status'] = 'cancelled';
+			$subscription['status'] = WC_Subscription::STATUS_CANCELLED;
 			return $subscription;
 		}
 
@@ -330,7 +330,7 @@ class WCS_Repair_2_0 {
 			WCS_Upgrade_Logger::add( sprintf( '-- For order %d: setting default subscription interval to 1.', $subscription['order_id'] ) );
 			self::log_store_owner_review( $subscription );
 			$subscription['interval'] = 1;
-			$subscription['status']   = 'cancelled';
+			$subscription['status']   = WC_Subscription::STATUS_CANCELLED;
 			return $subscription;
 		}
 
@@ -369,7 +369,7 @@ class WCS_Repair_2_0 {
 		$effective_start_date = self::get_effective_start_date( $subscription );
 
 		// If we can calculate it from the effective date and expiry date
-		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && null !== $effective_start_date && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
+		if ( WC_Subscription::STATUS_EXPIRED == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && null !== $effective_start_date && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
 			$intervals = wcs_estimate_periods_between( wcs_date_to_time( $effective_start_date ), wcs_date_to_time( $subscription['expiry_date'] ), $subscription['period'], 'floor' );
 			$subscription['length'] = $intervals;
 		} else {
@@ -455,11 +455,11 @@ class WCS_Repair_2_0 {
 			return $subscription;
 		}
 
-		if ( 'expired' == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) ) {
+		if ( WC_Subscription::STATUS_EXPIRED == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) ) {
 
 			$subscription['end_date'] = $subscription['expiry_date'];
 
-		} elseif ( 'cancelled' == $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
+		} elseif ( WC_Subscription::STATUS_CANCELLED == $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
 
 			// get renewal orders
 			$renewal_orders = self::get_renewal_orders( $subscription );

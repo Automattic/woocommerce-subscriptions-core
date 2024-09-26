@@ -194,7 +194,7 @@ class WC_Subscriptions_Manager {
 			throw new InvalidArgumentException( sprintf( __( 'Subscription doesn\'t exist in scheduled action: %d', 'woocommerce-subscriptions' ), $subscription_id ) );
 		}
 
-		$subscription->update_status( 'expired' );
+		$subscription->update_status( WC_Subscription::STATUS_EXPIRED );
 	}
 
 	/**
@@ -213,7 +213,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		if ( $subscription ) {
-			$subscription->update_status( 'cancelled' );
+			$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 		}
 	}
 
@@ -421,7 +421,7 @@ class WC_Subscriptions_Manager {
 
 				try {
 					if ( ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
-						$subscription->update_status( 'expired' );
+						$subscription->update_status( WC_Subscription::STATUS_EXPIRED );
 					}
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message
@@ -789,8 +789,8 @@ class WC_Subscriptions_Manager {
 		if ( ! empty( $subscriptions ) ) {
 
 			foreach ( $subscriptions as $subscription ) {
-				if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-					$subscription->update_status( 'cancelled' );
+				if ( $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
+					$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 				}
 			}
 
@@ -876,7 +876,7 @@ class WC_Subscriptions_Manager {
 			$order_id,
 			[
 				'order_type'          => 'parent',
-				'subscription_status' => [ 'trash' ],
+				'subscription_status' => [ WC_Subscription::STATUS_TRASH ],
 			]
 		);
 
@@ -904,7 +904,7 @@ class WC_Subscriptions_Manager {
 			$order_id,
 			[
 				'order_type'          => 'parent',
-				'subscription_status' => [ 'any', 'trash' ],
+				'subscription_status' => [ 'any', WC_Subscription::STATUS_TRASH ],
 			]
 		);
 
@@ -930,9 +930,9 @@ class WC_Subscriptions_Manager {
 			return;
 		}
 
-		if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
+		if ( $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
 
-			$subscription->update_status( 'cancelled' );
+			$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 
 		}
 	}
@@ -1089,7 +1089,7 @@ class WC_Subscriptions_Manager {
 
 		if ( 'new-payment-date' == $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "new-payment-date" parameter value is deprecated. Use WC_Subscription::can_date_be_updated( "next_payment" ) method instead.' );
-		} elseif ( 'suspended' == $new_status_or_meta ) {
+		} elseif ( WC_Subscription::STATUS_SUSPENDED == $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
 			$new_status_or_meta = WC_Subscription::STATUS_ON_HOLD;
 		}
@@ -1665,7 +1665,7 @@ class WC_Subscriptions_Manager {
 		$subscriptions = self::get_users_subscriptions( $user_id );
 
 		foreach ( $subscriptions as $key => $subscription ) {
-			if ( 'trash' != $subscription['status'] ) {
+			if ( WC_Subscription::STATUS_TRASH != $subscription['status'] ) {
 				unset( $subscriptions[ $key ] );
 			}
 		}
@@ -1763,7 +1763,7 @@ class WC_Subscriptions_Manager {
 	public static function get_users_change_status_link( $subscription_key, $status ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_users_change_status_link( $subscription_id, $status )' );
 
-		if ( 'suspended' == $status ) {
+		if ( WC_Subscription::STATUS_SUSPENDED == $status ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
 			$status = WC_Subscription::STATUS_ON_HOLD;
 		}
@@ -2239,20 +2239,20 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) ) {
+			if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
 			return false;
 		}
 
-		if ( ! $subscription->can_be_updated_to( 'cancelled' ) ) {
+		if ( ! $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
 
 			do_action( 'unable_to_cancel_subscription', $user_id, $subscription_key );
 
 		} else {
 
-			$subscription->update_status( 'cancelled' );
+			$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 
 			do_action( 'cancelled_subscription', $user_id, $subscription_key );
 
@@ -2302,22 +2302,22 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( 'trash' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_TRASH ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
 			return false;
 		}
 
-		if ( ! $subscription->can_be_updated_to( 'cancelled' ) ) {
+		if ( ! $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
 
 			do_action( 'unable_to_trash_subscription', $user_id, $subscription_key );
 
 		} else {
 
 			// Run all cancellation related functions on the subscription
-			if ( ! $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
-				$subscription->update_status( 'cancelled' );
+			if ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+				$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 			}
 
 			wp_trash_post( $subscription->get_id(), true );
@@ -2342,15 +2342,15 @@ class WC_Subscriptions_Manager {
 			return false;
 		}
 
-		if ( ! $subscription->can_be_updated_to( 'deleted' ) && ! $subscription->can_be_updated_to( 'cancelled' ) ) {
+		if ( ! $subscription->can_be_updated_to( 'deleted' ) && ! $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
 
 			do_action( 'unable_to_delete_subscription', $user_id, $subscription_key );
 
 		} else {
 
 			// Run all cancellation related functions on the subscription
-			if ( ! $subscription->has_status( array( 'cancelled', 'expired', 'trash' ) ) ) {
-				$subscription->update_status( 'cancelled' );
+			if ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+				$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 			}
 
 			wp_delete_post( $subscription->get_id(), true );
