@@ -51,7 +51,7 @@ class WCS_User_Change_Status_Handler {
 		do_action( 'woocommerce_before_customer_changed_subscription_to_' . $new_status, $subscription );
 
 		switch ( $new_status ) {
-			case 'active':
+			case WC_Subscription::STATUS_ACTIVE:
 				if ( ! $subscription->needs_payment() ) {
 					$subscription->update_status( $new_status );
 					$subscription->add_order_note( _x( 'Subscription reactivated by the subscriber from their account page.', 'order note left on subscription after user action', 'woocommerce-subscriptions' ) );
@@ -61,7 +61,7 @@ class WCS_User_Change_Status_Handler {
 					wc_add_notice( __( 'You can not reactivate that subscription until paying to renew it. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 				}
 				break;
-			case 'on-hold':
+			case WC_Subscription::STATUS_ON_HOLD:
 				if ( wcs_can_user_put_subscription_on_hold( $subscription ) ) {
 					$subscription->update_status( $new_status );
 					$subscription->add_order_note( _x( 'Subscription put on hold by the subscriber from their account page.', 'order note left on subscription after user action', 'woocommerce-subscriptions' ) );
@@ -71,7 +71,7 @@ class WCS_User_Change_Status_Handler {
 					wc_add_notice( __( 'You can not suspend that subscription - the suspension limit has been reached. Please contact us if you need assistance.', 'woocommerce-subscriptions' ), 'error' );
 				}
 				break;
-			case 'cancelled':
+			case WC_Subscription::STATUS_CANCELLED:
 				$subscription->cancel_order();
 				$subscription->add_order_note( _x( 'Subscription cancelled by the subscriber from their account page.', 'order note left on subscription after user action', 'woocommerce-subscriptions' ) );
 				wc_add_notice( _x( 'Your subscription has been cancelled.', 'Notice displayed to user confirming their action.', 'woocommerce-subscriptions' ), 'success' );

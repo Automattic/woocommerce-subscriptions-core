@@ -362,7 +362,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case self::STATUS_COMPLETED: // core WC order status mapped internally to avoid exceptions
 			case self::STATUS_ACTIVE:
-				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( 'on-hold' ) ) {
+				if ( $this->payment_method_supports( 'subscription_reactivation' ) && $this->has_status( self::STATUS_ON_HOLD ) ) {
 					// If the subscription's end date is in the past, it cannot be reactivated.
 					$end_time = $this->get_time( 'end' );
 					if ( 0 !== $end_time && $end_time < gmdate( 'U' ) ) {
@@ -372,7 +372,7 @@ class WC_Subscription extends WC_Order {
 					}
 				} elseif ( $this->has_status( self::STATUS_PENDING ) ) {
 					$can_be_updated = true;
-				} elseif ( $this->has_status( 'pending-cancel' ) && $this->get_time( 'end' ) > gmdate( 'U' ) && ( $this->is_manual() || ( false === $this->payment_method_supports( 'gateway_scheduled_payments' ) && $this->payment_method_supports( 'subscription_date_changes' ) && $this->payment_method_supports( 'subscription_reactivation' ) ) ) ) {
+				} elseif ( $this->has_status( self::STATUS_PENDING_CANCEL ) && $this->get_time( 'end' ) > gmdate( 'U' ) && ( $this->is_manual() || ( false === $this->payment_method_supports( 'gateway_scheduled_payments' ) && $this->payment_method_supports( 'subscription_date_changes' ) && $this->payment_method_supports( 'subscription_reactivation' ) ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -380,7 +380,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case self::STATUS_FAILED: // core WC order status mapped internally to avoid exceptions
 			case self::STATUS_ON_HOLD:
-				if ( $this->payment_method_supports( 'subscription_suspension' ) && $this->has_status( array( 'active', self::STATUS_PENDING ) ) ) {
+				if ( $this->payment_method_supports( 'subscription_suspension' ) && $this->has_status( array( self::STATUS_ACTIVE, self::STATUS_PENDING ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -396,9 +396,9 @@ class WC_Subscription extends WC_Order {
 			case self::STATUS_PENDING_CANCEL:
 				// Only active subscriptions can be given the "pending cancellation" status, because it is used to account for a prepaid term
 				if ( $this->payment_method_supports( 'subscription_cancellation' ) ) {
-					if ( $this->has_status( 'active' ) ) {
+					if ( $this->has_status( self::STATUS_ACTIVE ) ) {
 						$can_be_updated = true;
-					} elseif ( ! $this->needs_payment() && $this->has_status( array( 'cancelled', 'on-hold' ) ) ) {
+					} elseif ( ! $this->needs_payment() && $this->has_status( array( self::STATUS_CANCELLED, self::STATUS_ON_HOLD ) ) ) {
 						// Payment completed and subscription is cancelled
 						$can_be_updated = true;
 					} else {
@@ -409,7 +409,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case self::STATUS_EXPIRED:
-				if ( ! $this->has_status( array( 'cancelled', 'trash', 'switched' ) ) ) {
+				if ( ! $this->has_status( array( self::STATUS_CANCELLED, self::STATUS_TRASH, self::STATUS_SWITCHED ) ) ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -484,7 +484,7 @@ class WC_Subscription extends WC_Order {
 						// Nothing to do here
 						break;
 
-					case 'pending-cancel':
+					case self::STATUS_PENDING_CANCEL:
 						// Store the subscription's end date and trial end date before overriding/deleting them.
 						// Used for restoring the dates if the customer reactivates the subscription.
 						$this->update_meta_data( 'end_date_pre_cancellation', $this->get_date( 'end' ) );
@@ -510,8 +510,8 @@ class WC_Subscription extends WC_Order {
 						);
 						break;
 
-					case 'completed': // core WC order status mapped internally to avoid exceptions
-					case 'active':
+					case self::STATUS_COMPLETED: // core WC order status mapped internally to avoid exceptions
+					case self::STATUS_ACTIVE:
 						if ( 'pending-cancel' === $old_status ) {
 							$this->update_dates(
 								array(
@@ -545,14 +545,14 @@ class WC_Subscription extends WC_Order {
 						wcs_make_user_active( $this->get_user_id() );
 						break;
 
-					case 'failed': // core WC order status mapped internally to avoid exceptions
-					case 'on-hold':
+					case self::STATUS_FAILED: // core WC order status mapped internally to avoid exceptions
+					case self::STATUS_ON_HOLD:
 						// Record date of suspension - 'post_modified' column?
 						$this->set_suspension_count( $this->get_suspension_count() + 1 );
 						break;
-					case 'cancelled':
-					case 'switched':
-					case 'expired':
+					case self::STATUS_CANCELLED:
+					case self::STATUS_SWITCHED:
+					case self::STATUS_EXPIRED:
 						$this->delete_date( 'trial_end' );
 						$this->delete_date( 'next_payment' );
 
@@ -561,7 +561,7 @@ class WC_Subscription extends WC_Order {
 						);
 
 						// Also set the cancelled date to now if it wasn't set previously (when the status was changed to pending-cancellation)
-						if ( 'cancelled' === $new_status && 0 == $this->get_date( 'cancelled' ) ) {
+						if ( self::STATUS_CANCELLED === $new_status && 0 == $this->get_date( 'cancelled' ) ) {
 							$dates_to_update['cancelled'] = $dates_to_update['end'];
 						}
 
@@ -1518,7 +1518,7 @@ class WC_Subscription extends WC_Order {
 				break;
 			case 'next_payment':
 			case 'end':
-				if ( ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( WC_Subscription::STATUS_PENDING ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
+				if ( ! $this->has_status( wcs_get_subscription_ended_statuses() ) && ( $this->has_status( self::STATUS_PENDING ) || $this->payment_method_supports( 'subscription_date_changes' ) ) ) {
 					$can_date_be_updated = true;
 				} else {
 					$can_date_be_updated = false;
@@ -1807,7 +1807,7 @@ class WC_Subscription extends WC_Order {
 	public function cancel_order( $note = '' ) {
 
 		// If the customer hasn't been through the pending cancellation period yet set the subscription to be pending cancellation unless there is a pending renewal order.
-		if ( apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && ( $this->has_status( 'active' ) || $this->has_status( 'on-hold' ) && ! $this->needs_payment() ) ) {
+		if ( apply_filters( 'woocommerce_subscription_use_pending_cancel', true ) && $this->calculate_date( 'end_of_prepaid_term' ) > current_time( 'mysql', true ) && ( $this->has_status( self::STATUS_ACTIVE ) || $this->has_status( self::STATUS_ON_HOLD ) && ! $this->needs_payment() ) ) {
 
 			$this->update_status( 'pending-cancel', $note );
 
@@ -1914,7 +1914,7 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public function payment_failed( $new_status = 'on-hold' ) {
+	public function payment_failed( $new_status = self::STATUS_ON_HOLD ) {
 
 		// Make sure the last order's status is set to failed
 		$last_order = $this->get_last_order( 'all', 'any' );

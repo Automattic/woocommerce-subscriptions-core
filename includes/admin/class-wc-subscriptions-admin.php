@@ -798,7 +798,7 @@ class WC_Subscriptions_Admin {
 	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
 		global $post;
 
-		if ( is_admin() && 'active' == $new_status && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) && isset( $_POST['customer_user'] ) && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
+		if ( is_admin() && WC_Subscription::STATUS_ACTIVE == $new_status && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) && isset( $_POST['customer_user'] ) && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
 
 			$user = new WP_User( absint( $_POST['customer_user'] ) );
 

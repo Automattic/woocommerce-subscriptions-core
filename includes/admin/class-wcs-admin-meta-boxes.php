@@ -252,7 +252,7 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public static function create_pending_renewal_action_request( $subscription ) {
 		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
-		$subscription->update_status( 'on-hold' );
+		$subscription->update_status( WC_Subscription::STATUS_ON_HOLD );
 
 		$renewal_order = wcs_create_renewal_order( $subscription );
 
@@ -274,8 +274,8 @@ class WCS_Admin_Meta_Boxes {
 	 */
 	public static function create_pending_parent_action_request( $subscription ) {
 
-		if ( ! $subscription->has_status( array( WC_Subscription::STATUS_PENDING, 'on-hold' ) ) ) {
-			$subscription->update_status( 'on-hold' );
+		if ( ! $subscription->has_status( array( WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ON_HOLD ) ) ) {
+			$subscription->update_status( WC_Subscription::STATUS_ON_HOLD );
 		}
 
 		$parent_order = wcs_create_order_from_subscription( $subscription, 'parent' );

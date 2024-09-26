@@ -480,7 +480,7 @@ class WC_Subscriptions_Order {
 		$was_activated   = false;
 		$order           = wc_get_order( $order_id );
 		$paid_statuses   = array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' );
-		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( WC_Subscription::STATUS_PENDING, 'on-hold', 'failed' ), $order );
+		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order );
 		$order_completed = in_array( $new_order_status, $paid_statuses, true ) && in_array( $old_order_status, $unpaid_statuses, true );
 
 		/**
@@ -502,7 +502,7 @@ class WC_Subscriptions_Order {
 
 		foreach ( $subscriptions as $subscription ) {
 			// A special case where payment completes after user cancels subscription
-			if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
+			if ( $order_completed && $subscription->has_status( WC_Subscription::STATUS_CANCELLED ) ) {
 
 				// Store the actual cancelled_date so as to restore it after it is rewritten by update_status()
 				$cancelled_date = $subscription->get_date( 'cancelled' );
@@ -514,14 +514,14 @@ class WC_Subscriptions_Order {
 				$next_payment_date = $subscription->calculate_date( 'next_payment' );
 				$subscription->update_dates( array( 'next_payment' => $next_payment_date ) );
 
-				$subscription->update_status( 'pending-cancel', __( 'Payment completed on order after subscription was cancelled.', 'woocommerce-subscriptions' ) );
+				$subscription->update_status( WC_Subscription::STATUS_PENDING_CANCEL, __( 'Payment completed on order after subscription was cancelled.', 'woocommerce-subscriptions' ) );
 
 				// Restore the actual cancelled date
-				$subscription->update_dates( array( 'cancelled' => $cancelled_date ) );
+				$subscription->update_dates( array( WC_Subscription::STATUS_CANCELLED => $cancelled_date ) );
 			}
 
 			// Do we need to activate a subscription?
-			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
+			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 
 				$new_start_date_offset = current_time( 'timestamp', true ) - $subscription->get_time( 'start' );
 

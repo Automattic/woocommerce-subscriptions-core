@@ -19,7 +19,7 @@ class WCS_Subscription_Data_Store_CPT_Test extends WP_UnitTestCase {
 			return $args;
 		};
 		add_filter( 'woocommerce_new_subscription_data', $hook_callback );
-		$subscription_object = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		$subscription_object = WCS_Helper_Subscription::create_subscription( array( 'status' => WC_Subscription::STATUS_ACTIVE ) );
 		remove_filter( 'woocommerce_new_subscription_data', $hook_callback );
 
 		$this->assertStringContainsString( 'Test Title', get_the_title( $subscription_object->get_id() ) );

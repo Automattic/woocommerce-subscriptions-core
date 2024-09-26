@@ -1380,10 +1380,10 @@ class WCS_Admin_Post_Types {
 		$action_url   = add_query_arg( $action_url_args );
 		$action_url   = remove_query_arg( [ 'changed', 'ids', 'filter_action' ], $action_url );
 		$all_statuses = array(
-			'active'    => __( 'Reactivate', 'woocommerce-subscriptions' ),
-			'on-hold'   => __( 'Suspend', 'woocommerce-subscriptions' ),
-			'cancelled' => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
-			'trash'     => __( 'Trash', 'woocommerce-subscriptions' ),
+			WC_Subscription::STATUS_ACTIVE    => __( 'Reactivate', 'woocommerce-subscriptions' ),
+			WC_Subscription::STATUS_ON_HOLD   => __( 'Suspend', 'woocommerce-subscriptions' ),
+			WC_Subscription::STATUS_CANCELLED => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
+			WC_Subscription::STATUS_TRASH     => __( 'Trash', 'woocommerce-subscriptions' ),
 			'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
 		);
 

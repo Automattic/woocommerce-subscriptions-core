@@ -209,7 +209,7 @@ class WC_Subscriptions_Tracker {
 				'subscriptions_per_page' => 1,
 				'orderby'                => 'date',
 				'order'                  => 'ASC',
-				'subscription_status'    => [ 'active', 'on-hold', WC_Subscription::STATUS_PENDING, 'cancelled', 'expired' ],
+				'subscription_status'    => [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED ],
 			]
 		);
 		$last  = wcs_get_subscriptions(
@@ -217,7 +217,7 @@ class WC_Subscriptions_Tracker {
 				'subscriptions_per_page' => 1,
 				'orderby'                => 'date',
 				'order'                  => 'DESC',
-				'subscription_status'    => [ 'active', 'on-hold', WC_Subscription::STATUS_PENDING, 'cancelled', 'expired' ],
+				'subscription_status'    => [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED ],
 			]
 		);
 

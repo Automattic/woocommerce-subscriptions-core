@@ -178,7 +178,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 		$can_user_resubscribe = false;
 
-	} elseif ( ! $subscription->has_status( array( 'pending-cancel', 'cancelled', 'expired', 'trash' ) ) ) {
+	} elseif ( ! $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
 
 		$can_user_resubscribe = false;
 
@@ -212,7 +212,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 					$limited_product_id = $product->get_id();
 				}
 
-				if ( wcs_user_has_subscription( $user_id, $limited_product_id, 'on-hold' ) || wcs_user_has_subscription( $user_id, $limited_product_id, 'active' ) ) {
+				if ( wcs_user_has_subscription( $user_id, $limited_product_id, WC_Subscription::STATUS_ON_HOLD ) || wcs_user_has_subscription( $user_id, $limited_product_id, WC_Subscription::STATUS_ACTIVE ) ) {
 					$has_active_limited_subscription = true;
 					break;
 				}

@@ -835,42 +835,42 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_3 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'on-hold',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 
 		$subscription_4 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'switched',
+				'status' => WC_Subscription::STATUS_SWITCHED,
 			)
 		);
 
 		$subscription_5 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
 		$subscription_6 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'cancelled',
+				'status' => WC_Subscription::STATUS_CANCELLED,
 			)
 		);
 
 		$subscription_7 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'expired',
+				'status' => WC_Subscription::STATUS_EXPIRED,
 			)
 		);
 
 		$subscription_8 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending-cancel',
+				'status' => WC_Subscription::STATUS_PENDING_CANCEL,
 			)
 		);
 
 		// Check for on-hold
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'on-hold' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_ON_HOLD ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -900,7 +900,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Switched
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'switched' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_SWITCHED ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -930,14 +930,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Trash
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'trash' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_TRASH ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEmpty( $subscriptions );
 		unset( $subscriptions );
 
 		// Active
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'active' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_ACTIVE ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -952,7 +952,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Cancelled
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'cancelled' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_CANCELLED ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -967,7 +967,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Expired
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'expired' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_EXPIRED ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -982,7 +982,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Pending Cancellation
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'pending-cancel' ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => WC_Subscription::STATUS_PENDING_CANCEL ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -1022,7 +1022,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// An invalid status is ignored and does not apply as a clause to the query, while the valid status still applies.
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', 'active' ] ) );
+		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', WC_Subscription::STATUS_ACTIVE ] ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -1294,43 +1294,43 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_3 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'on-hold',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 
 		$subscription_4 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'switched',
+				'status' => WC_Subscription::STATUS_SWITCHED,
 			)
 		);
 
 		$subscription_5 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'expired',
+				'status' => WC_Subscription::STATUS_EXPIRED,
 			)
 		);
 
 		$subscription_6 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'cancelled',
+				'status' => WC_Subscription::STATUS_CANCELLED,
 			)
 		);
 
 		$subscription_7 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
 		$subscription_8 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending-cancel',
+				'status' => WC_Subscription::STATUS_PENDING_CANCEL,
 			)
 		);
 
 		$subscription_9 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'expired',
+				'status' => WC_Subscription::STATUS_EXPIRED,
 			)
 		);
 
@@ -1346,7 +1346,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$product_id1 = $product1->get_id();
 		$product_id2 = $product2->get_id();
 
-		$subscriptions = wcs_get_subscriptions_for_product( $product_id1, 'ids', array( 'subscription_status' => 'expired' ) );
+		$subscriptions = wcs_get_subscriptions_for_product( $product_id1, 'ids', array( 'subscription_status' => WC_Subscription::STATUS_EXPIRED ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
@@ -1365,7 +1365,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			$product_id1,
 			'ids',
 			array(
-				'subscription_status' => 'expired',
+				'subscription_status' => WC_Subscription::STATUS_EXPIRED,
 				'limit'               => 1,
 			)
 		);
@@ -1390,7 +1390,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		WCS_Helper_Subscription::add_product( $subscription_6, $product2 );
 		WCS_Helper_Subscription::add_product( $subscription_9, $product2 );
 
-		$subscriptions = wcs_get_subscriptions_for_product( array( $product_id1, $product_id2 ), 'ids', array( 'subscription_status' => array( 'expired', 'cancelled' ) ) );
+		$subscriptions = wcs_get_subscriptions_for_product( array( $product_id1, $product_id2 ), 'ids', array( 'subscription_status' => array( WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_CANCELLED ) ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 3, count( $subscriptions ) );
@@ -1409,7 +1409,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			array( $product_id1, $product_id2 ),
 			'ids',
 			array(
-				'subscription_status' => array( 'expired', 'cancelled' ),
+				'subscription_status' => array( WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_CANCELLED ),
 				'limit'               => 2,
 			)
 		);
@@ -1457,7 +1457,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			$product_id1,
 			'ids',
 			array(
-				'subscription_status' => 'active',
+				'subscription_status' => WC_Subscription::STATUS_ACTIVE,
 				'limit'               => 10,
 				'offset'              => 1,
 			)
@@ -1496,7 +1496,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function test_5_wcs_get_subscriptions_for_product() {
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
@@ -1508,43 +1508,43 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_3 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'on-hold',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 
 		$subscription_4 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'switched',
+				'status' => WC_Subscription::STATUS_SWITCHED,
 			)
 		);
 
 		$subscription_5 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'expired',
+				'status' => WC_Subscription::STATUS_EXPIRED,
 			)
 		);
 
 		$subscription_6 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'cancelled',
+				'status' => WC_Subscription::STATUS_CANCELLED,
 			)
 		);
 
 		$subscription_7 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
 		$subscription_8 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'pending-cancel',
+				'status' => WC_Subscription::STATUS_PENDING_CANCEL,
 			)
 		);
 
 		$subscription_9 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'expired',
+				'status' => WC_Subscription::STATUS_EXPIRED,
 			)
 		);
 
@@ -1617,7 +1617,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( $subscription_9->get_id(), $subscriptions );
 		unset( $subscriptions );
 
-		$subscriptions = wcs_get_subscriptions_for_product( array( $variations1[0], $variations1[1], $variations2[0] ), 'ids', array( 'subscription_status' => 'active' ) );
+		$subscriptions = wcs_get_subscriptions_for_product( array( $variations1[0], $variations1[1], $variations2[0] ), 'ids', array( 'subscription_status' => WC_Subscription::STATUS_ACTIVE ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
@@ -1632,7 +1632,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( $subscription_9->get_id(), $subscriptions );
 		unset( $subscriptions );
 
-		$subscriptions = wcs_get_subscriptions_for_product( array_merge( $variations1, $variations2 ), 'ids', array( 'subscription_status' => array( 'on-hold', 'active' ) ) );
+		$subscriptions = wcs_get_subscriptions_for_product( array_merge( $variations1, $variations2 ), 'ids', array( 'subscription_status' => array( WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_ACTIVE ) ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 3, count( $subscriptions ) );
@@ -1651,7 +1651,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			array_merge( $variations1, $variations2 ),
 			'ids',
 			array(
-				'subscription_status' => array( 'on-hold', 'active' ),
+				'subscription_status' => array( WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_ACTIVE ),
 				'limit'               => 2,
 			)
 		);
@@ -1667,17 +1667,17 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function test_6_wcs_get_subscriptions_for_product() {
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'on-hold',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 		$subscription_3 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'cancelled',
+				'status' => WC_Subscription::STATUS_CANCELLED,
 			)
 		);
 
@@ -1735,14 +1735,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Check status filter. Subscription 1 is active but switched from variation 1 to variation 2 so no results should be returned.
-		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => 'active' ) );
+		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => WC_Subscription::STATUS_ACTIVE ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 0, count( $subscriptions ) );
 		unset( $subscriptions );
 
 		// Check status filter. Subscription 1 is active but switched from variation 1 to variation 2 so only subscription 2 should be returned.
-		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => array( 'active', 'on-hold' ) ) );
+		$subscriptions = wcs_get_subscriptions_for_product( $variation_1->get_id(), 'ids', array( 'subscription_status' => array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD ) ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );

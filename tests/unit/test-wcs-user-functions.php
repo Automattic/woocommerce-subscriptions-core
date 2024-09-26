@@ -58,28 +58,28 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', WC_Subscription::STATUS_PENDING ) );
 
 		// Test for active status
-		$this->assertFalse( wcs_user_has_subscription( $user_id1, '', 'active' ) );
+		$this->assertFalse( wcs_user_has_subscription( $user_id1, '', WC_Subscription::STATUS_ACTIVE ) );
 
 		// Create another test subscription with 'active' status
 		$subscription2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status'      => 'active',
+				'status'      => WC_Subscription::STATUS_ACTIVE,
 				'start_date'  => '2017-06-01 00:00:00',
 				'customer_id' => $user_id1,
 			)
 		);
 
 		// Test for active status
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', 'active' ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', WC_Subscription::STATUS_ACTIVE ) );
 
 		// Test for array of statuses - one of them present
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', array( 'active', 'pending-cancel' ) ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL ) ) );
 
 		// Test for array of statuses - one of them present
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', array( 'active', 'pending-cancel', 'switched' ) ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_SWITCHED ) ) );
 
 		// Test for array of statuses - all not present
-		$this->assertFalse( wcs_user_has_subscription( $user_id1, '', array( 'cancelled', 'switched', 'expired' ) ) );
+		$this->assertFalse( wcs_user_has_subscription( $user_id1, '', array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_EXPIRED ) ) );
 
 		// Link first subscription to an order
 		$order1 = WCS_Helper_Subscription::create_order();
@@ -137,24 +137,24 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 		$this->assertTrue( wcs_user_has_subscription( $user_id1, $product_id1, 'any' ) );
 
 		// Test for user + product and specific status - all present
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, $product_id2, 'active' ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, $product_id2, WC_Subscription::STATUS_ACTIVE ) );
 
 		// Test for user + product and specific status not present
-		$this->assertFalse( wcs_user_has_subscription( $user_id1, $product_id2, 'cancelled' ) );
+		$this->assertFalse( wcs_user_has_subscription( $user_id1, $product_id2, WC_Subscription::STATUS_CANCELLED ) );
 
 		// Test for user + product and specific status - status present but not for product
-		$this->assertFalse( wcs_user_has_subscription( $user_id1, $product_id2, 'pending' ) );
+		$this->assertFalse( wcs_user_has_subscription( $user_id1, $product_id2, WC_Subscription::STATUS_PENDING ) );
 
 		// Test for user + product and specific status - status not present for product
-		$this->assertFalse( wcs_user_has_subscription( $user_id1, $product_id1, array( 'expired', 'cancelled' ) ) );
+		$this->assertFalse( wcs_user_has_subscription( $user_id1, $product_id1, array( WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_CANCELLED ) ) );
 
 		// Test for user + product and specific status - status not present for product
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, $product_id2, array( 'expired', 'active' ) ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, $product_id2, array( WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_ACTIVE ) ) );
 
 		// Test for user + product and specific status - status present for product
-		$this->assertTrue( wcs_user_has_subscription( $user_id2, $product_id2, array( 'expired', 'active' ) ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id2, $product_id2, array( WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_ACTIVE ) ) );
 
 		// Test for user + product and specific status - status not present for product
-		$this->assertFalse( wcs_user_has_subscription( $user_id2, $product_id2, array( 'pending', 'active' ) ) );
+		$this->assertFalse( wcs_user_has_subscription( $user_id2, $product_id2, array( WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ACTIVE ) ) );
 	}
 }

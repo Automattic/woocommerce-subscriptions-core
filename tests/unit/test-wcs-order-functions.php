@@ -144,19 +144,19 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_on_hold = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'on-hold',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 
 		$subscription_active = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => 'active',
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
 		$order_pending = wc_create_order(
 			array(
-				'status' => WC_Subscription::STATUS_PENDING,
+				'status' => 'pending',
 			)
 		);
 
@@ -177,7 +177,7 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 			array(
 				'return' => 'ids',
 				'type'   => 'shop_subscription',
-				'status' => 'on-hold',
+				'status' => WC_Subscription::STATUS_ON_HOLD,
 			)
 		);
 		$this->assertIsArray( $subscriptions );

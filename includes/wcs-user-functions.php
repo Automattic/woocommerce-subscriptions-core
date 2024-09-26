@@ -305,15 +305,15 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 	if ( user_can( $user_id, 'edit_shop_subscription_status', $subscription->get_id() ) ) {
 		$current_status = $subscription->get_status();
 
-		if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
+		if ( $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) && ! $subscription->needs_payment() ) {
 			$actions['reactivate'] = array(
-				'url'      => wcs_get_users_change_status_link( $subscription->get_id(), 'active', $current_status ),
+				'url'      => wcs_get_users_change_status_link( $subscription->get_id(), WC_Subscription::STATUS_ACTIVE, $current_status ),
 				'name'     => __( 'Reactivate', 'woocommerce-subscriptions' ),
 				'block_ui' => true,
 			);
 		}
 
-		if ( wcs_can_user_resubscribe_to( $subscription, $user_id ) && false == $subscription->can_be_updated_to( 'active' ) ) {
+		if ( wcs_can_user_resubscribe_to( $subscription, $user_id ) && false == $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
 			$actions['resubscribe'] = array(
 				'url'      => wcs_get_users_resubscribe_link( $subscription ),
 				'name'     => __( 'Resubscribe', 'woocommerce-subscriptions' ),
@@ -323,7 +323,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 
 		// Show button for subscriptions which can be cancelled and which may actually require cancellation (i.e. has a future payment)
 		$next_payment = $subscription->get_time( 'next_payment' );
-		if ( $subscription->can_be_updated_to( 'cancelled' ) && ( ! $subscription->is_one_payment() && ( $subscription->has_status( 'on-hold' ) && empty( $next_payment ) ) || $next_payment > 0 ) ) {
+		if ( $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) && ( ! $subscription->is_one_payment() && ( $subscription->has_status( WC_Subscription::STATUS_ON_HOLD ) && empty( $next_payment ) ) || $next_payment > 0 ) ) {
 			$actions['cancel'] = array(
 				'url'      => wcs_get_users_change_status_link( $subscription->get_id(), 'cancelled', $current_status ),
 				'name'     => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),

@@ -48,7 +48,7 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 			}
 
 			remove_filter( 'woocommerce_subscription_payment_gateway_supports', 'WCS_PayPal_Supports::add_feature_support_for_subscription', 10 );
-			$subscription->update_status( 'on-hold', __( 'Subscription suspended by Database repair script. This subscription was suspended via PayPal.', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( WC_Subscription::STATUS_ON_HOLD, __( 'Subscription suspended by Database repair script. This subscription was suspended via PayPal.', 'woocommerce-subscriptions' ) );
 
 			$this->log( sprintf( 'Subscription ID %d suspended from 2.3.0 PayPal database repair script.', $subscription_id ) );
 		} catch ( Exception $e ) {

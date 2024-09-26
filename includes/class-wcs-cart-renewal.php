@@ -210,7 +210,7 @@ class WCS_Cart_Renewal {
 					do_action( 'wcs_before_renewal_setup_cart_subscription', $subscription, $order );
 
 					// Check if order/subscription can be paid for
-					if ( empty( $subscription ) || ! $subscription->has_status( array( 'on-hold', WC_Subscription::STATUS_PENDING ) ) ) {
+					if ( empty( $subscription ) || ! $subscription->has_status( array( WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ) ) ) {
 						wc_add_notice( __( 'This order can no longer be paid because the corresponding subscription does not require payment at this time.', 'woocommerce-subscriptions' ), 'error' );
 					} else {
 						// Add the existing subscription items to the cart
@@ -656,7 +656,7 @@ class WCS_Cart_Renewal {
 			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 
 			foreach ( $subscriptions as $subscription ) {
-				if ( empty( $subscription ) || ! $subscription->has_status( array( 'on-hold', WC_Subscription::STATUS_PENDING ) ) ) {
+				if ( empty( $subscription ) || ! $subscription->has_status( array( WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ) ) ) {
 					unset( $actions['pay'] );
 					break;
 				}

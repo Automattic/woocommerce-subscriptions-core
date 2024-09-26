@@ -137,7 +137,7 @@ class WC_Subscriptions_Manager {
 		if ( ! empty( $subscription ) && $subscription->has_status( $required_status ) && ( 0 == $subscription->get_total() || $subscription->is_manual() || '' == $subscription->get_payment_method() || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) ) {
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', $order_note );
+			$subscription->update_status( WC_Subscription::STATUS_ON_HOLD, $order_note );
 
 			// Generate a renewal order for payment gateways to use to record the payment (and determine how much is due)
 			$renewal_order = wcs_create_renewal_order( $subscription );
@@ -263,9 +263,9 @@ class WC_Subscriptions_Manager {
 
 		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
 		if ( apply_filters( 'woocommerce_subscriptions_max_failed_payments_exceeded', false, $user_id, $subscription_key ) ) {
-			$new_status = 'cancelled';
+			$new_status = WC_Subscription::STATUS_CANCELLED;
 		} else {
-			$new_status = 'on-hold';
+			$new_status = WC_Subscription::STATUS_ON_HOLD;
 		}
 
 		$subscription->payment_failed( $new_status );
@@ -365,7 +365,7 @@ class WC_Subscriptions_Manager {
 
 				try {
 					if ( ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) ) {
-						$subscription->update_status( 'on-hold' );
+						$subscription->update_status( WC_Subscription::STATUS_ON_HOLD );
 					}
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message
@@ -653,22 +653,22 @@ class WC_Subscriptions_Manager {
 		}
 
 		if ( 'suspend' === $status ) {
-			$status = 'on-hold';
+			$status = WC_Subscription::STATUS_ON_HOLD;
 			_deprecated_argument( __METHOD__, '1.2', 'The "suspend" status value is deprecated. Use "on-hold"' );
 		}
 
 		foreach ( wcs_get_subscriptions_for_order( wcs_get_objects_property( $order, 'id' ), array( 'order_type' => 'parent' ) ) as $subscription_id => $subscription ) {
 
 			switch ( $status ) {
-				case 'cancelled':
+				case WC_Subscription::STATUS_CANCELLED:
 					$subscription->cancel_order();
 					break;
-				case 'active':
-				case 'expired':
-				case 'on-hold':
+				case WC_Subscription::STATUS_ACTIVE:
+				case WC_Subscription::STATUS_EXPIRED:
+				case WC_Subscription::STATUS_ON_HOLD:
 					$subscription->update_status( $status );
 					break;
-				case 'failed':
+				case WC_Subscription::STATUS_FAILED:
 					_deprecated_argument( __METHOD__, '2.0', 'The "failed" status value is deprecated.' );
 					self::failed_subscription_signup( $order->get_user_id(), $subscription_id );
 					break;
@@ -1091,7 +1091,7 @@ class WC_Subscriptions_Manager {
 			_deprecated_argument( __METHOD__, '2.0', 'The "new-payment-date" parameter value is deprecated. Use WC_Subscription::can_date_be_updated( "next_payment" ) method instead.' );
 		} elseif ( 'suspended' == $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
-			$new_status_or_meta = 'on-hold';
+			$new_status_or_meta = WC_Subscription::STATUS_ON_HOLD;
 		}
 
 		try {
@@ -1101,13 +1101,13 @@ class WC_Subscriptions_Manager {
 				case 'new-payment-date':
 					$subscription_can_be_changed = $subscription->can_date_be_updated( 'next_payment' );
 					break;
-				case 'active':
-				case 'on-hold':
-				case 'cancelled':
-				case 'expired':
-				case 'trash':
-				case 'deleted':
-				case 'failed':
+				case WC_Subscription::STATUS_ACTIVE:
+				case WC_Subscription::STATUS_ON_HOLD:
+				case WC_Subscription::STATUS_CANCELLED:
+				case WC_Subscription::STATUS_EXPIRED:
+				case WC_Subscription::STATUS_TRASH:
+				case WC_Subscription::STATUS_DELETED:
+				case WC_Subscription::STATUS_FAILED:
 				default:
 					$subscription_can_be_changed = $subscription->can_be_updated_to( $new_status_or_meta );
 					break;
@@ -1160,22 +1160,22 @@ class WC_Subscriptions_Manager {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_subscription_statuses()' );
 
 		switch ( $status ) {
-			case 'active':
+			case WC_Subscription::STATUS_ACTIVE:
 				$status_string = _x( 'Active', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'cancelled':
+			case WC_Subscription::STATUS_CANCELLED:
 				$status_string = _x( 'Cancelled', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'expired':
+			case WC_Subscription::STATUS_EXPIRED:
 				$status_string = _x( 'Expired', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
 			case WC_Subscription::STATUS_PENDING:
 				$status_string = _x( 'Pending', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'failed':
+			case WC_Subscription::STATUS_FAILED:
 				$status_string = _x( 'Failed', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
-			case 'on-hold':
+			case WC_Subscription::STATUS_ON_HOLD:
 			case 'suspend': // Backward compatibility
 				$status_string = _x( 'On-hold', 'Subscription status', 'woocommerce-subscriptions' );
 				break;
@@ -1765,7 +1765,7 @@ class WC_Subscriptions_Manager {
 
 		if ( 'suspended' == $status ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
-			$status = 'on-hold';
+			$status = WC_Subscription::STATUS_ON_HOLD;
 		}
 
 		$subscription_id = wcs_get_subscription_id_from_key( $subscription_key );
@@ -2007,7 +2007,7 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( 'on-hold' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_ON_HOLD ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
@@ -2016,7 +2016,7 @@ class WC_Subscriptions_Manager {
 
 		// If the subscription is using manual payments, the gateway isn't active or it manages scheduled payments
 		if ( 0 == $subscription->get_total() || $subscription->is_manual() || '' == $subscription->get_payment_method() || ! $subscription->payment_method_supports( 'gateway_scheduled_payments' ) ) {
-			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( WC_Subscription::STATUS_ON_HOLD, _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 		}
 	}
 
@@ -2034,7 +2034,7 @@ class WC_Subscriptions_Manager {
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
-			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
+			$subscription->update_status( WC_Subscription::STATUS_ON_HOLD, _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 
 			// Create a renewal order to record the failed payment which can then be used by the customer to reactivate the subscription
 			$renewal_order = wcs_create_renewal_order( $subscription );
@@ -2199,26 +2199,26 @@ class WC_Subscriptions_Manager {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
 	 */
 	public static function put_subscription_on_hold( $user_id, $subscription_key ) {
-		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status( "on-hold" )' );
+		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::update_status( WC_Subscription::STATUS_ON_HOLD )' );
 
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( 'on-hold' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_ON_HOLD ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
 			return false;
 		}
 
-		if ( ! $subscription->can_be_updated_to( 'on-hold' ) ) {
+		if ( ! $subscription->can_be_updated_to( WC_Subscription::STATUS_ON_HOLD ) ) {
 
 			do_action( 'unable_to_put_subscription_on-hold', $user_id, $subscription_key );
 			do_action( 'unable_to_suspend_subscription', $user_id, $subscription_key );
 
 		} else {
 
-			$subscription->update_status( 'on-hold' );
+			$subscription->update_status( WC_Subscription::STATUS_ON_HOLD );
 
 			do_action( 'subscription_put_on-hold', $user_id, $subscription_key );
 			// Backward, backward compatibility
@@ -2272,7 +2272,7 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( 'on-hold' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_ON_HOLD ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
@@ -2280,7 +2280,7 @@ class WC_Subscriptions_Manager {
 		}
 
 		// Place the subscription on-hold
-		$subscription->update_status( 'on-hold' );
+		$subscription->update_status( WC_Subscription::STATUS_ON_HOLD );
 
 		// Log failure on order
 		// translators: placeholder is subscription ID
@@ -2465,7 +2465,7 @@ class WC_Subscriptions_Manager {
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
 		// Don't reschedule for cancelled, suspended or expired subscriptions
-		if ( ! $subscription->has_status( 'expired', 'cancelled', 'on-hold' ) ) {
+		if ( ! $subscription->has_status( WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_ON_HOLD ) ) {
 
 			// Reschedule the 'scheduled_subscription_payment' hook
 			if ( $subscription->can_date_be_updated( 'next_payment' ) ) {

@@ -57,7 +57,7 @@ class WC_Subscriptions_Addresses {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3
 	 */
 	public static function add_edit_address_subscription_action( $actions, $subscription ) {
-		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+		if ( $subscription->needs_shipping_address() && $subscription->has_status( array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD ) ) ) {
 			$actions['change_address'] = array(
 				'url'  => esc_url( add_query_arg( array( 'subscription' => $subscription->get_id() ), wc_get_endpoint_url( 'edit-address', 'shipping' ) ) ),
 				'name' => __( 'Change address', 'woocommerce-subscriptions' ),
@@ -161,7 +161,7 @@ class WC_Subscriptions_Addresses {
 			$users_subscriptions = wcs_get_users_subscriptions( $user_id );
 
 			foreach ( $users_subscriptions as $subscription ) {
-				if ( $subscription->has_status( array( 'active', 'on-hold' ) ) ) {
+				if ( $subscription->has_status( array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD ) ) ) {
 					wcs_set_order_address( $subscription, $address, $address_type );
 					$subscription->save();
 				}

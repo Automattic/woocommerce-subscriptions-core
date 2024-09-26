@@ -14,7 +14,7 @@ class WCS_Deprecated_Functions_Test extends WP_UnitTestCase {
 	 * includes/wcs-deprecated-functions.php
 	 */
 	public function test_wcs_get_old_subscription_key() {
-		$subscription = WCS_Helper_Subscription::create_subscription( array( 'status' => 'active' ) );
+		$subscription = WCS_Helper_Subscription::create_subscription( array( 'status' => WC_Subscription::STATUS_ACTIVE ) );
 
 		$product = WCS_Helper_Product::create_simple_subscription_product();
 
