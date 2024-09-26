@@ -214,6 +214,10 @@ class WC_Subscriptions_Email_Notifications {
 	public static function add_notification_actions( $actions ) {
 		global $theorder;
 
+		if ( ! self::notifications_globally_enabled() ) {
+			return $actions;
+		}
+
 		if ( wcs_is_subscription( $theorder ) ) {
 			$subscription     = $theorder;
 			$allowed_statuses = [
