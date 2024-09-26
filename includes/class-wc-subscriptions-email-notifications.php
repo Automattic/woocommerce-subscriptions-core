@@ -231,18 +231,18 @@ class WC_Subscriptions_Email_Notifications {
 			}
 
 			if ( $subscription->get_date( 'trial_end' ) ) {
-				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send Free Trial Expiration notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send free trial expiration notification', 'woocommerce-subscriptions' );
 			}
 
 			if ( $subscription->get_date( 'end' ) ) {
-				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send Subscription Expiration notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send subscription expiration notification', 'woocommerce-subscriptions' );
 			}
 
 			if ( $subscription->get_date( 'next_payment' ) ) {
 				if ( $subscription->is_manual() ) {
-					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
+					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send manual renewal notification', 'woocommerce-subscriptions' );
 				} else {
-					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send Automatic Renewal notification', 'woocommerce-subscriptions' );
+					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send automatic renewal notification', 'woocommerce-subscriptions' );
 				}
 			}
 		}
