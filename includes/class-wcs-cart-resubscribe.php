@@ -103,7 +103,7 @@ class WCS_Cart_Resubscribe extends WCS_Cart_Renewal {
 			$order        = wc_get_order( $wp->query_vars['order-pay'] );
 			$order_key    = $_GET['key'];
 
-			if ( wcs_get_objects_property( $order, 'order_key' ) == $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_resubscribe( $order ) ) {
+			if ( wcs_get_objects_property( $order, 'order_key' ) == $order_key && $order->has_status( array( Order_Status::PENDING, Order_Status::FAILED ) ) && wcs_order_contains_resubscribe( $order ) ) {
 
 				if ( ! is_user_logged_in() ) {
 

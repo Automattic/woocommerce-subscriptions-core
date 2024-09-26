@@ -270,7 +270,7 @@ class WC_Subscriptions_Email {
 		$order_items_table_args = array(
 			'show_download_links' => ( $sent_to_admin ) ? false : $order->is_download_permitted(),
 			'show_sku'            => $sent_to_admin,
-			'show_purchase_note'  => ( $sent_to_admin ) ? false : $order->has_status( apply_filters( 'woocommerce_order_is_paid_statuses', array( 'processing', 'completed' ) ) ),
+			'show_purchase_note'  => ( $sent_to_admin ) ? false : $order->has_status( apply_filters( 'woocommerce_order_is_paid_statuses', array( Order_Status::PROCESSING, Order_Status::COMPLETED ) ) ),
 			'show_image'          => '',
 			'image_size'          => '',
 			'plain_text'          => $plain_text,

@@ -250,7 +250,7 @@ class WCS_Limiter {
 		$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
 		$order    = wc_get_order( absint( $order_id ) );
 
-		if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+		if ( is_object( $order ) && $order->has_status( array( Order_Status::PENDING, Order_Status::FAILED ) ) ) {
 			foreach ( $order->get_items() as $item ) {
 
 				// If this order contains the product we're interested in, continue finding a related subscription.

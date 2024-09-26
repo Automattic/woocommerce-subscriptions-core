@@ -156,19 +156,19 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 
 		$order_pending = wc_create_order(
 			array(
-				'status' => 'pending',
+				'status' => Order_Status::PENDING,
 			)
 		);
 
 		$order_on_hold = wc_create_order(
 			array(
-				'status' => 'on-hold',
+				'status' => Order_Status::ON_HOLD,
 			)
 		);
 
 		$order_complete = wc_create_order(
 			array(
-				'status' => 'complete',
+				'status' => Order_Status::COMPLETED,
 			)
 		);
 

@@ -549,7 +549,7 @@ class WC_Subscriptions_Upgrader {
 							$renewal_order->payment_complete();
 
 							// Avoid creating 100s "processing" orders
-							$renewal_order->update_status( 'completed' );
+							$renewal_order->update_status( Order_Status::COMPLETED );
 
 							// Set correct dates on the order
 							$renewal_order = array(

@@ -479,8 +479,8 @@ class WC_Subscriptions_Order {
 		$subscriptions   = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'parent' ) );
 		$was_activated   = false;
 		$order           = wc_get_order( $order_id );
-		$paid_statuses   = array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' );
-		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order );
+		$paid_statuses   = array( apply_filters( 'woocommerce_payment_complete_order_status', Order_Status::PROCESSING, $order_id, $order ), Order_Status::PROCESSING, Order_Status::COMPLETED );
+		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( Order_Status::PENDING, Order_Status::ON_HOLD, Order_Status::FAILED ), $order );
 		$order_completed = in_array( $new_order_status, $paid_statuses, true ) && in_array( $old_order_status, $unpaid_statuses, true );
 
 		/**
@@ -564,7 +564,7 @@ class WC_Subscriptions_Order {
 				$subscription->payment_complete_for_order( $order );
 				$was_activated = true;
 
-			} elseif ( 'failed' == $new_order_status ) {
+			} elseif ( Order_Status::FAILED == $new_order_status ) {
 				$subscription->payment_failed();
 			}
 		}
@@ -1172,7 +1172,7 @@ class WC_Subscriptions_Order {
 	 */
 	public static function maybe_autocomplete_order( $new_order_status, $order_id, $order = null ) {
 		// Exit early if the order has no ID, or if the new order status is not 'processing'.
-		if ( 0 === $order_id || 'processing' !== $new_order_status ) {
+		if ( 0 === $order_id || Order_Status::PROCESSING !== $new_order_status ) {
 			return $new_order_status;
 		}
 
@@ -1206,7 +1206,7 @@ class WC_Subscriptions_Order {
 		}
 
 		if ( wcs_order_contains_resubscribe( $order ) ) {
-			$new_order_status = 'completed';
+			$new_order_status = Order_Status::COMPLETED;
 		} elseif ( wcs_order_contains_switch( $order ) ) {
 			$all_switched = true;
 
@@ -1218,7 +1218,7 @@ class WC_Subscriptions_Order {
 			}
 
 			if ( $all_switched || 1 == count( $order->get_items() ) ) {
-				$new_order_status = 'completed';
+				$new_order_status = Order_Status::COMPLETED;
 			}
 		} else {
 			$subscriptions = wcs_get_subscriptions_for_order( $order_id );
@@ -1233,7 +1233,7 @@ class WC_Subscriptions_Order {
 			}
 
 			if ( $all_synced ) {
-				$new_order_status = 'completed';
+				$new_order_status = Order_Status::COMPLETED;
 			}
 		}
 

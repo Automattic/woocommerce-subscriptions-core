@@ -181,7 +181,7 @@ class WCS_Cart_Renewal {
 			$order_id  = isset( $wp->query_vars['order-pay'] ) ? $wp->query_vars['order-pay'] : absint( $_GET['order_id'] );
 			$order     = wc_get_order( $order_id );
 
-			if ( wcs_get_objects_property( $order, 'order_key' ) === $order_key && $order->has_status( array( 'pending', 'failed' ) ) && wcs_order_contains_renewal( $order ) ) {
+			if ( wcs_get_objects_property( $order, 'order_key' ) === $order_key && $order->has_status( array( Order_Status::PENDING, Order_Status::FAILED ) ) && wcs_order_contains_renewal( $order ) ) {
 
 				// If a user isn't logged in, allow them to login first and then redirect back
 				if ( ! is_user_logged_in() ) {
@@ -1836,7 +1836,7 @@ class WCS_Cart_Renewal {
 	 */
 	public function maybe_preserve_order_status( $order_status ) {
 		wcs_deprecated_function( __METHOD__, '6.3.0' );
-		if ( null !== WC()->session && 'failed' !== $order_status ) {
+		if ( null !== WC()->session && Order_Status::FAILED !== $order_status ) {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
 
@@ -1845,8 +1845,8 @@ class WCS_Cart_Renewal {
 
 			$order = $order_id > 0 ? wc_get_order( $order_id ) : null;
 
-			if ( $order && wcs_order_contains_renewal( $order ) && $order->has_status( 'failed' ) ) {
-				$order_status = 'failed';
+			if ( $order && wcs_order_contains_renewal( $order ) && $order->has_status( Order_Status::FAILED ) ) {
+				$order_status = Order_Status::FAILED;
 			}
 
 			add_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ) );

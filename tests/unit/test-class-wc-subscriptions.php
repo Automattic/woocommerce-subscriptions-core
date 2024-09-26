@@ -1624,7 +1624,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$this->assertTrue( $subscription->needs_payment() );
 		}
 
-		$renewal_order->update_status( 'processing' ); // update status also calls save() in WC 3.0+
+		$renewal_order->update_status( Order_Status::PROCESSING ); // update status also calls save() in WC 3.0+
 
 		$this->assertFalse( $subscription->needs_payment() );
 
@@ -1701,8 +1701,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_get_paid_order_statuses() {
 		$subscription    = WCS_Helper_Subscription::create_subscription();
 		$expected_result = [
-			'processing',
-			'completed',
+			Order_Status::PROCESSING,
+			Order_Status::COMPLETED,
 			'wc-processing',
 			'wc-completed',
 		];
@@ -2082,9 +2082,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( wc_get_order( $order_id ), $subscription->get_last_order( 'all' ) );
 
 		// Test for the status filtering parameter
-		$order->update_status( 'failed' );
+		$order->update_status( Order_Status::FAILED );
 		$order->save();
-		$this->assertFalse( $subscription->get_last_order( 'ids', array( 'parent', 'renewal' ), array( 'failed' ) ) );
+		$this->assertFalse( $subscription->get_last_order( 'ids', array( 'parent', 'renewal' ), array( Order_Status::FAILED ) ) );
 
 		$renewal    = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_id = wcs_get_objects_property( $renewal, 'id' );
@@ -2461,18 +2461,18 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$order_id     = wcs_get_objects_property( $order, 'id' );
 
 		$subscription->set_parent_id( $order_id );
-		$this->assertNotEquals( 'failed', $order->get_status() );
+		$this->assertNotEquals( Order_Status::FAILED, $order->get_status() );
 		$subscription->payment_failed();
 		$order = wc_get_order( $order_id ); // With WC 3.0, we need to reinit the order to make sure we have the correct status.
 
-		$this->assertEquals( 'failed', $order->get_status() );
+		$this->assertEquals( Order_Status::FAILED, $order->get_status() );
 		$this->assertEquals( WC_Subscription::STATUS_ON_HOLD, $subscription->get_status() );
 
 		$subscription     = WCS_Helper_Subscription::create_subscription();
 		$renewal_order    = WCS_Helper_Subscription::create_renewal_order( $subscription );
 		$renewal_order_id = wcs_get_objects_property( $renewal_order, 'id' );
 
-		$this->assertNotEquals( 'failed', $renewal_order->get_status() );
+		$this->assertNotEquals( Order_Status::FAILED, $renewal_order->get_status() );
 
 		$subscription->payment_failed();
 
@@ -2528,8 +2528,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertThat(
 			$order->get_status(),
 			$this->logicalOr(
-				'processing',
-				'completed'
+				Order_Status::PROCESSING,
+				Order_Status::COMPLETED
 			)
 		);
 	}

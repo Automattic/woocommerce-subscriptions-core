@@ -372,7 +372,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 				)
 			);
 
-			$previous_status = 'pending';
+			$previous_status = Order_Status::PENDING;
 		} elseif ( $previous_state_is_invalid ) {
 			// If we cannot restore to pending, we should probably stand back and let the merchant intervene some other way.
 			wc_get_logger()->warning(

@@ -1271,7 +1271,7 @@ class WC_Subscriptions_Product {
 				$order_id = ! empty( WC()->session->order_awaiting_payment ) ? WC()->session->order_awaiting_payment : $wp->query_vars['order-pay'];
 				$order    = wc_get_order( absint( $order_id ) );
 
-				if ( is_object( $order ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+				if ( is_object( $order ) && $order->has_status( array( Order_Status::PENDING, Order_Status::FAILED ) ) ) {
 					foreach ( $order->get_items() as $item ) {
 						if ( $item['product_id'] == $product_id || $item['variation_id'] == $product_id ) {
 

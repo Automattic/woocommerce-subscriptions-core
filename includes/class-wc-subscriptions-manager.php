@@ -450,8 +450,8 @@ class WC_Subscriptions_Manager {
 			}
 
 			// Set subscription status to failed and log failure
-			if ( $order->has_status( 'failed' ) ) {
-				$order->update_status( 'failed', __( 'Subscription sign up failed.', 'woocommerce-subscriptions' ) );
+			if ( $order->has_status( Order_Status::FAILED ) ) {
+				$order->update_status( Order_Status::FAILED, __( 'Subscription sign up failed.', 'woocommerce-subscriptions' ) );
 			}
 
 			foreach ( $subscriptions as $subscription ) {

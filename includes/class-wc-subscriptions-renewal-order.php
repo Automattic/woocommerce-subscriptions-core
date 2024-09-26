@@ -92,8 +92,8 @@ class WC_Subscriptions_Renewal_Order {
 		$subscriptions        = wcs_get_subscriptions_for_renewal_order( $order_id );
 		$was_activated        = false;
 		$order                = wc_get_order( $order_id );
-		$order_completed      = in_array( $orders_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', 'processing', $order_id, $order ), 'processing', 'completed' ) );
-		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
+		$order_completed      = in_array( $orders_new_status, array( apply_filters( 'woocommerce_payment_complete_order_status', Order_Status::PROCESSING, $order_id, $order ), Order_Status::PROCESSING, Order_Status::COMPLETED ) );
+		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( Order_Status::PENDING, Order_Status::ON_HOLD, Order_Status::FAILED ), $order ) );
 
 		if ( $order_completed && $order_needed_payment ) {
 
@@ -127,7 +127,7 @@ class WC_Subscriptions_Renewal_Order {
 			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
 				// Included here because calling payment_complete sets the retry status to 'cancelled'
-				$is_failed_renewal_order = 'failed' === $orders_old_status || wc_string_to_bool( $order->get_meta( WC_Subscription::RENEWAL_FAILED_META_KEY, true ) );
+				$is_failed_renewal_order = Order_Status::FAILED === $orders_old_status || wc_string_to_bool( $order->get_meta( WC_Subscription::RENEWAL_FAILED_META_KEY, true ) );
 				$is_failed_renewal_order = apply_filters( 'woocommerce_subscriptions_is_failed_renewal_order', $is_failed_renewal_order, $order_id, $orders_old_status );
 
 				// Subscription will be activated only if this is the last renewal order of the subscription.
@@ -139,7 +139,7 @@ class WC_Subscriptions_Renewal_Order {
 				if ( $is_failed_renewal_order ) {
 					do_action( 'woocommerce_subscriptions_paid_for_failed_renewal_order', wc_get_order( $order_id ), $subscription );
 				}
-			} elseif ( 'failed' == $orders_new_status ) {
+			} elseif ( Order_Status::FAILED == $orders_new_status ) {
 				$subscription->payment_failed();
 			}
 		}
@@ -266,7 +266,7 @@ class WC_Subscriptions_Renewal_Order {
 	public static function generate_failed_payment_renewal_order( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_create_renewal_order( WC_Subscription $subscription )' );
 		$renewal_order = wcs_create_renewal_order( wcs_get_subscription_from_key( $subscription_key ) );
-		$renewal_order->update_status( 'failed' );
+		$renewal_order->update_status( Order_Status::FAILED );
 		return wcs_get_objects_property( $renewal_order, 'id' );
 	}
 
@@ -637,7 +637,7 @@ class WC_Subscriptions_Renewal_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
-	public static function process_subscription_payment_on_child_order( $order_id, $payment_status = 'completed' ) {
+	public static function process_subscription_payment_on_child_order( $order_id, $payment_status = Order_Status::COMPLETED ) {
 		_deprecated_function( __METHOD__, '2.0' );
 
 		if ( wcs_order_contains_renewal( $order_id ) ) {
@@ -646,7 +646,7 @@ class WC_Subscriptions_Renewal_Order {
 
 			foreach ( $subscriptions as $subscription ) {
 
-				if ( 'failed' == $payment_status ) {
+				if ( Order_Status::FAILED == $payment_status ) {
 
 					$subscription->payment_failed();
 
