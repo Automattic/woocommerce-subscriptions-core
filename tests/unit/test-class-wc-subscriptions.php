@@ -1247,7 +1247,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_onhold() {
-		$expected_to_pass = [ WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ON_HOLD ];
+		$expected_to_pass = [ WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ACTIVE ];
 		$subscriptions    = WCS_Helper_Subscription::create_subscriptions();
 
 		foreach ( $subscriptions as $status => $subscription ) {

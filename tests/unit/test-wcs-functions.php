@@ -1233,7 +1233,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		$subscription_2 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => WC_Subscription::STATUS_ON_HOLD,
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
@@ -1282,7 +1282,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	public function test_4_wcs_get_subscriptions_for_product() {
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
-				'status' => WC_Subscription::STATUS_ON_HOLD,
+				'status' => WC_Subscription::STATUS_ACTIVE,
 			)
 		);
 
