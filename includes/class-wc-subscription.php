@@ -484,7 +484,7 @@ class WC_Subscription extends WC_Order {
 
 					case self::STATUS_PENDING:
 						// Nothing to do here
-						break;
+					break;
 
 					case self::STATUS_PENDING_CANCEL:
 						// Store the subscription's end date and trial end date before overriding/deleting them.
@@ -510,19 +510,17 @@ class WC_Subscription extends WC_Order {
 								'end'       => $end_date,
 							)
 						);
-						break;
+					break;
 
 					case self::STATUS_COMPLETED: // core WC order status mapped internally to avoid exceptions
 					case self::STATUS_ACTIVE:
 						if ( self::STATUS_PENDING_CANCEL === $old_status ) {
-							$this->update_dates(
-								array(
-									'cancelled'    => 0,
-									'end'          => $this->meta_exists( 'end_date_pre_cancellation' ) ? $this->get_meta( 'end_date_pre_cancellation' ) : 0,
-									'trial_end'    => $this->meta_exists( 'trial_end_pre_cancellation' ) ? $this->get_meta( 'trial_end_pre_cancellation' ) : 0,
-									'next_payment' => $this->get_date( 'end' ),
-								)
-							);
+							$this->update_dates( array(
+								'cancelled'    => 0,
+								'end'          => $this->meta_exists( 'end_date_pre_cancellation' ) ? $this->get_meta( 'end_date_pre_cancellation' ) : 0,
+								'trial_end'    => $this->meta_exists( 'trial_end_pre_cancellation' ) ? $this->get_meta( 'trial_end_pre_cancellation' ) : 0,
+								'next_payment' => $this->get_date( 'end' ),
+							) );
 						} else {
 							// Recalculate and set next payment date
 							$stored_next_payment = $this->get_time( 'next_payment' );
@@ -545,7 +543,7 @@ class WC_Subscription extends WC_Order {
 
 						// Trial end date and end/expiration date don't change at all - they should be set when the subscription is first created
 						wcs_make_user_active( $this->get_user_id() );
-						break;
+					break;
 
 					case self::STATUS_FAILED: // core WC order status mapped internally to avoid exceptions
 					case self::STATUS_ON_HOLD:
@@ -568,7 +566,7 @@ class WC_Subscription extends WC_Order {
 						}
 
 						$this->update_dates( $dates_to_update );
-						break;
+					break;
 				}
 
 				// Make sure status is saved when WC 3.0+ is active, similar to WC_Order::update_status() with WC 3.0+ - set_status() can be used to avoid saving.
