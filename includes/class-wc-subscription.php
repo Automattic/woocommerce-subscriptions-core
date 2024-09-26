@@ -66,8 +66,8 @@ class WC_Subscription extends WC_Order {
 	 * @var array
 	 */
 	const ENDED_STATUSES = [
-		self::STATUS_EXPIRED,
 		self::STATUS_CANCELLED,
+		self::STATUS_EXPIRED,
 		self::STATUS_SUSPENDED,
 		self::STATUS_SWITCHED,
 		self::STATUS_TRASH,
@@ -81,9 +81,9 @@ class WC_Subscription extends WC_Order {
 	 * @var array
 	 */
 	const ENDED_OR_ENDING_STATUSES = [
-		self::STATUS_EXPIRED,
 		self::STATUS_PENDING_CANCEL,
 		self::STATUS_CANCELLED,
+		self::STATUS_EXPIRED,
 		self::STATUS_SUSPENDED,
 		self::STATUS_SWITCHED,
 		self::STATUS_TRASH,
