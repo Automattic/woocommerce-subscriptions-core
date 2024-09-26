@@ -239,11 +239,7 @@ class WC_Subscriptions_Email_Notifications {
 			}
 
 			if ( $subscription->get_date( 'next_payment' ) ) {
-				if ( $subscription->is_manual() ) {
-					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send manual renewal notification', 'woocommerce-subscriptions' );
-				} else {
-					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send automatic renewal notification', 'woocommerce-subscriptions' );
-				}
+				$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send renewal notification', 'woocommerce-subscriptions' );
 			}
 		}
 
