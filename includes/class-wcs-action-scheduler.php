@@ -152,7 +152,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					$this->schedule_action( $end_time, 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 				break;
-			case WC_Subscription::STATUS_ACTIVE:
+			case WC_Subscription::STATUS_ON_HOLD:
 			case WC_Subscription::STATUS_CANCELLED:
 			case WC_Subscription::STATUS_SWITCHED:
 			case WC_Subscription::STATUS_EXPIRED:
