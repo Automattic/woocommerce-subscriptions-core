@@ -263,14 +263,19 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	/**
+	 * Set which date types are affecting the notifications.
+	 *
+	 * Currently, only trial_end, end and next_payment are being used.
+	 *
+	 * @return void
+	 */
 	public function set_date_types_to_schedule() {
-		$date_types_to_schedule = wcs_get_subscription_date_types();
-		unset(
-			$date_types_to_schedule['start'],
-			$date_types_to_schedule['cancelled'], // prevent scheduling end date when reactivating subscription.
-		);
-
-		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
+		$this->date_types_to_schedule = [
+			'trial_end',
+			'next_payment',
+			'end',
+		];
 	}
 
 	/**
