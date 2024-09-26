@@ -231,15 +231,15 @@ class WC_Subscriptions_Email_Notifications {
 			}
 
 			if ( $subscription->get_date( 'trial_end' ) ) {
-				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send free trial expiration notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send trial is ending notification', 'woocommerce-subscriptions' );
 			}
 
 			if ( $subscription->get_date( 'end' ) ) {
-				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send subscription expiration notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send upcoming subscription expiration notification', 'woocommerce-subscriptions' );
 			}
 
 			if ( $subscription->get_date( 'next_payment' ) ) {
-				$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send renewal notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send upcoming renewal notification', 'woocommerce-subscriptions' );
 			}
 		}
 
