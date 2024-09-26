@@ -430,7 +430,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			}
 
 			// Skip if there are no remaining payments or the subscription is not current.
-			if ( $user_subscription->get_time( 'next_payment' ) <= 0 || ! $user_subscription->has_status( array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD ) ) ) {
+			if ( $user_subscription->get_time( 'next_payment' ) <= 0 || ! $user_subscription->has_status( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES ) ) {
 				continue;
 			}
 

@@ -360,7 +360,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
 
 					// Process the payment if the subscription is active
-					} elseif ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_TRASH ) ) ) {
+					} elseif ( ! $subscription->has_status( WC_Subscription::ENDED_STATUSES ) ) {
 
 						if ( true === $is_renewal_sign_up_after_failure && is_object( $transaction_order ) ) {
 

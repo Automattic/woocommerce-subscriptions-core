@@ -1393,7 +1393,7 @@ class WCS_Admin_Post_Types {
 			}
 
 			// Trashing and deleting requires specific user capabilities.
-			if ( in_array( $status, array( WC_Subscription::STATUS_TRASH, WC_Subscription::STATUS_DELETED ), true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
+			if ( in_array( $status, WC_Subscription::REMOVED_STATUSES, true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
 				continue;
 			}
 
@@ -1444,7 +1444,7 @@ class WCS_Admin_Post_Types {
 		if ( WC_Subscription::STATUS_PENDING === $subscription->get_status() ) {
 			unset( $actions['active'] );
 			unset( $actions['trash'] );
-		} elseif ( ! in_array( $subscription->get_status(), array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_SUSPENDED ), true ) ) {
+		} elseif ( ! in_array( $subscription->get_status(), WC_Subscription::ENDED_OR_ENDING_STATUSES, true ) ) {
 			unset( $actions['trash'] );
 		}
 

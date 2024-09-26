@@ -948,7 +948,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_none() {
-		foreach ( [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ] as $status ) {
+		foreach ( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES as $status ) {
 			$completed_payments = $this->subscriptions[ $status ]->get_payment_count();
 			$this->assertEmpty( $completed_payments );
 		}
@@ -1008,7 +1008,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$order->set_status( 'wc-failed' );
 		$order->save();
 
-		foreach ( [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ] as $status ) {
+		foreach ( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES as $status ) {
 
 			WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 
@@ -1037,7 +1037,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$orders[] = $order;
 		}
 
-		foreach ( [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ] as $status ) {
+		foreach ( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES as $status ) {
 
 			$expected_count = 0;
 			foreach ( $orders as $order ) {
@@ -1289,7 +1289,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_expired() {
-		$expected_to_pass = [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_ON_HOLD ];
+		$expected_to_pass = WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES;
 		$now              = time();
 
 		$subscriptions = WCS_Helper_Subscription::create_subscriptions(
@@ -1338,7 +1338,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_cancelled() {
-		$expected_to_pass = [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_ON_HOLD ];
+		$expected_to_pass = WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES;
 		$now              = time();
 		$subscriptions    = WCS_Helper_Subscription::create_subscriptions(
 			[
@@ -1640,7 +1640,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_has_ended_statuses( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ON_HOLD ], true ) ) {
+		if ( in_array( $status, WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES, true ) ) {
 			$this->assertFalse( $subscription->has_status( wcs_get_subscription_ended_statuses() ) );
 
 			add_filter( 'wcs_subscription_ended_statuses', [ $this, 'filter_has_ended_statuses' ] );
@@ -2121,7 +2121,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_is_download_permitted( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL ], true ) ) {
+		if ( in_array( $status, WC_Subscription::ACTIVE_STATUSES, true ) ) {
 			$this->assertTrue( $subscription->is_download_permitted() );
 		} else {
 			$this->assertFalse( $subscription->is_download_permitted() );

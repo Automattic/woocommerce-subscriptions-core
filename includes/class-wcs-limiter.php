@@ -258,7 +258,7 @@ class WCS_Limiter {
 					$subscriptions = wcs_get_subscriptions(
 						array(
 							'order_id'            => $order->get_id(),
-							'subscription_status' => array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ON_HOLD ),
+							'subscription_status' => WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES,
 						)
 					);
 

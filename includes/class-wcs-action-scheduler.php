@@ -195,7 +195,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				break;
 			case 'end':
 				// End dates may need either an expiration or end of prepaid term hook, depending on the status
-				if ( $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_PENDING_CANCEL ) ) ) {
+				if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) ) {
 					$hook = 'woocommerce_scheduled_subscription_end_of_prepaid_term';
 				} elseif ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 					$hook = 'woocommerce_scheduled_subscription_expiration';

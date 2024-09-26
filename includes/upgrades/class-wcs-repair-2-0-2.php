@@ -137,7 +137,7 @@ class WCS_Repair_2_0_2 {
 		}
 
 		// if the subscription has been cancelled, we don't need to repair any other data
-		if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) ) {
+		if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has cancelled status.', $subscription->get_id() ) );
 			return $repaired_subscription;
 		}

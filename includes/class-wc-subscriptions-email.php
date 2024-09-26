@@ -112,7 +112,7 @@ class WC_Subscriptions_Email {
 	public static function send_cancelled_email( $subscription ) {
 		WC()->mailer();
 
-		if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) && 'true' !== $subscription->get_cancelled_email_sent() ) {
+		if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) && 'true' !== $subscription->get_cancelled_email_sent() ) {
 			do_action( 'cancelled_subscription_notification', $subscription );
 		}
 	}

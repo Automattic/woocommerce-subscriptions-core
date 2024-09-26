@@ -2239,7 +2239,7 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) ) {
+			if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
@@ -2316,7 +2316,7 @@ class WC_Subscriptions_Manager {
 		} else {
 
 			// Run all cancellation related functions on the subscription
-			if ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+			if ( ! $subscription->has_status( WC_Subscription::ENDED_STATUSES ) ) {
 				$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 			}
 
@@ -2349,7 +2349,7 @@ class WC_Subscriptions_Manager {
 		} else {
 
 			// Run all cancellation related functions on the subscription
-			if ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+			if ( ! $subscription->has_status( WC_Subscription::ENDED_STATUSES ) ) {
 				$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 			}
 

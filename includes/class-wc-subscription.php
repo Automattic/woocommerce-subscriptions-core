@@ -29,6 +29,78 @@ class WC_Subscription extends WC_Order {
 	const STATUS_FAILED         = 'failed';
 
 	/**
+	 * Subscription statuses that are considered to be active.
+	 *
+	 * @var array
+	 */
+	const ACTIVE_STATUSES = [
+		self::STATUS_ACTIVE,
+		self::STATUS_PENDING_CANCEL,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be active or waiting payment confirmation.
+	 *
+	 * @var array
+	 */
+	const ACTIVE_OR_WAITING_PAYMENT_STATUSES = [
+		self::STATUS_PENDING,
+		self::STATUS_ACTIVE,
+		self::STATUS_ON_HOLD,
+		self::STATUS_PENDING_CANCEL,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be cancelled.
+	 *
+	 * @var array
+	 */
+	const CANCELLED_STATUSES = [
+		self::STATUS_PENDING_CANCEL,
+		self::STATUS_CANCELLED,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be ended. These won't be renewed.
+	 *
+	 * @var array
+	 */
+	const ENDED_STATUSES = [
+		self::STATUS_EXPIRED,
+		self::STATUS_CANCELLED,
+		self::STATUS_SUSPENDED,
+		self::STATUS_SWITCHED,
+		self::STATUS_TRASH,
+		self::STATUS_DELETED,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be ended or ending. These won't be renewed.
+	 * Pending-cancel can be reverted.
+	 *
+	 * @var array
+	 */
+	const ENDED_OR_ENDING_STATUSES = [
+		self::STATUS_EXPIRED,
+		self::STATUS_PENDING_CANCEL,
+		self::STATUS_CANCELLED,
+		self::STATUS_SUSPENDED,
+		self::STATUS_SWITCHED,
+		self::STATUS_TRASH,
+		self::STATUS_DELETED,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be removed.
+	 *
+	 * @var array
+	 */
+	const REMOVED_STATUSES = [
+		self::STATUS_TRASH,
+		self::STATUS_DELETED,
+	];
+
+	/**
 	 * Core WC order status mapped internally to avoid exceptions
 	 *
 	 * @var array
