@@ -354,7 +354,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		foreach ( $this->subscriptions as $status => $subscription ) {
 
 			$expected_result = $expected_results[ $status ];
-			$actual_result   = $subscription->can_be_updated_to( 'deleted' );
+			$actual_result   = $subscription->can_be_updated_to( WC_Subscription::STATUS_DELETED );
 			$this->assertEquals( $expected_result, $actual_result );
 
 		}

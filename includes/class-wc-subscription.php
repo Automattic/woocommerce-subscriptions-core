@@ -24,6 +24,7 @@ class WC_Subscription extends WC_Order {
 	const STATUS_SWITCHED       = 'switched';
 	const STATUS_TRASH          = 'trash';
 	const STATUS_DELETED        = 'deleted';
+	const STATUS_PROCESSING     = 'processing';
 	const STATUS_COMPLETED      = 'completed';
 	const STATUS_FAILED         = 'failed';
 
@@ -33,6 +34,7 @@ class WC_Subscription extends WC_Order {
 	 * @var array
 	 */
 	const INTERNAL_STATUSES = [
+		self::STATUS_PROCESSING,
 		self::STATUS_COMPLETED,
 		self::STATUS_FAILED,
 	];

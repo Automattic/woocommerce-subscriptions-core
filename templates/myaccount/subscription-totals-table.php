@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			}
 
 			$purchase_note = get_post_meta( $_product->get_id(), '_purchase_note', true );
-			if ( $subscription->has_status( array( 'completed', 'processing' ) ) && $purchase_note ) {
+			if ( $subscription->has_status( array( WC_Subscription::STATUS_COMPLETED, WC_Subscription::STATUS_PROCESSING ) ) && $purchase_note ) {
 				?>
 				<tr class="product-purchase-note">
 					<td colspan="3"><?php echo wp_kses_post( wpautop( do_shortcode( $purchase_note ) ) ); ?></td>

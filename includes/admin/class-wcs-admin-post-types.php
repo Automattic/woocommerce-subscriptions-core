@@ -1384,7 +1384,7 @@ class WCS_Admin_Post_Types {
 			WC_Subscription::STATUS_ON_HOLD   => __( 'Suspend', 'woocommerce-subscriptions' ),
 			WC_Subscription::STATUS_CANCELLED => _x( 'Cancel', 'an action on a subscription', 'woocommerce-subscriptions' ),
 			WC_Subscription::STATUS_TRASH     => __( 'Trash', 'woocommerce-subscriptions' ),
-			'deleted'   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
+			WC_Subscription::STATUS_DELETED   => __( 'Delete Permanently', 'woocommerce-subscriptions' ),
 		);
 
 		foreach ( $all_statuses as $status => $label ) {
@@ -1393,7 +1393,7 @@ class WCS_Admin_Post_Types {
 			}
 
 			// Trashing and deleting requires specific user capabilities.
-			if ( in_array( $status, array( WC_Subscription::STATUS_TRASH, 'deleted' ), true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
+			if ( in_array( $status, array( WC_Subscription::STATUS_TRASH, WC_Subscription::STATUS_DELETED ), true ) && ! current_user_can( $post_type_object->cap->delete_post, $subscription->get_id() ) ) {
 				continue;
 			}
 
@@ -1421,7 +1421,7 @@ class WCS_Admin_Post_Types {
 			}
 
 			// The delete action is only shown on already trashed subscriptions, or where there is no trash period.
-			if ( 'deleted' === $status && ( WC_Subscription::STATUS_TRASH === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) ) {
+			if ( WC_Subscription::STATUS_DELETED === $status && ( WC_Subscription::STATUS_TRASH === $subscription->get_status() || ! EMPTY_TRASH_DAYS ) ) {
 				$actions['delete'] = sprintf(
 					'<a class="submitdelete" title="%s" href="%s">%s</a>',
 					esc_attr( __( 'Delete this item permanently', 'woocommerce-subscriptions' ) ),

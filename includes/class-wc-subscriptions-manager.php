@@ -706,7 +706,7 @@ class WC_Subscriptions_Manager {
 
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( isset( $new_subscription_details['status'] ) && 'deleted' == $new_subscription_details['status'] ) {
+			if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED == $new_subscription_details['status'] ) {
 				wp_delete_post( $subscription->get_id() );
 			} else {
 				// There is no direct analog for this in WC_Subscription, so we need to call the deprecated method
@@ -740,7 +740,7 @@ class WC_Subscriptions_Manager {
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( isset( $new_subscription_details['status'] ) && 'deleted' == $new_subscription_details['status'] ) {
+		if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED == $new_subscription_details['status'] ) {
 
 			wp_delete_post( $subscription->get_id() );
 
@@ -2342,7 +2342,7 @@ class WC_Subscriptions_Manager {
 			return false;
 		}
 
-		if ( ! $subscription->can_be_updated_to( 'deleted' ) && ! $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
+		if ( ! $subscription->can_be_updated_to( WC_Subscription::STATUS_DELETED ) && ! $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
 
 			do_action( 'unable_to_delete_subscription', $user_id, $subscription_key );
 
