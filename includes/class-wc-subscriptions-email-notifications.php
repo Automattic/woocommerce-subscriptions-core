@@ -88,6 +88,7 @@ class WC_Subscriptions_Email_Notifications {
 			$message = WCS_Notifications_Batch_Processor::enqueue();
 		}
 
+		//TODO: make sure this works first.
 		wc_add_notice( $message, 'notice' );
 	}
 
@@ -97,7 +98,8 @@ class WC_Subscriptions_Email_Notifications {
 	public static function add_emails( $email_classes ) {
 
 		// Customer notifications.
-		$email_classes['WCS_Email_Customer_Notification_Free_Trial_Expiration']   = new WCS_Email_Customer_Notification_Free_Trial_Expiration();
+		$email_classes['WCS_Email_Customer_Notification_Manual_Trial_Expiration'] = new WCS_Email_Customer_Notification_Manual_Trial_Expiration();
+		$email_classes['WCS_Email_Customer_Notification_Auto_Trial_Expiration']   = new WCS_Email_Customer_Notification_Auto_Trial_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Subscription_Expiration'] = new WCS_Email_Customer_Notification_Subscription_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Manual_Renewal']          = new WCS_Email_Customer_Notification_Manual_Renewal();
 		$email_classes['WCS_Email_Customer_Notification_Auto_Renewal']            = new WCS_Email_Customer_Notification_Auto_Renewal();
@@ -119,7 +121,8 @@ class WC_Subscriptions_Email_Notifications {
 		if ( ! ( $emails['WCS_Email_Customer_Notification_Auto_Renewal'] instanceof WCS_Email_Customer_Notification_Auto_Renewal
 				&& $emails['WCS_Email_Customer_Notification_Manual_Renewal'] instanceof WCS_Email_Customer_Notification_Manual_Renewal
 				&& $emails['WCS_Email_Customer_Notification_Subscription_Expiration'] instanceof WCS_Email_Customer_Notification_Subscription_Expiration
-				&& $emails['WCS_Email_Customer_Notification_Free_Trial_Expiration'] instanceof WCS_Email_Customer_Notification_Free_Trial_Expiration
+				&& $emails['WCS_Email_Customer_Notification_Manual_Trial_Expiration'] instanceof WCS_Email_Customer_Notification_Manual_Trial_Expiration
+				&& $emails['WCS_Email_Customer_Notification_Auto_Trial_Expiration'] instanceof WCS_Email_Customer_Notification_Auto_Trial_Expiration
 			)
 		) {
 			return;
@@ -135,7 +138,12 @@ class WC_Subscriptions_Email_Notifications {
 				}
 				break;
 			case 'woocommerce_scheduled_subscription_customer_notification_trial_expiration':
-				$notification = $emails['WCS_Email_Customer_Notification_Free_Trial_Expiration'];
+				$subscription = wcs_get_subscription( $subscription_id );
+				if ( $subscription->is_manual() ) {
+					$notification = $emails['WCS_Email_Customer_Notification_Manual_Trial_Expiration'];
+				} else {
+					$notification = $emails['WCS_Email_Customer_Notification_Auto_Trial_Expiration'];
+				}
 				break;
 			case 'woocommerce_scheduled_subscription_customer_notification_expiration':
 				$notification = $emails['WCS_Email_Customer_Notification_Subscription_Expiration'];

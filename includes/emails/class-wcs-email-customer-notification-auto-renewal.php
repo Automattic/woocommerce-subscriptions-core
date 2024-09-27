@@ -19,22 +19,41 @@ class WCS_Email_Customer_Notification_Auto_Renewal extends WCS_Email_Customer_No
 	 * Create an instance of the class.
 	 */
 	public function __construct() {
-		parent::__construct();
-
 		$this->plugin_id = 'woocommerce-subscriptions_';
 
 		$this->id          = 'customer_notification_auto_renewal';
-		$this->title       = __( 'Customer Notification: Automatic Renewal for Subscription', 'woocommerce-subscriptions' );
-		$this->description = __( 'Customer Notification: Automatic Renewal emails are sent when a customer\'s subscription is about to be renewed automatically.', 'woocommerce-subscriptions' );
+		$this->title       = __( 'Customer Notification: Automatic renewal notice', 'woocommerce-subscriptions' );
+		$this->description = __( 'Customer Notification: Automatic renewal notice emails are sent when customer\'s subscription is about to be renewed automatically.', 'woocommerce-subscriptions' );
 
-		$this->heading = __( 'Subscription will be renewed automatically', 'woocommerce-subscriptions' );
-		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
-		$this->subject = sprintf( _x( '[%s] Subscription Will Be Auto Renewed', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
+		$this->heading = __( 'Automatic renewal notice', 'woocommerce-subscriptions' );
+
+		$this->subject = sprintf(
+			// translators: %1$s: number of days until renewal, %2$s: customer's first name.
+			_x( 'Your subscription automatically renews in %1$s days, %1$s ♻️', 'default email subject for subscription\'s automatic renewal notice', 'woocommerce-subscriptions' ),
+			'{days_until_renewal}',
+			'{customers_first_name}'
+		);
 
 		$this->template_html  = 'emails/customer-notification-auto-renewal.php';
 		$this->template_plain = 'emails/plain/customer-notification-auto-renewal.php';
 		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		$this->customer_email = true;
+
+		// Constructor in parent uses the values above in the initialization.
+		parent::__construct();
+	}
+
+	public function get_relevant_date_type() {
+		return 'next_payment';
+	}
+
+	/**
+	 * Default content to show below main email content.
+	 *
+	 * @return string
+	 */
+	public function get_default_additional_content() {
+		return __( 'Thank you for being a loyal customer, {customers_first_name} — we appreciate your business.', 'woocommerce-subscriptions' );
 	}
 }

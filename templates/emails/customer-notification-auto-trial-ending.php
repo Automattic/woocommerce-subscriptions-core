@@ -1,6 +1,6 @@
 <?php
 /**
- * Customer Notification: Manual renewal needed.
+ * Customer Notification: Free trial of an automatically renewed subscription is about to expire email.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails
  * @version x.x.x
@@ -20,7 +20,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		<?php
 		printf(
 		/* translators: %s: Customer first name */
-			esc_html__( 'Hi %s.', 'woocommerce-subscriptions' ),
+			esc_html__( 'Hi, %s.', 'woocommerce-subscriptions' ),
 			esc_html( $subscription->get_billing_first_name() )
 		);
 		?>
@@ -32,7 +32,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		echo wp_kses(
 			sprintf(
 			// translators: %1$s: number of days until expiry, %2$s: date in local format.
-				__( 'Your subscription is up for renewal in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
+				__( 'Your paid subscription begins when your free trial expires in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
 				(int) $subscription_days_til_event,
 				esc_html( $subscription_event_date )
 			),
@@ -43,32 +43,23 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 	<p>
 		<?php
+
 		echo wp_kses(
-			__( '<strong>This subscription will not automatically renew</strong>, but you can <strong>renew it manually</strong> in a few short steps via the <em>Subscriptions</em> tab in your account dashboard.', 'woocommerce-subscriptions' ),
-			[ 'strong' => [] ]
+			sprintf(
+			// translators: %1$s: link to account dashboard.
+				__( 'Payment will be deducted using the payment method on file. You can manage this subscription from your %1$s.', 'woocommerce-subscriptions' ),
+				'<a href="' . esc_url( $subscription->get_view_order_url() ) . '">' . esc_html__( 'account dashboard', 'woocommerce-subscriptions' ) . '</a>'
+			),
+			[ 'a' => [ 'href' => true ] ]
 		);
 		?>
 	</p>
 
-	<table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
-		<tr>
-			<td>
-				<?php
-				echo wp_kses(
-					'<a href="' . esc_url( $subscription->get_checkout_payment_url() ) . '">' . esc_html__( 'Renew my subscription', 'woocommerce-subscriptions' ) . '</a>',
-					[ 'a' => [ 'href' => true ] ]
-				);
-				?>
-			</td>
-		</tr>
-	</table>
-
 	<p>
 		<?php
-		esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
+			esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
 		?>
 	</p>
-
 
 <?php
 
