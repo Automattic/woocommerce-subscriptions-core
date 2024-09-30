@@ -215,11 +215,16 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 	 */
 	public function process_batch( array $batch ): void {
 
-		$subscriptions_notifications = new WCS_Action_Scheduler_Customer_Notifications();
+		$subscriptions_notifications = WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler;
 
 		foreach ( $batch as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
-			$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
+
+			if ( WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
+				$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
+			} else {
+				$subscriptions_notifications->unschedule_all_notifications( $subscription );
+			}
 
 			// Update the subscription's update time to mark it as updated.
 			$subscription->set_date_modified( time() );
