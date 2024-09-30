@@ -18,10 +18,12 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 	<p>
 		<?php
-		printf(
-		/* translators: %s: Customer first name */
-			esc_html__( 'Hi %s.', 'woocommerce-subscriptions' ),
-			esc_html( $subscription->get_billing_first_name() )
+		echo esc_html(
+			sprintf(
+					/* translators: %s: Customer first name */
+				__( 'Hi %s.', 'woocommerce-subscriptions' ),
+				$subscription->get_billing_first_name()
+			)
 		);
 		?>
 	</p>
@@ -34,7 +36,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 				// translators: %1$s: number of days until expiry, %2$s: date in local format.
 				__( 'Your subscription will <strong>automatically renew</strong> in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
 				(int) $subscription_days_til_event,
-				esc_html( $subscription_event_date )
+				$subscription_event_date
 			),
 			[ 'strong' => [] ]
 		);
@@ -51,15 +53,23 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <?php
 
 // Show subscription details.
-\WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text );
+\WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text, true );
+?>
+	<p>
+		<small>
+			<?php
+			echo wp_kses_post(
+				sprintf(
+							// translators: %s: link to subscription detail in the customer's dashboard.
+					__( 'You can manage this subscription from your %s', 'woocommerce-subscriptions' ),
+					'<a href="' . esc_url( $subscription->get_view_order_url() ) . '">' . esc_html__( 'account dashboard', 'woocommerce-subscriptions' ) . '</a>',
+				)
+			);
+			?>
+		</small>
+	</p>
 
-echo wp_kses_post(
-	sprintf(
-				// translators: %s: link to subscription detail in the customer's dashboard.
-		__( 'You can manage this subscription from your %s', 'woocommerce-subscriptions' ),
-		'<a href="' . esc_url( $subscription->get_view_order_url() ) . '">' . esc_html__( 'account dashboard', 'woocommerce-subscriptions' ) . '</a>',
-	)
-);
+<?php
 
 /**
  * Show user-defined additional content - this is set in each email's settings.

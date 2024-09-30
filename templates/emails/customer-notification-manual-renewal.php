@@ -18,10 +18,12 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 	<p>
 		<?php
-		printf(
-		/* translators: %s: Customer first name */
-			esc_html__( 'Hi %s.', 'woocommerce-subscriptions' ),
-			esc_html( $subscription->get_billing_first_name() )
+		echo esc_html(
+			sprintf(
+					/* translators: %s: Customer first name */
+				__( 'Hi %s.', 'woocommerce-subscriptions' ),
+				$subscription->get_billing_first_name()
+			)
 		);
 		?>
 	</p>
@@ -34,7 +36,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 			// translators: %1$s: number of days until expiry, %2$s: date in local format.
 				__( 'Your subscription is up for renewal in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
 				(int) $subscription_days_til_event,
-				esc_html( $subscription_event_date )
+				$subscription_event_date
 			),
 			[ 'strong' => [] ]
 		);
@@ -55,14 +57,14 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 			<td>
 				<?php
 				echo wp_kses(
-					'<a href="' . esc_url( $subscription->get_checkout_payment_url() ) . '">' . esc_html__( 'Renew my subscription', 'woocommerce-subscriptions' ) . '</a>',
+					'<a href="' . esc_url( wcs_get_early_renewal_url( $subscription ) ) . '">' . esc_html__( 'Renew my subscription', 'woocommerce-subscriptions' ) . '</a>',
 					[ 'a' => [ 'href' => true ] ]
 				);
 				?>
 			</td>
 		</tr>
 	</table>
-
+	<br>
 	<p>
 		<?php
 		esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
