@@ -2008,12 +2008,16 @@ class WC_Subscription extends WC_Order {
 		$this->add_order_note( __( 'Payment failed.', 'woocommerce-subscriptions' ) );
 
 		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
-		if ( self::STATUS_CANCELLED == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
-			if ( $this->can_be_updated_to( self::STATUS_CANCELLED ) ) {
-				$this->update_status( self::STATUS_CANCELLED, __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
-			}
-		} elseif ( $this->can_be_updated_to( $new_status ) ) {
-			$this->update_status( $new_status );
+		// This also forces the new status to be 'cancelled' if the filter is applied or the subscription is pending-cancel
+		$max_failed_payments = apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this );
+		$status_note         = $max_failed_payments ? __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) : '';
+
+		if ( $max_failed_payments || $this->has_status( self::STATUS_PENDING_CANCEL ) ) {
+			$new_status = self::STATUS_CANCELLED;
+		}
+
+		if ( $this->can_be_updated_to( $new_status ) ) {
+			$this->update_status( $new_status, $status_note );
 		}
 
 		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );
