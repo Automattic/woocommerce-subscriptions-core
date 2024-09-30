@@ -21,6 +21,7 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 		$process_next_batch_for_single_processor->setAccessible( true );
 		$process_next_batch_for_single_processor->invoke( $batch_processor, WCS_Notifications_Debug_Tool_Processor::class );
 
+		// Ensure that the processor is dequeued after processing done.
 		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
 	}
 
