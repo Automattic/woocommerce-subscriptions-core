@@ -1636,11 +1636,12 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 * @dataProvider subscription_status_data_provider
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 * @group test_has_ended_statuses
 	 */
 	public function test_has_ended_statuses( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES, true ) ) {
+		if ( in_array( $status, [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ON_HOLD ], true ) ) {
 			$this->assertFalse( $subscription->has_status( wcs_get_subscription_ended_statuses() ) );
 
 			add_filter( 'wcs_subscription_ended_statuses', [ $this, 'filter_has_ended_statuses' ] );
