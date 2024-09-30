@@ -200,7 +200,7 @@ class WC_Subscriptions_Email_Notifications {
 		 *
 		 * Values 'yes' or 'no' expected, since it works with WC_Settings_API.
 		 *
-		 * @since 8.0.0
+		 * @since x.x.x
 		 *
 		 * @param string $notification_enabled
 		 */
@@ -268,8 +268,6 @@ class WC_Subscriptions_Email_Notifications {
 
 	/**
 	 * Adds the subscription notification setting.
-	 *
-	 * @since 8.0.0
 	 *
 	 * @param  array $settings Subscriptions settings.
 	 * @return array Subscriptions settings.

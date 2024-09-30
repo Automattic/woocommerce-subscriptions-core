@@ -5,8 +5,8 @@
  * Interface for batch data processors. See the WCS_Batch_Processing_Controller class for usage details.
  *
  * @package  WooCommerce Subscriptions
- * @version  8.0.0
- * @since    8.0.0
+ * @version  x.x.x
+ * @since    x.x.x
  */
 interface WCS_Batch_Processor {
 
