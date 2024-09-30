@@ -4,13 +4,8 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 	/**
 	 * Sanity check the controller first.
-	 *
-	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch
-	 *
-	 * @param array $data
-	 * @return bool
 	 */
-	public function test_batch_processesing_controller() {
+	public function test_batch_processing_controller() {
 
 		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
@@ -31,11 +26,6 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 	/**
 	 * Test the "WCS_Notifications_Debug_Tool_Processor::process_batch()" method.
-	 *
-	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch
-	 *
-	 * @param array $data
-	 * @return bool
 	 */
 	public function test_process_batch_notifications() {
 
@@ -45,7 +35,7 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 		foreach ( $batches as $batch ) {
 			$subscription = $batch['subscription'];
 			$action_name  = $batch['action_name'];
-			$action_args  = [ 'subscription_id' => $subscription->get_id() ];
+			$action_args  = \WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler::get_action_args( $subscription );
 
 			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 			$this->assertTrue( $has_notification );
@@ -178,7 +168,7 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 		$simple_subscription->update_dates(
 			[
-				'next_payment' => '2034-09-20 08:08:08',
+				'next_payment' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
 			]
 		);
 
@@ -188,13 +178,13 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 		$free_trial_subscription = WCS_Helper_Subscription::create_subscription(
 			[
 				'status'     => 'active',
-				'start_date' => '2024-09-10 08:08:08',
+				'start_date' => gmdate( 'Y-m-d H:i:s' ),
 			]
 		);
 
 		$free_trial_subscription->update_dates(
 			[
-				'trial_end' => '2034-09-20 08:08:08',
+				'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
 			]
 		);
 
@@ -204,13 +194,13 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 		$expiry_subscription = WCS_Helper_Subscription::create_subscription(
 			[
 				'status'     => 'active',
-				'start_date' => '2024-09-10 08:08:08',
+				'start_date' => gmdate( 'Y-m-d H:i:s' ),
 			]
 		);
 
 		$expiry_subscription->update_dates(
 			[
-				'end' => '2034-09-20 08:08:08',
+				'end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
 			]
 		);
 

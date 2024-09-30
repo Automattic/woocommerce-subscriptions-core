@@ -90,7 +90,7 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 		foreach ( $batches as $batch ) {
 			$subscription = $batch['subscription'];
 			$action_name  = $batch['action_name'];
-			$action_args  = [ 'subscription_id' => $subscription->get_id() ];
+			$action_args  = \WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler::get_action_args( $subscription );
 
 			// First iteration doesn't have the notification scheduled, since the feature was disabled during the creation.
 			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );

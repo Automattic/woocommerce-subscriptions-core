@@ -77,7 +77,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test subscription period too long.
+	 * Test global subscription notification switch.
 	 */
 	public function test_notifications_globally_enabled() {
 		$enabled = WC_Subscriptions_Email_Notifications::notifications_globally_enabled();

@@ -171,7 +171,7 @@ class WC_Subscriptions_Core_Plugin {
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
 
-		// Custom notifications scheduler.
+		// Customer notifications scheduler.
 		$this->notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
 
 		// Initialise the cache.
@@ -533,7 +533,7 @@ class WC_Subscriptions_Core_Plugin {
 				update_option( WC_Subscriptions_admin::$option_prefix . '_paypal_debugging_default_set', 'true' );
 			}
 
-			// Enable customer notifications by default.
+			// Enable customer notifications by default for new stores.
 			if ( '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', '0' ) && 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'no' ) ) {
 				update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
 			}
