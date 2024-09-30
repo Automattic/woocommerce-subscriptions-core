@@ -296,7 +296,7 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 				'name'     => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
 				'button'   => __( 'Add notifications', 'woocommerce-subscriptions' ),
 				'disabled' => true,
-				'desc'     => __( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler. Currently, there are no entries to convert.', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler. Currently, there are no subscriptions to process.', 'woocommerce-subscriptions' ),
 			);
 		} elseif ( $batch_processor->is_enqueued( self::class ) ) {
 			$tools['stop_add_subscription_notifications'] = array(
@@ -304,7 +304,7 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 				'button'   => __( 'Stop adding notifications', 'woocommerce-subscriptions' ),
 				'desc'     =>
 				/* translators: %1$d=count of total entries needing conversion */
-					sprintf( __( 'Stopping this will halt the background process that adds notifications to pending, active, and on-hold subscriptions. %1$d of %2$d entries remain to be converted.', 'woocommerce-subscriptions' ), $pending_count, ( $pending_count + $total_done ) ),
+					sprintf( __( 'Stopping this will halt the background process that adds notifications to pending, active, and on-hold subscriptions. %1$d of %2$d subscriptions remain to be processed.', 'woocommerce-subscriptions' ), $pending_count, ( $pending_count + $total_done ) ),
 				'callback' => array( $this, 'dequeue' ),
 			);
 		} else {
@@ -313,7 +313,7 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 				'button'   => __( 'Add notifications', 'woocommerce-subscriptions' ),
 				'desc'     =>
 				/* translators: %d=count of entries pending conversion */
-					sprintf( __( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler. Currently, there are %d entries available for conversion.', 'woocommerce-subscriptions' ), $pending_count ),
+					sprintf( __( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler. Currently, there are %d subscriptions to process.', 'woocommerce-subscriptions' ), $pending_count ),
 				'callback' => array( $this, 'enqueue' ),
 			);
 		}
