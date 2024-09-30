@@ -114,14 +114,30 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 * @return string
 	 */
 	public function get_content_html() {
+		$subscription = $this->object;
+
+		if ( wcs_can_user_renew_early( $subscription )
+			&& $subscription->payment_method_supports( 'subscription_date_changes' )
+			&& WCS_Early_Renewal_Manager::is_early_renewal_enabled()
+			&& WCS_Manual_Renewal_Manager::is_manual_renewal_enabled()
+		) {
+			$url_for_renewal = wcs_get_early_renewal_url( $subscription );
+			$can_renew_early = true;
+		} else {
+			$url_for_renewal = $subscription->get_view_order_url();
+			$can_renew_early = false;
+		}
+
 		return wc_get_template_html(
 			$this->template_html,
 			[
-				'subscription'                => $this->object,
-				'order'                       => $this->object->get_parent(),
+				'subscription'                => $subscription,
+				'order'                       => $subscription->get_parent(),
 				'email_heading'               => $this->get_heading(),
-				'subscription_days_til_event' => $this->get_time_until_date( $this->object, $this->get_relevant_date_type() ),
-				'subscription_event_date'     => $this->get_formatted_date( $this->object, $this->get_relevant_date_type() ),
+				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
+				'url_for_renewal'             => $url_for_renewal,
+				'can_renew_early'             => $can_renew_early,
 				'additional_content'          => is_callable(
 					[
 						$this,
@@ -144,14 +160,30 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 * @return string
 	 */
 	public function get_content_plain() {
+		$subscription = $this->object;
+
+		if ( wcs_can_user_renew_early( $subscription )
+			&& $subscription->payment_method_supports( 'subscription_date_changes' )
+			&& WCS_Early_Renewal_Manager::is_early_renewal_enabled()
+			&& WCS_Manual_Renewal_Manager::is_manual_renewal_enabled()
+		) {
+			$url_for_renewal = wcs_get_early_renewal_url( $subscription );
+			$can_renew_early = true;
+		} else {
+			$url_for_renewal = $subscription->get_view_order_url();
+			$can_renew_early = false;
+		}
+
 		return wc_get_template_html(
 			$this->template_plain,
 			[
-				'subscription'                => $this->object,
-				'order'                       => $this->object->get_parent(),
+				'subscription'                => $subscription,
+				'order'                       => $subscription->get_parent(),
 				'email_heading'               => $this->get_heading(),
-				'subscription_days_til_event' => $this->get_time_until_date( $this->object, $this->get_relevant_date_type() ),
-				'subscription_event_date'     => $this->get_formatted_date( $this->object, $this->get_relevant_date_type() ),
+				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
+				'url_for_renewal'             => $url_for_renewal,
+				'can_renew_early'             => $can_renew_early,
 				'additional_content'          => is_callable(
 					[
 						$this,

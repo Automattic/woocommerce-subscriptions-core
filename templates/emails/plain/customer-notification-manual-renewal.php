@@ -34,16 +34,24 @@ echo esc_html(
 
 echo "\n\n";
 
-esc_html_e(
-	'This subscription will not automatically renew, but you can renew it manually in a few short steps via the Subscriptions tab in your account dashboard.',
-	'woocommerce-subscriptions'
-);
+esc_html_e( 'This subscription will not renew automatically.', 'woocommerce-subscriptions' );
+echo "\n";
+if ( $can_renew_early ) {
+	esc_html_e(
+		'You can renew it manually in a few short steps via the Subscriptions tab in your account dashboard.',
+		'woocommerce-subscriptions'
+	);
+}
 
 echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
 
-// translators: %s: link to checkout with the subscription.
-esc_html_e( 'Renew my subscription: ', 'woocommerce-subscriptions' );
-echo esc_url( wcs_get_early_renewal_url( $subscription ) );
+if ( $can_renew_early ) {
+	esc_html_e( 'Renew my subscription: ', 'woocommerce-subscriptions' );
+	echo esc_url( $url_for_renewal );
+} else {
+	esc_html_e( 'Manage my subscription: ', 'woocommerce-subscriptions' );
+	echo esc_url( $url_for_renewal );
+}
 
 echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
 

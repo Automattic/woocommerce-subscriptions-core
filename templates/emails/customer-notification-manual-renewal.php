@@ -44,26 +44,45 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	</p>
 
 	<p>
+		<strong>
 		<?php
-		echo wp_kses(
-			__( '<strong>This subscription will not automatically renew</strong>, but you can <strong>renew it manually</strong> in a few short steps via the <em>Subscriptions</em> tab in your account dashboard.', 'woocommerce-subscriptions' ),
-			[ 'strong' => [] ]
-		);
+			esc_html_e( 'This subscription will not renew automatically.', 'woocommerce-subscriptions' );
+		?>
+		</strong>
+		<?php
+		if ( $can_renew_early ) {
+			echo wp_kses(
+				__( 'You can <strong>renew it manually</strong> in a few short steps via the <em>Subscriptions</em> tab in your account dashboard.', 'woocommerce-subscriptions' ),
+				[
+					'strong' => [],
+					'em'     => [],
+				]
+			);
+		}
+
 		?>
 	</p>
+
 
 	<table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
 		<tr>
 			<td>
-				<?php
+			<?php
+			if ( $can_renew_early ) {
+				$link_text = __( 'Renew Subscription', 'woocommerce-subscriptions' );
+			} else {
+				$link_text = __( 'Manage Subscription', 'woocommerce-subscriptions' );
+			}
 				echo wp_kses(
-					'<a href="' . esc_url( wcs_get_early_renewal_url( $subscription ) ) . '">' . esc_html__( 'Renew my subscription', 'woocommerce-subscriptions' ) . '</a>',
+					'<a href="' . esc_url( $url_for_renewal ) . '">' . esc_html( $link_text ) . '</a>',
 					[ 'a' => [ 'href' => true ] ]
 				);
 				?>
+
 			</td>
 		</tr>
 	</table>
+
 	<br>
 	<p>
 		<?php
