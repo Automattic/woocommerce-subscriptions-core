@@ -145,7 +145,7 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 
 		$simple_subscription->update_dates(
 			[
-				'next_payment' => '2034-09-20 08:08:08',
+				'next_payment' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
 			]
 		);
 
@@ -155,13 +155,13 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 		$free_trial_subscription = WCS_Helper_Subscription::create_subscription(
 			[
 				'status'     => 'active',
-				'start_date' => '2024-09-10 08:08:08',
+				'start_date' => gmdate( 'Y-m-d H:i:s' ),
 			]
 		);
 
 		$free_trial_subscription->update_dates(
 			[
-				'trial_end' => '2034-09-20 08:08:08',
+				'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
 			]
 		);
 
@@ -171,13 +171,13 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 		$expiry_subscription = WCS_Helper_Subscription::create_subscription(
 			[
 				'status'     => 'active',
-				'start_date' => '2024-09-10 08:08:08',
+				'start_date' => gmdate( 'Y-m-d H:i:s' ),
 			]
 		);
 
 		$expiry_subscription->update_dates(
 			[
-				'end' => '2034-09-20 08:08:08',
+				'end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
 			]
 		);
 
