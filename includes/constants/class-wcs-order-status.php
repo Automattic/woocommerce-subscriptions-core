@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class Order_Status
  */
-class Order_Status {
+class WCS_Order_Status {
 	const CANCELLED  = 'cancelled';
 	const COMPLETED  = 'completed';
 	const FAILED     = 'failed';
