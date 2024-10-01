@@ -31,8 +31,8 @@ class WCS_Email_Customer_Notification_Subscription_Expiration extends WCS_Email_
 		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
 		$this->subject = sprintf( _x( '[%s] Subscription is about to expire', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
 
-		$this->template_html  = 'emails/customer-expiring-subscription.php';
-		$this->template_plain = 'emails/plain/customer-expiring-subscription.php';
+		$this->template_html  = 'emails/customer-notification-expiring-subscription.php';
+		$this->template_plain = 'emails/plain/customer-notification-expiring-subscription.php';
 		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		$this->customer_email = true;

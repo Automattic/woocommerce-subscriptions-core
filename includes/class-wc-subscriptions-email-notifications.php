@@ -3,7 +3,6 @@
 /**
  * Subscriptions Email Notifications Class
  *
- * Some details to enlighten your exploration of this code.
  *
  * @package    WooCommerce Subscriptions
  * @subpackage WC_Subscriptions_Email
@@ -29,63 +28,67 @@ class WC_Subscriptions_Email_Notifications {
 
 		add_filter( 'woocommerce_order_actions', [ __CLASS__, 'add_notification_actions' ], 10, 1 );
 
-		// TODO this is a bit ugly...
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_free_trial_expiration',
-			function ( $order ) {
-				/**
-				 * Send Trial expiration notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_trial_expiration', $order->get_id() );
-			},
-			10,
-			1
-		);
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_subscription_expiration',
-			function ( $order ) {
-				/**
-				 * Send Subscription expiration notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_expiration', $order->get_id() );
-			},
-			10,
-			1
-		);
-		add_action(
-			'woocommerce_order_action_wcs_customer_notification_renewal',
-			function ( $order ) {
-				/**
-				 * Send Manual renewal notification to the customer.
-				 *
-				 * @since 8.0.0
-				 *
-				 * @param int $subscription_id
-				 */
-				do_action( 'woocommerce_scheduled_subscription_customer_notification_renewal', $order->get_id() );
-			},
-			10,
-			1
-		);
+		// Trigger actions from Edit order screen.
+		add_action( 'woocommerce_order_action_wcs_customer_notification_free_trial_expiration', [ __CLASS__, 'forward_action' ], 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_customer_notification_subscription_expiration', [ __CLASS__, 'forward_action' ], 10, 1 );
+		add_action( 'woocommerce_order_action_wcs_customer_notification_renewal', [ __CLASS__, 'forward_action' ], 10, 1 );
 
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'update_update_time' ] );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
 	}
 
-	public static function update_update_time() {
+	/**
+	 * Map and forward Edit order screen action to the correct reminder.
+	 *
+	 * @param $order
+	 *
+	 * @return void
+	 */
+	public static function forward_action( $order ) {
+		$trigger_action = '';
+		$current_action = current_action();
+		switch ( $current_action ) {
+			case 'woocommerce_order_action_wcs_customer_notification_free_trial_expiration':
+				$trigger_action = 'woocommerce_scheduled_subscription_customer_notification_trial_expiration';
+				break;
+			case 'woocommerce_order_action_wcs_customer_notification_subscription_expiration':
+				$trigger_action = 'woocommerce_scheduled_subscription_customer_notification_expiration';
+				break;
+			case 'woocommerce_order_action_wcs_customer_notification_renewal':
+				$trigger_action = 'woocommerce_scheduled_subscription_customer_notification_renewal';
+				break;
+		}
+
+		if ( $trigger_action ) {
+			do_action( $trigger_action, $order->get_id() );
+		}
+	}
+
+	/**
+	 * Sets the update time when any of the settings that affect notifications change and triggers update of subscriptions.
+	 *
+	 * When time offset or global on/off switch change values, this method gets triggered and it:
+	 * 1. Updates the wcs_notification_settings_update_time option so that the code knows which subscriptions to update
+	 * 2. Triggers rescheduling/unscheduling of existing notifications.
+	 * 3. Adds a notice with info about the actions that got triggered to the store manager.
+	 *
+	 * @return void
+	 */
+	public static function set_notification_settings_update_time() {
 		update_option( 'wcs_notification_settings_update_time', time() );
 
-		WCS_Notifications_Batch_Processor::enqueue();
+		// Shortcut to unschedule all notifications more efficiently instead of processing them subscription by subscription.
+		if ( ! self::notifications_globally_enabled() ) {
+			\WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler->unschedule_all_notifications();
+
+			$message = __( 'Unscheduling all notifications now.', 'woocommerce-subscriptions' );
+		} else {
+			$message = WCS_Notifications_Batch_Processor::enqueue();
+		}
+
+		wc_add_notice( $message, 'notice' );
 	}
 
 	/**
@@ -211,33 +214,32 @@ class WC_Subscriptions_Email_Notifications {
 	public static function add_notification_actions( $actions ) {
 		global $theorder;
 
+		if ( ! self::notifications_globally_enabled() ) {
+			return $actions;
+		}
+
 		if ( wcs_is_subscription( $theorder ) ) {
-			$subscription = $theorder;
-			//TODO: confirm if these statuses make sense.
+			$subscription     = $theorder;
 			$allowed_statuses = [
 				'active',
 				'on-hold',
-				'pending-cancellation',
+				'pending-cancel',
 			];
 
-			if ( ! in_array( $subscription->get_status(), $allowed_statuses, true ) ) {
+			if ( ! $subscription->has_status( $allowed_statuses ) ) {
 				return $actions;
 			}
 
 			if ( $subscription->get_date( 'trial_end' ) ) {
-				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send Free Trial Expiration notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send trial is ending notification', 'woocommerce-subscriptions' );
 			}
 
 			if ( $subscription->get_date( 'end' ) ) {
-				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send Subscription Expiration notification', 'woocommerce-subscriptions' );
+				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send upcoming subscription expiration notification', 'woocommerce-subscriptions' );
 			}
 
 			if ( $subscription->get_date( 'next_payment' ) ) {
-				if ( $subscription->is_manual() ) {
-					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send Manual Renewal notification', 'woocommerce-subscriptions' );
-				} else {
-					$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send Automatic Renewal notification', 'woocommerce-subscriptions' );
-				}
+				$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send upcoming renewal notification', 'woocommerce-subscriptions' );
 			}
 		}
 

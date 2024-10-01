@@ -141,24 +141,31 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
 	}
 
-	public function schedule_trial_ending_notification( $subscription ) {
-		$trial_end = $subscription->get_date( 'trial_end' );
-		$timestamp = $this->sub_time_offset( $trial_end, $subscription );
+	protected function get_action_from_date_type( $date_type ) {
+		$action = '';
 
-		$this->schedule_notification(
-			$subscription,
-			'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
-			$timestamp
-		);
+		switch ( $date_type ) {
+			case 'trial_end':
+				$action = 'woocommerce_scheduled_subscription_customer_notification_trial_expiration';
+				break;
+			case 'next_payment':
+				$action = 'woocommerce_scheduled_subscription_customer_notification_renewal';
+				break;
+			case 'end':
+				$action = 'woocommerce_scheduled_subscription_customer_notification_expiration';
+				break;
+		}
+
+		return $action;
 	}
 
-	public function schedule_expiry_notification( $subscription ) {
-		$subscription_end = $subscription->get_date( 'end' );
-		$timestamp        = $this->sub_time_offset( $subscription_end, $subscription );
+	public function schedule_expiry_notification( $subscription, $date_type ) {
+		$end_date  = $subscription->get_date( $date_type );
+		$timestamp = $this->sub_time_offset( $end_date, $subscription );
 
 		$this->schedule_notification(
 			$subscription,
-			'woocommerce_scheduled_subscription_customer_notification_expiration',
+			$this->get_action_from_date_type( $date_type ),
 			$timestamp
 		);
 	}
@@ -223,7 +230,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			$subscription_update_utc_timestamp = $subscription_update_time_raw->getTimestamp();
 		}
 
-		$notification_settings_update_utc_timestamp = get_option( 'wcs_notification_settings_update_time' );
+		$notification_settings_update_utc_timestamp = get_option( 'wcs_notification_settings_update_time', 0 );
 
 		if ( $subscription_update_utc_timestamp < $notification_settings_update_utc_timestamp ) {
 			$this->schedule_all_notifications( $subscription );
@@ -243,11 +250,11 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 */
 	protected function schedule_all_notifications( $subscription ) {
 		if ( $subscription->get_date( 'trial_end' ) ) {
-			$this->schedule_trial_ending_notification( $subscription );
+			$this->schedule_expiry_notification( $subscription, 'trial_end' );
 		}
 
 		if ( $subscription->get_date( 'end' ) ) {
-			$this->schedule_expiry_notification( $subscription );
+			$this->schedule_expiry_notification( $subscription, 'end' );
 		}
 
 		if ( $subscription->get_date( 'next_payment' ) ) {
@@ -255,14 +262,19 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	/**
+	 * Set which date types are affecting the notifications.
+	 *
+	 * Currently, only trial_end, end and next_payment are being used.
+	 *
+	 * @return void
+	 */
 	public function set_date_types_to_schedule() {
-		$date_types_to_schedule = wcs_get_subscription_date_types();
-		unset(
-			$date_types_to_schedule['start'],
-			$date_types_to_schedule['cancelled'], // prevent scheduling end date when reactivating subscription.
-		);
-
-		$this->date_types_to_schedule = array_keys( $date_types_to_schedule );
+		$this->date_types_to_schedule = [
+			'trial_end',
+			'next_payment',
+			'end',
+		];
 	}
 
 	/**
@@ -285,10 +297,13 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
 	public function delete_date( $subscription, $date_type ) {
-		$this->update_date( $subscription, $date_type, '0' );
+		$action = $this->get_action_from_date_type( $date_type );
+		if ( $action ) {
+			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
+		}
 	}
 
-	public function unschedule_all_notifications( $subscription, $exceptions = [] ) {
+	public function unschedule_all_notifications( $subscription = null, $exceptions = [] ) {
 		foreach ( $this->notification_actions as $action ) {
 			if ( in_array( $action, $exceptions, true ) ) {
 				continue;
@@ -331,11 +346,15 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Get the args to set on the scheduled action.
 	 *
-	 * @param object $subscription An instance of WC_Subscription to get the hook for
+	 * @param WC_Subscription|null $subscription An instance of WC_Subscription to get the hook for
 	 *
 	 * @return array Array of name => value pairs stored against the scheduled action.
 	 */
 	public static function get_action_args( $subscription ) {
+		if ( ! $subscription ) {
+			return [];
+		}
+
 		$action_args = [ 'subscription_id' => $subscription->get_id() ];
 
 		return $action_args;
@@ -347,7 +366,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * @param string $action_hook Name of event used as the hook for the scheduled action.
 	 * @param array $action_args Array of name => value pairs stored against the scheduled action.
 	 */
-	protected function unschedule_actions( $action_hook, $action_args ) {
+	protected function unschedule_actions( $action_hook, $action_args = [] ) {
 		as_unschedule_all_actions( $action_hook, $action_args, $this->notifications_as_group );
 	}
 }
