@@ -258,6 +258,7 @@ class WCS_Core_Autoloader_Test extends WP_UnitTestCase {
 			array( 'WC_Product_Subscription_Variation', 'class-wc-product-subscription-variation.php' ),
 			array( 'WC_Product_Subscription', 'class-wc-product-subscription.php' ),
 			array( 'WC_Product_Variable_Subscription', 'class-wc-product-variable-subscription.php' ),
+			array( 'WCS_Order_Status', 'class-wcs-order-status.php' ),
 			array( 'WC_Subscription', 'class-wc-subscription.php' ),
 			array( 'WC_Subscriptions_Addresses', 'class-wc-subscriptions-addresses.php' ),
 			array( 'WC_Subscriptions_Cart', 'class-wc-subscriptions-cart.php' ),
