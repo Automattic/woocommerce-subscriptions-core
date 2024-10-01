@@ -37,7 +37,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		/**
 		 * Offset between a subscription event and related notification.
 		 *
-		 * @since 8.0.0
+		 * @since x.x.x
 		 *
 		 * @param int $time_offset
 		 */

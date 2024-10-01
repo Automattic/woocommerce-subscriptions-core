@@ -1,35 +1,42 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-
 class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 
 	/**
+	 * Sanity check the controller first.
+	 */
+	public function test_batch_processing_controller() {
+
+		$batch_processor = WCS_Batch_Processing_Controller::instance();
+		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+
+		// Enqueue the processor.
+		$batch_processor->enqueue_processor( WCS_Notifications_Debug_Tool_Processor::class );
+
+		$this->assertTrue( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+
+		// Process.
+		$reflection                              = new ReflectionClass( $batch_processor );
+		$process_next_batch_for_single_processor = $reflection->getMethod( 'process_next_batch_for_single_processor' );
+		$process_next_batch_for_single_processor->setAccessible( true );
+		$process_next_batch_for_single_processor->invoke( $batch_processor, WCS_Notifications_Debug_Tool_Processor::class );
+
+		// Ensure that the processor is dequeued after processing done.
+		$this->assertFalse( $batch_processor->is_enqueued( WCS_Notifications_Debug_Tool_Processor::class ) );
+	}
+
+	/**
 	 * Test the "WCS_Notifications_Debug_Tool_Processor::process_batch()" method.
-	 *
-	 * @covers WCS_Notifications_Debug_Tool_Processor::process_batch
-	 *
-	 * @param array $data
-	 * @return bool
 	 */
 	public function test_process_batch_notifications() {
 
-		// Enable feature.
-		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
-		update_option(
-			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-			[
-				'number' => '3',
-				'unit'   => 'days',
-			]
-		);
-
-		$batches = $this->notification_subscription_provider();
+		$batches   = $this->notification_subscription_data_provider();
+		$processor = new WCS_Notifications_Debug_Tool_Processor();
 
 		foreach ( $batches as $batch ) {
 			$subscription = $batch['subscription'];
 			$action_name  = $batch['action_name'];
-			$action_args  = [ 'subscription_id' => $subscription->get_id() ];
+			$action_args  = \WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler::get_action_args( $subscription );
 
 			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 			$this->assertTrue( $has_notification );
@@ -41,84 +48,11 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 			$this->assertFalse( $has_notification );
 
 			// Run the debug processor.
-			$processor = new WCS_Notifications_Debug_Tool_Processor();
 			$processor->process_batch( [ $subscription->get_id() ] );
 
 			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 			$this->assertTrue( $has_notification );
 		}
-	}
-
-	/**
-	 * Data provider for the "test_process_batch_notifications()" method.
-	 *
-	 * @return array
-	 */
-	protected function notification_subscription_provider() {
-
-		/*
-		 * Create a simple subscription.
-		 */
-		$simple_subscription = WCS_Helper_Subscription::create_subscription(
-			[
-				'billing_period'   => 'month',
-				'billing_interval' => 1,
-			]
-		);
-
-		$simple_subscription->update_status( 'active' );
-		$simple_subscription->save();
-
-		/*
-		 * Create a free trial subscription.
-		 */
-		$free_trial_subscription = WCS_Helper_Subscription::create_subscription(
-			[
-				'status'       => 'active',
-				'start_date'   => '2024-09-10 08:08:08',
-				'date_created' => '2024-09-10 08:08:08',
-			]
-		);
-
-		$free_trial_subscription->update_dates(
-			[
-				'trial_end' => '2024-09-20 08:08:08',
-				'end'       => '2024-09-20 08:08:08',
-			]
-		);
-
-		/**
-		 * Create an expiry subscription.
-		 */
-		$expiry_subscription = WCS_Helper_Subscription::create_subscription(
-			[
-				'status'       => 'active',
-				'start_date'   => '2024-09-10 08:08:08',
-				'date_created' => '2024-09-10 08:08:08',
-			]
-		);
-
-		$expiry_subscription->update_dates(
-			[
-				'trial_end' => '2024-09-20 08:08:08',
-				'end'       => '2024-09-20 08:08:08',
-			]
-		);
-
-		return [
-			[
-				'subscription' => $simple_subscription,
-				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_renewal',
-			],
-			[
-				'subscription' => $free_trial_subscription,
-				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
-			],
-			[
-				'subscription' => $expiry_subscription,
-				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_expiration',
-			],
-		];
 	}
 
 	/**
@@ -174,7 +108,7 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 	 */
 	public function test_tool_state_while_processing() {
 
-		$this->notification_subscription_provider();
+		$this->notification_subscription_data_provider();
 		$processor = new WCS_Notifications_Debug_Tool_Processor();
 
 		// Get a reflection of private get_tool_state() method.
@@ -211,5 +145,79 @@ class WCS_Subscription_Notifications_Debug_Tool_Test extends WP_UnitTestCase {
 		$tool_state = $get_method->invoke( $processor );
 		$this->assertIsArray( $tool_state );
 		$this->assertFalse( isset( $tool_state['last_offset'] ) );
+	}
+
+	/**
+	 * Data provider for the "test_process_batch_notifications()" method.
+	 *
+	 * @return array
+	 */
+	protected function notification_subscription_data_provider() {
+
+		/*
+		 * Create a simple subscription.
+		 */
+		$simple_subscription = WCS_Helper_Subscription::create_subscription(
+			[
+				'billing_period'   => 'month',
+				'billing_interval' => 1,
+			]
+		);
+
+		$simple_subscription->update_status( 'active' );
+		$simple_subscription->save();
+
+		$simple_subscription->update_dates(
+			[
+				'next_payment' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
+			]
+		);
+
+		/*
+		 * Create a free trial subscription.
+		 */
+		$free_trial_subscription = WCS_Helper_Subscription::create_subscription(
+			[
+				'status'     => 'active',
+				'start_date' => gmdate( 'Y-m-d H:i:s' ),
+			]
+		);
+
+		$free_trial_subscription->update_dates(
+			[
+				'trial_end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
+			]
+		);
+
+		/**
+		 * Create an expiry subscription.
+		 */
+		$expiry_subscription = WCS_Helper_Subscription::create_subscription(
+			[
+				'status'     => 'active',
+				'start_date' => gmdate( 'Y-m-d H:i:s' ),
+			]
+		);
+
+		$expiry_subscription->update_dates(
+			[
+				'end' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
+			]
+		);
+
+		return [
+			[
+				'subscription' => $simple_subscription,
+				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_renewal',
+			],
+			[
+				'subscription' => $free_trial_subscription,
+				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_trial_expiration',
+			],
+			[
+				'subscription' => $expiry_subscription,
+				'action_name'  => 'woocommerce_scheduled_subscription_customer_notification_expiration',
+			],
+		];
 	}
 }

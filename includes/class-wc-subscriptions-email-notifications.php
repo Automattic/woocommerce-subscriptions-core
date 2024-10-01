@@ -20,12 +20,16 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static $switch_setting_string = '_customer_notifications_enabled';
 
+	/**
+	 * Init.
+	 */
 	public static function init() {
 
 		add_action( 'woocommerce_email_classes', __CLASS__ . '::add_emails', 10, 1 );
 
 		add_action( 'woocommerce_init', __CLASS__ . '::hook_notification_emails' );
 
+		// Add notification actions to the admin edit subscriptions page.
 		add_filter( 'woocommerce_order_actions', [ __CLASS__, 'add_notification_actions' ], 10, 1 );
 
 		// Trigger actions from Edit order screen.
@@ -33,10 +37,13 @@ class WC_Subscriptions_Email_Notifications {
 		add_action( 'woocommerce_order_action_wcs_customer_notification_subscription_expiration', [ __CLASS__, 'forward_action' ], 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_customer_notification_renewal', [ __CLASS__, 'forward_action' ], 10, 1 );
 
+		// Add settings UI.
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
 	}
 
 	/**
@@ -96,7 +103,6 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static function add_emails( $email_classes ) {
 
-		// Customer notifications.
 		$email_classes['WCS_Email_Customer_Notification_Free_Trial_Expiration']   = new WCS_Email_Customer_Notification_Free_Trial_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Subscription_Expiration'] = new WCS_Email_Customer_Notification_Subscription_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Manual_Renewal']          = new WCS_Email_Customer_Notification_Manual_Renewal();
@@ -105,12 +111,20 @@ class WC_Subscriptions_Email_Notifications {
 		return $email_classes;
 	}
 
+	/**
+	 * Hook the notification emails with our custom trigger.
+	 */
 	public static function hook_notification_emails() {
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_renewal', [ __CLASS__, 'send_notification' ] );
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_trial_expiration', [ __CLASS__, 'send_notification' ] );
 		add_action( 'woocommerce_scheduled_subscription_customer_notification_expiration', [ __CLASS__, 'send_notification' ] );
 	}
 
+	/**
+	 * Send the notification emails.
+	 *
+	 * @param int $subscription_id Subscription ID.
+	 */
 	public static function send_notification( $subscription_id ) {
 
 		// Init email classes.
@@ -147,6 +161,11 @@ class WC_Subscriptions_Email_Notifications {
 		}
 	}
 
+	/**
+	 * Is the notifications feature enabled?
+	 *
+	 * @return bool
+	 */
 	public static function notifications_globally_enabled() {
 		return ( 'yes' === get_option( WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string )
 				&& get_option( WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string ) );
@@ -181,7 +200,7 @@ class WC_Subscriptions_Email_Notifications {
 		 *
 		 * Values 'yes' or 'no' expected, since it works with WC_Settings_API.
 		 *
-		 * @since 8.0.0
+		 * @since x.x.x
 		 *
 		 * @param string $notification_enabled
 		 */
@@ -189,8 +208,9 @@ class WC_Subscriptions_Email_Notifications {
 	}
 
 	/**
-	 * @param $subscription
+	 * Check if the subscription period is too short to send a renewal notification.
 	 *
+	 * @param $subscription
 	 * @return bool
 	 */
 	public static function subscription_period_too_short( $subscription ) {
@@ -198,7 +218,7 @@ class WC_Subscriptions_Email_Notifications {
 		$interval = $subscription->get_billing_interval();
 
 		// By default, there are no shorter periods than days in WCS, so we ignore hours, minutes, etc.
-		if ( $period <= 2 && 'day' === $interval ) {
+		if ( $interval <= 2 && 'day' === $period ) {
 			return true;
 		}
 
@@ -248,8 +268,6 @@ class WC_Subscriptions_Email_Notifications {
 
 	/**
 	 * Adds the subscription notification setting.
-	 *
-	 * @since 8.0.0
 	 *
 	 * @param  array $settings Subscriptions settings.
 	 * @return array Subscriptions settings.

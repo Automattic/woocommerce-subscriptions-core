@@ -150,7 +150,8 @@ class WCS_Core_Autoloader {
 	 */
 	protected function is_class_interface( $class ) {
 		static $interfaces = array(
-			'wcs_cache_updater' => true,
+			'wcs_cache_updater'   => true,
+			'wcs_batch_processor' => true,
 		);
 
 		return isset( $interfaces[ $class ] );
