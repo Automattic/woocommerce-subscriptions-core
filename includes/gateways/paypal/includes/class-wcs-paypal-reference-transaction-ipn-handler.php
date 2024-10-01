@@ -61,7 +61,7 @@ class WCS_PayPal_Reference_Transaction_IPN_Handler extends WCS_PayPal_Standard_I
 					$transaction_details['payment_status'] = strtolower( $transaction_details['payment_status'] );
 
 					// Sandbox fix
-					if ( isset( $transaction_details['test_ipn'] ) && 1 == $transaction_details['test_ipn'] && WCS_Order_Status::PENDING == $transaction_details['payment_status'] ) {
+					if ( isset( $transaction_details['test_ipn'] ) && 1 === $transaction_details['test_ipn'] && WCS_Order_Status::PENDING === $transaction_details['payment_status'] ) {
 						$transaction_details['payment_status'] = 'completed';
 					}
 

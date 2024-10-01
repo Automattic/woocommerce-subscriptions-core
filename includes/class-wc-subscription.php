@@ -908,7 +908,7 @@ class WC_Subscription extends WC_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_failed_payment_count() {
-		$parent_order = $this->get_parent();
+		$parent_order         = $this->get_parent();
 		$failed_payment_count = $parent_order && $parent_order->has_status( WCS_Order_Status::FAILED ) ? 1 : 0;
 
 		foreach ( $this->get_related_orders( 'all', 'renewal' ) as $renewal_order ) {
