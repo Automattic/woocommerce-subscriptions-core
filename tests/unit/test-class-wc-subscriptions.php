@@ -1702,8 +1702,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_get_paid_order_statuses() {
 		$subscription    = WCS_Helper_Subscription::create_subscription();
 		$expected_result = [
-			Order_Status::PROCESSING,
-			Order_Status::COMPLETED,
+			WCS_Order_Status::PROCESSING,
+			WCS_Order_Status::COMPLETED,
 			'wc-processing',
 			'wc-completed',
 		];
@@ -2529,8 +2529,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertThat(
 			$order->get_status(),
 			$this->logicalOr(
-				Order_Status::PROCESSING,
-				Order_Status::COMPLETED
+				WCS_Order_Status::PROCESSING,
+				WCS_Order_Status::COMPLETED
 			)
 		);
 	}
