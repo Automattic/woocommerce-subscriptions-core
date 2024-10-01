@@ -369,7 +369,7 @@ class WCS_Repair_2_0 {
 		$effective_start_date = self::get_effective_start_date( $subscription );
 
 		// If we can calculate it from the effective date and expiry date
-		if ( WC_Subscription::STATUS_EXPIRED == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && null !== $effective_start_date && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
+		if ( WC_Subscription::STATUS_EXPIRED === $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) && null !== $effective_start_date && array_key_exists( 'period', $subscription ) && ! empty( $subscription['period'] ) && array_key_exists( 'interval', $subscription ) && ! empty( $subscription['interval'] ) ) {
 			$intervals = wcs_estimate_periods_between( wcs_date_to_time( $effective_start_date ), wcs_date_to_time( $subscription['expiry_date'] ), $subscription['period'], 'floor' );
 			$subscription['length'] = $intervals;
 		} else {
@@ -455,11 +455,11 @@ class WCS_Repair_2_0 {
 			return $subscription;
 		}
 
-		if ( WC_Subscription::STATUS_EXPIRED == $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) ) {
+		if ( WC_Subscription::STATUS_EXPIRED === $subscription['status'] && array_key_exists( 'expiry_date', $subscription ) && ! empty( $subscription['expiry_date'] ) ) {
 
 			$subscription['end_date'] = $subscription['expiry_date'];
 
-		} elseif ( WC_Subscription::STATUS_CANCELLED == $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
+		} elseif ( WC_Subscription::STATUS_CANCELLED === $subscription['status'] || ! array_key_exists( 'length', $subscription ) || empty( $subscription['length'] ) ) {
 
 			// get renewal orders
 			$renewal_orders = self::get_renewal_orders( $subscription );

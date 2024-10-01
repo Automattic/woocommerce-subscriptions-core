@@ -948,7 +948,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_completed_count_none() {
-		foreach ( [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ] as $status ) {
+		foreach ( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES as $status ) {
 			$completed_payments = $this->subscriptions[ $status ]->get_payment_count();
 			$this->assertEmpty( $completed_payments );
 		}
@@ -1008,7 +1008,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$order->set_status( 'wc-failed' );
 		$order->save();
 
-		foreach ( [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ] as $status ) {
+		foreach ( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES as $status ) {
 
 			WCS_Related_Order_Store::instance()->add_relation( $order, $this->subscriptions[ $status ], 'renewal' );
 
@@ -1037,7 +1037,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			$orders[] = $order;
 		}
 
-		foreach ( [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ] as $status ) {
+		foreach ( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES as $status ) {
 
 			$expected_count = 0;
 			foreach ( $orders as $order ) {
@@ -1247,7 +1247,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_onhold() {
-		$expected_to_pass = [ WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ON_HOLD ];
+		$expected_to_pass = [ WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_ACTIVE ];
 		$subscriptions    = WCS_Helper_Subscription::create_subscriptions();
 
 		foreach ( $subscriptions as $status => $subscription ) {
@@ -1289,7 +1289,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_expired() {
-		$expected_to_pass = [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_ON_HOLD ];
+		$expected_to_pass = WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES;
 		$now              = time();
 
 		$subscriptions = WCS_Helper_Subscription::create_subscriptions(
@@ -1338,7 +1338,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_status_to_cancelled() {
-		$expected_to_pass = [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_ON_HOLD ];
+		$expected_to_pass = WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES;
 		$now              = time();
 		$subscriptions    = WCS_Helper_Subscription::create_subscriptions(
 			[
@@ -1636,6 +1636,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 *
 	 * @dataProvider subscription_status_data_provider
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 * @group test_has_ended_statuses
 	 */
 	public function test_has_ended_statuses( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
@@ -1680,7 +1681,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * Tests that subscriptions loaded from the database with draft or auto-draft status are treated as pending.
 	 */
 	public function test_draft_subscription_statuses() {
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_ACTIVE ] );
 		$subscription->set_status( 'draft' );
 		$subscription->save();
 
@@ -1830,7 +1831,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_last_payment_date() {
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_ACTIVE ] );
 
 		$this->assertEquals( 0, PHPUnit_Utils::call_method( $subscription, 'get_last_payment_date' ) );
 
@@ -1887,7 +1888,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_update_last_payment_date() {
 		$subscription = WCS_Helper_Subscription::create_subscription(
 			[
-				'status'     => 'active',
+				'status'     => WC_Subscription::STATUS_ACTIVE,
 				'start_date' => '2015-01-01 10:19:40', // make sure we have a start date before all the test dates
 			]
 		);
@@ -2121,7 +2122,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_is_download_permitted( $status ) {
 		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => $status ] );
 
-		if ( in_array( $status, [ WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL ], true ) ) {
+		if ( in_array( $status, WC_Subscription::ACTIVE_STATUSES, true ) ) {
 			$this->assertTrue( $subscription->is_download_permitted() );
 		} else {
 			$this->assertFalse( $subscription->is_download_permitted() );
@@ -2520,7 +2521,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$order = wc_get_order( $order_id ); // With WC 3.0, we need to reinit the order to make sure we have the correct status.
 
-		$this->assertEquals( 'active', $subscription->get_status() );
+		$this->assertEquals( WC_Subscription::STATUS_ACTIVE, $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
 			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
@@ -2599,7 +2600,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_update_date( $dates_to_set, $input, $expected_outcome ) {
-		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => 'active' ] );
+		$subscription = WCS_Helper_Subscription::create_subscription( [ 'status' => WC_Subscription::STATUS_ACTIVE ] );
 
 		// We need an order to set the last payment date on
 		if ( isset( $dates_to_set['last_order_date_created'] ) || isset( $input['last_order_date_created'] ) ) {

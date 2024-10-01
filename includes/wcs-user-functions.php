@@ -36,7 +36,7 @@ function wcs_make_user_inactive( $user_id ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_maybe_make_user_inactive( $user_id ) {
-	if ( ! wcs_user_has_subscription( $user_id, '', 'active' ) ) {
+	if ( ! wcs_user_has_subscription( $user_id, '', WC_Subscription::STATUS_ACTIVE ) ) {
 		wcs_update_users_role( $user_id, 'default_inactive_role' );
 	}
 }
@@ -313,7 +313,7 @@ function wcs_get_all_user_actions_for_subscription( $subscription, $user_id ) {
 			);
 		}
 
-		if ( wcs_can_user_resubscribe_to( $subscription, $user_id ) && false == $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
+		if ( wcs_can_user_resubscribe_to( $subscription, $user_id ) && false === $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
 			$actions['resubscribe'] = array(
 				'url'      => wcs_get_users_resubscribe_link( $subscription ),
 				'name'     => __( 'Resubscribe', 'woocommerce-subscriptions' ),

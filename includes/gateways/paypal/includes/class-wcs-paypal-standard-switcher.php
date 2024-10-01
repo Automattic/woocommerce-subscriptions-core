@@ -66,7 +66,7 @@ class WCS_PayPal_Standard_Switcher {
 				$is_product_switchable = false;
 			}
 
-			if ( $subscription->has_status( 'active' ) && 0 !== $subscription->get_date( 'last_order_date_created' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) && 0 !== $subscription->get_date( 'last_order_date_created' ) ) {
 				$is_subscription_switchable = true;
 			} else {
 				$is_subscription_switchable = false;

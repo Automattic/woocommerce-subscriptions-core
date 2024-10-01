@@ -798,7 +798,7 @@ class WC_Subscriptions_Admin {
 	public static function check_customer_is_set( $old_status, $new_status, $subscription ) {
 		global $post;
 
-		if ( is_admin() && WC_Subscription::STATUS_ACTIVE == $new_status && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) && isset( $_POST['customer_user'] ) && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
+		if ( is_admin() && WC_Subscription::STATUS_ACTIVE === $new_status && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' ) ) && isset( $_POST['customer_user'] ) && ! empty( $post ) && 'shop_subscription' === $post->post_type ) {
 
 			$user = new WP_User( absint( $_POST['customer_user'] ) );
 
@@ -973,7 +973,7 @@ class WC_Subscriptions_Admin {
 	public static function user_column_values( $value, $column_name, $user_id ) {
 
 		if ( 'woocommerce_active_subscriber' == $column_name ) {
-			if ( wcs_user_has_subscription( $user_id, '', 'active' ) ) {
+			if ( wcs_user_has_subscription( $user_id, '', WC_Subscription::STATUS_ACTIVE ) ) {
 				$value = '<div class="active-subscriber"></div>';
 			} else {
 				$value = '<div class="inactive-subscriber">-</div>';
@@ -1650,7 +1650,7 @@ class WC_Subscriptions_Admin {
 		$attributes = shortcode_atts(
 			array(
 				'user_id' => 0,
-				'status'  => 'active',
+				'status'  => WC_Subscription::STATUS_ACTIVE,
 			),
 			$attributes,
 			'subscriptions'

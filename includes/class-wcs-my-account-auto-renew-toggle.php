@@ -42,7 +42,7 @@ class WCS_My_Account_Auto_Renew_Toggle {
 			return false;
 		}
 		// Cannot change to auto-renewal for a subscription with status other than active
-		if ( ! $subscription->has_status( 'active' ) ) {
+		if ( ! $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 			return false;
 		}
 		// Cannot change to auto-renewal for a subscription with 0 total

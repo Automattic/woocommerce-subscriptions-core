@@ -360,7 +360,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
 
 					// Process the payment if the subscription is active
-					} elseif ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_TRASH ) ) ) {
+					} elseif ( ! $subscription->has_status( WC_Subscription::ENDED_STATUSES ) ) {
 
 						if ( true === $is_renewal_sign_up_after_failure && is_object( $transaction_order ) ) {
 
@@ -461,7 +461,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					WC_Gateway_Paypal::log( sprintf( 'IPN "recurring_payment_suspended" ignored for subscription %d - PayPal profile ID has changed', $subscription->get_id() ) );
 
-				} else if ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
+				} elseif ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 
 					// We don't need to suspend the subscription at PayPal because it's already on-hold there
 					remove_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );
@@ -507,7 +507,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 				$ipn_failure_note = __( 'IPN subscription payment failure.', 'woocommerce-subscriptions' );
 
-				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure && $subscription->has_status( 'active' ) ) {
+				if ( ! $is_first_payment && ! $is_renewal_sign_up_after_failure && $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 					// Generate a renewal order to record the failed payment
 					$transaction_order = wcs_create_renewal_order( $subscription );
 

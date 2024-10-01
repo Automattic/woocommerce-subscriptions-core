@@ -73,7 +73,7 @@ class WCS_User_Functions_Test extends WP_UnitTestCase {
 		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', WC_Subscription::STATUS_ACTIVE ) );
 
 		// Test for array of statuses - one of them present
-		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL ) ) );
+		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', WC_Subscription::ACTIVE_STATUSES ) );
 
 		// Test for array of statuses - one of them present
 		$this->assertTrue( wcs_user_has_subscription( $user_id1, '', array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_SWITCHED ) ) );

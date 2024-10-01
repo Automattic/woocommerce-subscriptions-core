@@ -178,7 +178,7 @@ function wcs_can_user_resubscribe_to( $subscription, $user_id = '' ) {
 
 		$can_user_resubscribe = false;
 
-	} elseif ( ! $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+	} elseif ( ! $subscription->has_status( WC_Subscription::ENDED_OR_ENDING_STATUSES ) ) {
 
 		$can_user_resubscribe = false;
 

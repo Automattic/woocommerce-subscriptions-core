@@ -137,7 +137,7 @@ class WCS_Repair_2_0_2 {
 		}
 
 		// if the subscription has been cancelled, we don't need to repair any other data
-		if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) ) {
+		if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) ) {
 			WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: no need to repair: it has cancelled status.', $subscription->get_id() ) );
 			return $repaired_subscription;
 		}
@@ -247,7 +247,7 @@ class WCS_Repair_2_0_2 {
 		global $wpdb;
 
 		// the subscription doesn't have a next payment date set, let's see if it should
-		if ( 0 == $subscription->get_time( 'next_payment' ) && $subscription->has_status( 'active' ) ) {
+		if ( 0 === $subscription->get_time( 'next_payment' ) && $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 
 			$old_hook_args = array(
 				'user_id'          => (int) $subscription->get_user_id(),
@@ -355,7 +355,7 @@ class WCS_Repair_2_0_2 {
 	 */
 	protected static function maybe_repair_status( $subscription, $former_order_item_meta, $dates_to_update ) {
 
-		if ( $subscription->has_status( WC_Subscription::STATUS_EXPIRED ) && WC_Subscription::STATUS_EXPIRED != $former_order_item_meta['_wcs_migrated_subscription_status'][0] && isset( $dates_to_update['end'] ) ) {
+		if ( $subscription->has_status( WC_Subscription::STATUS_EXPIRED ) && WC_Subscription::STATUS_EXPIRED !== $former_order_item_meta['_wcs_migrated_subscription_status'][0] && isset( $dates_to_update['end'] ) ) {
 
 			try {
 
@@ -373,7 +373,7 @@ class WCS_Repair_2_0_2 {
 					WCS_Upgrade_Logger::add( sprintf( 'For subscription %d: payment method does not support "subscription_date_changes" and total > 0, setting "_wcs_repaired_2_0_2_needs_failed_payment" post meta flag.', $subscription->get_id() ) );
 				}
 
-				if ( 'active' == $former_order_item_meta['_wcs_migrated_subscription_status'][0] && $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
+				if ( WC_Subscription::STATUS_ACTIVE === $former_order_item_meta['_wcs_migrated_subscription_status'][0] && $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
 					$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 				}
 

@@ -93,7 +93,6 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case WC_Subscription::STATUS_ACTIVE:
-
 				$this->unschedule_actions( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $this->get_action_args( 'end', $subscription ) );
 
 				foreach ( $this->get_date_types_to_schedule() as $date_type ) {
@@ -126,7 +125,6 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 				break;
 			case WC_Subscription::STATUS_PENDING_CANCEL:
-
 				// Now that we have the current times, clear the scheduled hooks
 				foreach ( $this->get_date_types_to_schedule() as $date_type ) {
 
@@ -152,7 +150,7 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 					$this->schedule_action( $end_time, 'woocommerce_scheduled_subscription_end_of_prepaid_term', $action_args );
 				}
 				break;
-			case WC_Subscription::STATUS_ACTIVE:
+			case WC_Subscription::STATUS_ON_HOLD:
 			case WC_Subscription::STATUS_CANCELLED:
 			case WC_Subscription::STATUS_SWITCHED:
 			case WC_Subscription::STATUS_EXPIRED:
@@ -195,9 +193,9 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 				break;
 			case 'end':
 				// End dates may need either an expiration or end of prepaid term hook, depending on the status
-				if ( $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_PENDING_CANCEL ) ) ) {
+				if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) ) {
 					$hook = 'woocommerce_scheduled_subscription_end_of_prepaid_term';
-				} elseif ( $subscription->has_status( 'active' ) ) {
+				} elseif ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 					$hook = 'woocommerce_scheduled_subscription_expiration';
 				}
 				break;

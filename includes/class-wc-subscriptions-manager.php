@@ -113,7 +113,7 @@ class WC_Subscriptions_Manager {
 
 		$order_note = _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' );
 
-		$renewal_order = self::process_renewal( $subscription_id, 'active', $order_note );
+		$renewal_order = self::process_renewal( $subscription_id, WC_Subscription::STATUS_ACTIVE, $order_note );
 
 		// Backward compatibility with Subscriptions < 2.2.12 where we returned false for an unknown reason
 		if ( false === $renewal_order ) {
@@ -338,7 +338,7 @@ class WC_Subscriptions_Manager {
 			foreach ( $subscriptions as $subscription ) {
 
 				try {
-					$subscription->update_status( 'active' );
+					$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 				} catch ( Exception $e ) {
 					// translators: $1: order number, $2: error message
 					$subscription->add_order_note( sprintf( __( 'Failed to activate subscription status for order #%1$s: %2$s', 'woocommerce-subscriptions' ), is_object( $order ) ? $order->get_order_number() : $order, $e->getMessage() ) );
@@ -674,6 +674,7 @@ class WC_Subscriptions_Manager {
 					break;
 				case WC_Subscription::STATUS_PENDING:
 					_deprecated_argument( __METHOD__, '2.0', 'The "pending" status value is deprecated.' );
+					// no break
 				default:
 					self::create_pending_subscription_for_order( $order );
 					break;
@@ -706,7 +707,7 @@ class WC_Subscriptions_Manager {
 
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED == $new_subscription_details['status'] ) {
+			if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED === $new_subscription_details['status'] ) {
 				wp_delete_post( $subscription->get_id() );
 			} else {
 				// There is no direct analog for this in WC_Subscription, so we need to call the deprecated method
@@ -740,7 +741,7 @@ class WC_Subscriptions_Manager {
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED == $new_subscription_details['status'] ) {
+		if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED === $new_subscription_details['status'] ) {
 
 			wp_delete_post( $subscription->get_id() );
 
@@ -1087,9 +1088,9 @@ class WC_Subscriptions_Manager {
 
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::can_be_updated_to( $new_status_or_meta )' );
 
-		if ( 'new-payment-date' == $new_status_or_meta ) {
+		if ( 'new-payment-date' === $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "new-payment-date" parameter value is deprecated. Use WC_Subscription::can_date_be_updated( "next_payment" ) method instead.' );
-		} elseif ( WC_Subscription::STATUS_SUSPENDED == $new_status_or_meta ) {
+		} elseif ( WC_Subscription::STATUS_SUSPENDED === $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
 			$new_status_or_meta = WC_Subscription::STATUS_ON_HOLD;
 		}
@@ -1665,7 +1666,7 @@ class WC_Subscriptions_Manager {
 		$subscriptions = self::get_users_subscriptions( $user_id );
 
 		foreach ( $subscriptions as $key => $subscription ) {
-			if ( WC_Subscription::STATUS_TRASH != $subscription['status'] ) {
+			if ( WC_Subscription::STATUS_TRASH !== $subscription['status'] ) {
 				unset( $subscriptions[ $key ] );
 			}
 		}
@@ -1763,7 +1764,7 @@ class WC_Subscriptions_Manager {
 	public static function get_users_change_status_link( $subscription_key, $status ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_users_change_status_link( $subscription_id, $status )' );
 
-		if ( WC_Subscription::STATUS_SUSPENDED == $status ) {
+		if ( WC_Subscription::STATUS_SUSPENDED === $status ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
 			$status = WC_Subscription::STATUS_ON_HOLD;
 		}
@@ -2150,14 +2151,14 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( 'active' ) ) {
+			if ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
 			return false;
 		}
 
-		if ( ! $subscription->has_status( WC_Subscription::STATUS_PENDING ) && ! $subscription->can_be_updated_to( 'active' ) ) {
+		if ( ! $subscription->has_status( WC_Subscription::STATUS_PENDING ) && ! $subscription->can_be_updated_to( WC_Subscription::STATUS_ACTIVE ) ) {
 
 			do_action( 'unable_to_activate_subscription', $user_id, $subscription_key );
 
@@ -2165,7 +2166,7 @@ class WC_Subscriptions_Manager {
 
 		} else {
 
-			$subscription->update_status( 'active' );
+			$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 
 			do_action( 'activated_subscription', $user_id, $subscription_key );
 
@@ -2239,7 +2240,7 @@ class WC_Subscriptions_Manager {
 		try {
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) ) {
+			if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
@@ -2316,7 +2317,7 @@ class WC_Subscriptions_Manager {
 		} else {
 
 			// Run all cancellation related functions on the subscription
-			if ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+			if ( ! $subscription->has_status( WC_Subscription::ENDED_STATUSES ) ) {
 				$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 			}
 
@@ -2349,7 +2350,7 @@ class WC_Subscriptions_Manager {
 		} else {
 
 			// Run all cancellation related functions on the subscription
-			if ( ! $subscription->has_status( array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_TRASH ) ) ) {
+			if ( ! $subscription->has_status( WC_Subscription::ENDED_STATUSES ) ) {
 				$subscription->update_status( WC_Subscription::STATUS_CANCELLED );
 			}
 

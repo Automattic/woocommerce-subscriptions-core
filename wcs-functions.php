@@ -640,7 +640,7 @@ function wcs_get_line_items_with_a_trial( $subscription_id ) {
 function wcs_can_items_be_removed( $subscription ) {
 	$allow_remove = false;
 
-	if ( sizeof( $subscription->get_items() ) > 1 && $subscription->payment_method_supports( 'subscription_amount_changes' ) && $subscription->has_status( array( WC_Subscription::STATUS_ACTIVE, WC_Subscription::STATUS_ON_HOLD, WC_Subscription::STATUS_PENDING ) ) ) {
+	if ( count( $subscription->get_items() ) > 1 && $subscription->payment_method_supports( 'subscription_amount_changes' ) && $subscription->has_status( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES ) ) {
 		$allow_remove = true;
 	}
 
@@ -707,7 +707,7 @@ function wcs_get_canonical_product_id( $item_or_product ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscription_ended_statuses() {
-	return apply_filters( 'wcs_subscription_ended_statuses', array( WC_Subscription::STATUS_CANCELLED, WC_Subscription::STATUS_TRASH, WC_Subscription::STATUS_EXPIRED, WC_Subscription::STATUS_SWITCHED, WC_Subscription::STATUS_PENDING_CANCEL ) );
+	return apply_filters( 'wcs_subscription_ended_statuses', WC_Subscription::ENDED_OR_ENDING_STATUSES );
 }
 
 /**

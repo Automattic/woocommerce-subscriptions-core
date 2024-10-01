@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</td>
 			<td class="subscription-next-payment order-date woocommerce-orders-table__cell woocommerce-orders-table__cell-subscription-next-payment woocommerce-orders-table__cell-order-date" data-title="<?php echo esc_attr_x( 'Next Payment', 'table heading', 'woocommerce-subscriptions' ); ?>">
 				<?php echo esc_attr( $subscription->get_date_to_display( 'next_payment' ) ); ?>
-				<?php if ( ! $subscription->is_manual() && $subscription->has_status( 'active' ) && $subscription->get_time( 'next_payment' ) > 0 ) : ?>
+				<?php if ( ! $subscription->is_manual() && $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) && $subscription->get_time( 'next_payment' ) > 0 ) : ?>
 				<br/><small><?php echo esc_attr( $subscription->get_payment_method_to_display( 'customer' ) ); ?></small>
 				<?php endif; ?>
 			</td>

@@ -29,6 +29,78 @@ class WC_Subscription extends WC_Order {
 	const STATUS_FAILED         = 'failed';
 
 	/**
+	 * Subscription statuses that are considered to be active.
+	 *
+	 * @var array
+	 */
+	const ACTIVE_STATUSES = [
+		self::STATUS_ACTIVE,
+		self::STATUS_PENDING_CANCEL,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be active or waiting payment confirmation.
+	 *
+	 * @var array
+	 */
+	const ACTIVE_OR_WAITING_PAYMENT_STATUSES = [
+		self::STATUS_PENDING,
+		self::STATUS_ACTIVE,
+		self::STATUS_ON_HOLD,
+		self::STATUS_PENDING_CANCEL,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be cancelled.
+	 *
+	 * @var array
+	 */
+	const CANCELLED_STATUSES = [
+		self::STATUS_PENDING_CANCEL,
+		self::STATUS_CANCELLED,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be ended. These won't be renewed.
+	 *
+	 * @var array
+	 */
+	const ENDED_STATUSES = [
+		self::STATUS_CANCELLED,
+		self::STATUS_EXPIRED,
+		self::STATUS_SUSPENDED,
+		self::STATUS_SWITCHED,
+		self::STATUS_TRASH,
+		self::STATUS_DELETED,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be ended or ending. These won't be renewed.
+	 * Pending-cancel can be reverted.
+	 *
+	 * @var array
+	 */
+	const ENDED_OR_ENDING_STATUSES = [
+		self::STATUS_PENDING_CANCEL,
+		self::STATUS_CANCELLED,
+		self::STATUS_EXPIRED,
+		self::STATUS_SUSPENDED,
+		self::STATUS_SWITCHED,
+		self::STATUS_TRASH,
+		self::STATUS_DELETED,
+	];
+
+	/**
+	 * Subscription statuses that are considered to be removed.
+	 *
+	 * @var array
+	 */
+	const REMOVED_STATUSES = [
+		self::STATUS_TRASH,
+		self::STATUS_DELETED,
+	];
+
+	/**
 	 * Core WC order status mapped internally to avoid exceptions
 	 *
 	 * @var array
@@ -425,7 +497,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case self::STATUS_DELETED:
-				if ( self::STATUS_TRASH == $this->get_status() ) {
+				if ( self::STATUS_TRASH === $this->get_status() ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -561,7 +633,7 @@ class WC_Subscription extends WC_Order {
 						);
 
 						// Also set the cancelled date to now if it wasn't set previously (when the status was changed to pending-cancellation)
-						if ( self::STATUS_CANCELLED === $new_status && 0 == $this->get_date( 'cancelled' ) ) {
+						if ( self::STATUS_CANCELLED === $new_status && 0 === $this->get_date( 'cancelled' ) ) {
 							$dates_to_update['cancelled'] = $dates_to_update['end'];
 						}
 
@@ -1325,7 +1397,7 @@ class WC_Subscription extends WC_Order {
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
 		// Don't display next payment date when the subscription is inactive
-		if ( 'next_payment' == $date_type && ! $this->has_status( 'active' ) ) {
+		if ( 'next_payment' === $date_type && ! $this->has_status( self::STATUS_ACTIVE ) ) {
 			$timestamp_gmt = 0;
 		}
 
@@ -1894,8 +1966,8 @@ class WC_Subscription extends WC_Order {
 		$this->add_order_note( __( 'Payment status marked complete.', 'woocommerce-subscriptions' ) );
 
 		// $this->update_status() only calls save if the status has changed.
-		if ( 'active' !== $this->get_status( 'edit' ) ) {
-			$this->update_status( 'active' );
+		if ( self::STATUS_ACTIVE !== $this->get_status( 'edit' ) ) {
+			$this->update_status( self::STATUS_ACTIVE );
 		} else {
 			$this->save();
 		}
@@ -1936,12 +2008,16 @@ class WC_Subscription extends WC_Order {
 		$this->add_order_note( __( 'Payment failed.', 'woocommerce-subscriptions' ) );
 
 		// Allow a short circuit for plugins & payment gateways to force max failed payments exceeded
-		if ( self::STATUS_CANCELLED == $new_status || apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this ) ) {
-			if ( $this->can_be_updated_to( self::STATUS_CANCELLED ) ) {
-				$this->update_status( self::STATUS_CANCELLED, __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) );
-			}
-		} elseif ( $this->can_be_updated_to( $new_status ) ) {
-			$this->update_status( $new_status );
+		// This also forces the new status to be 'cancelled' if the filter is applied or the subscription is pending-cancel
+		$max_failed_payments = apply_filters( 'woocommerce_subscription_max_failed_payments_exceeded', false, $this );
+		$status_note         = $max_failed_payments ? __( 'Subscription Cancelled: maximum number of failed payments reached.', 'woocommerce-subscriptions' ) : '';
+
+		if ( $max_failed_payments || $this->has_status( self::STATUS_PENDING_CANCEL ) ) {
+			$new_status = self::STATUS_CANCELLED;
+		}
+
+		if ( $this->can_be_updated_to( $new_status ) ) {
+			$this->update_status( $new_status, $status_note );
 		}
 
 		do_action( 'woocommerce_subscription_payment_failed', $this, $new_status );

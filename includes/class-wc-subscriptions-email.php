@@ -27,7 +27,7 @@ class WC_Subscriptions_Email {
 		add_action( 'woocommerce_subscriptions_email_order_details', __CLASS__ . '::order_download_details', 10, 4 );
 		add_action( 'woocommerce_subscriptions_email_order_details', __CLASS__ . '::order_details', 10, 4 );
 
-		add_action( 'woocommerce_subscription_pre_update_status', __CLASS__ . '::maybe_clear_cancelled_email_flag', 10, 4 );
+		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', __CLASS__ . '::maybe_clear_cancelled_email_flag', 10, 4 );
 	}
 
 	/**
@@ -112,7 +112,7 @@ class WC_Subscriptions_Email {
 	public static function send_cancelled_email( $subscription ) {
 		WC()->mailer();
 
-		if ( $subscription->has_status( array( WC_Subscription::STATUS_PENDING_CANCEL, WC_Subscription::STATUS_CANCELLED ) ) && 'true' !== $subscription->get_cancelled_email_sent() ) {
+		if ( $subscription->has_status( WC_Subscription::CANCELLED_STATUSES ) && 'true' !== $subscription->get_cancelled_email_sent() ) {
 			do_action( 'cancelled_subscription_notification', $subscription );
 		}
 	}
@@ -351,16 +351,12 @@ class WC_Subscriptions_Email {
 	/**
 	 * If the subscription was cancelled before, reset the cancelled email sent flag so the customer can be notified of a future cancellation.
 	 *
-	 * @param $old_status string The old status of the subscription.
-	 * @param $new_status string The new status of the subscription.
 	 * @param $subscription WC_Subscription The subscription object.
 	 * @return void
 	 */
-	public static function maybe_clear_cancelled_email_flag( $old_status, $new_status, $subscription ) {
-		if ( WC_Subscription::STATUS_ACTIVE === $new_status && WC_Subscription::STATUS_PENDING_CANCEL === $old_status ) {
-			$subscription->set_cancelled_email_sent( 'false' );
-			$subscription->save();
-		}
+	public static function maybe_clear_cancelled_email_flag( $subscription ) {
+		$subscription->set_cancelled_email_sent( 'false' );
+		$subscription->save();
 	}
 
 	/**

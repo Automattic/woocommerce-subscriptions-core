@@ -124,7 +124,7 @@ class WC_Subscriptions_Renewal_Order {
 		foreach ( $subscriptions as $subscription ) {
 
 			// Do we need to activate a subscription?
-			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
+			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 
 				// Included here because calling payment_complete sets the retry status to 'cancelled'
 				$is_failed_renewal_order = Order_Status::FAILED === $orders_old_status || wc_string_to_bool( $order->get_meta( WC_Subscription::RENEWAL_FAILED_META_KEY, true ) );
@@ -654,7 +654,7 @@ class WC_Subscriptions_Renewal_Order {
 
 					$subscription->payment_complete();
 
-					$subscription->update_status( 'active' );
+					$subscription->update_status( WC_Subscription::STATUS_ACTIVE );
 				}
 			}
 		}

@@ -343,7 +343,7 @@ class WC_Subscriptions_Order {
 
 			if ( $subscription_count ) {
 				foreach ( $subscriptions as $subscription ) {
-					if ( ! $subscription->has_status( 'active' ) ) {
+					if ( ! $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 						$thank_you_message = '<p>' . _n( 'Your subscription will be activated when payment clears.', 'Your subscriptions will be activated when payment clears.', $subscription_count, 'woocommerce-subscriptions' ) . '</p>';
 						break;
 					}
@@ -1105,7 +1105,7 @@ class WC_Subscriptions_Order {
 			foreach ( $subscriptions as $subscription ) {
 				$latest_order = $subscription->get_last_order();
 
-				if ( wcs_get_objects_property( $order, 'id' ) == $latest_order && $subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL ) && $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
+				if ( wcs_get_objects_property( $order, 'id' ) === $latest_order && $subscription->has_status( WC_Subscription::STATUS_PENDING_CANCEL ) && $subscription->can_be_updated_to( WC_Subscription::STATUS_CANCELLED ) ) {
 					// translators: $1: opening link tag, $2: order number, $3: closing link tag
 					$subscription->update_status( WC_Subscription::STATUS_CANCELLED, wp_kses( sprintf( __( 'Subscription cancelled for refunded order %1$s#%2$s%3$s.', 'woocommerce-subscriptions' ), sprintf( '<a href="%s">', esc_url( wcs_get_edit_post_link( wcs_get_objects_property( $order, 'id' ) ) ) ), $order->get_order_number(), '</a>' ), array( 'a' => array( 'href' => true ) ) ) );
 				}
