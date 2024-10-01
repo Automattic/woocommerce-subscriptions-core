@@ -1,9 +1,13 @@
 <?php
 
-use Automattic\WooCommerce\Internal\BatchProcessing\BatchProcessingController;
-use Automattic\WooCommerce\Internal\BatchProcessing\BatchProcessorInterface;
-
-class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
+/**
+ * WooCommerce Subscriptions Notifications Batch Processor.
+ *
+ * @package  WooCommerce Subscriptions
+ * @category Class
+ * @since    x.x.x
+ */
+class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 
 	/**
 	 * Get a user-friendly name for this processor.
@@ -23,6 +27,11 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 		return 'WooCommerce Notifications Batch Processor';
 	}
 
+	/**
+	 * Get the subscription statuses that should be processed.
+	 *
+	 * @return array Subscription statuses that should be processed.
+	 */
 	protected function get_subscription_statuses() {
 		$allowed_statuses = array(
 			'active',
@@ -33,9 +42,18 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 		return array_map( 'wcs_sanitize_subscription_status_key', $allowed_statuses );
 	}
 
+	/**
+	 * Get the timestamp of the last time the notification settings were updated.
+	 *
+	 * @return string Datetime of the last time the notification settings were updated.
+	 */
 	public function get_notification_settings_update_time() {
-		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time' );
-		$notification_settings_update_time      = new DateTime( "@$notification_settings_update_timestamp", new DateTimeZone( 'UTC' ) );
+		$notification_settings_update_timestamp = get_option( 'wcs_notification_settings_update_time', 0 );
+		if ( 0 === $notification_settings_update_timestamp ) {
+			return '';
+		}
+
+		$notification_settings_update_time = new DateTime( "@$notification_settings_update_timestamp", new DateTimeZone( 'UTC' ) );
 		return $notification_settings_update_time->format( 'Y-m-d H:i:s' );
 	}
 
@@ -51,6 +69,10 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	public function get_total_pending_count(): int {
 		global $wpdb;
 
+		if ( empty( $this->get_notification_settings_update_time() ) ) {
+			return 0;
+		}
+
 		$allowed_statuses = $this->get_subscription_statuses();
 		$placeholders     = implode( ', ', array_fill( 0, count( $allowed_statuses ), '%s' ) );
 
@@ -60,12 +82,12 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 			// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 				$wpdb->prepare(
 					"SELECT 
-								COUNT(*) 
-							FROM {$wpdb->prefix}wc_orders 
-							WHERE type='shop_subscription'
-							AND date_updated_gmt < %s
-							AND status IN ($placeholders)
-							",
+						COUNT(*) 
+					FROM {$wpdb->prefix}wc_orders 
+					WHERE type='shop_subscription'
+					AND date_updated_gmt < %s
+					AND status IN ($placeholders)
+					",
 					$this->get_notification_settings_update_time(),
 					...$allowed_statuses
 				)
@@ -76,12 +98,12 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 			// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 				$wpdb->prepare(
 					"SELECT 
-								COUNT(*) 
-							FROM {$wpdb->prefix}posts 
-							WHERE post_type='shop_subscription'
-							AND post_modified_gmt < %s
-							AND post_status IN ($placeholders)
-							",
+						COUNT(*) 
+					FROM {$wpdb->prefix}posts 
+					WHERE post_type='shop_subscription'
+					AND post_modified_gmt < %s
+					AND post_status IN ($placeholders)
+					",
 					$this->get_notification_settings_update_time(),
 					...$allowed_statuses
 				)
@@ -108,6 +130,10 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	public function get_next_batch_to_process( int $size ): array {
 		global $wpdb;
 
+		if ( empty( $this->get_notification_settings_update_time() ) ) {
+			return [];
+		}
+
 		$allowed_statuses = $this->get_subscription_statuses();
 		$placeholders     = implode( ', ', array_fill( 0, count( $allowed_statuses ), '%s' ) );
 
@@ -123,13 +149,13 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 			// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 				$wpdb->prepare(
 					"SELECT 
-								id
-							FROM {$wpdb->prefix}wc_orders 
-							WHERE type='shop_subscription'
-							AND date_updated_gmt < %s
-							AND status IN ($placeholders)
-							ORDER BY id ASC
-							LIMIT %d",
+						id
+					FROM {$wpdb->prefix}wc_orders 
+					WHERE type='shop_subscription'
+					AND date_updated_gmt < %s
+					AND status IN ($placeholders)
+					ORDER BY id ASC
+					LIMIT %d",
 					...$args
 				)
 			);
@@ -139,13 +165,13 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 			// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 				$wpdb->prepare(
 					"SELECT 
-								ID
-							FROM {$wpdb->prefix}posts 
-							WHERE post_type='shop_subscription'
-							AND post_modified_gmt < %s
-							AND post_status IN ($placeholders)
-							ORDER BY ID ASC
-							LIMIT %d",
+						ID
+					FROM {$wpdb->prefix}posts 
+					WHERE post_type='shop_subscription'
+					AND post_modified_gmt < %s
+					AND post_status IN ($placeholders)
+					ORDER BY ID ASC
+					LIMIT %d",
 					...$args
 				)
 			);
@@ -202,7 +228,7 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	 * @return string Informative string to show after the tool is triggered in UI.
 	 */
 	public static function enqueue(): string {
-		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
+		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		if ( $batch_processor->is_enqueued( self::class ) ) {
 			return __( 'Background process for updating subscritpion notifications already started, nothing done.', 'woocommerce-subscriptions' );
 		}
@@ -217,7 +243,7 @@ class WCS_Notifications_Batch_Processor implements BatchProcessorInterface {
 	 * @return string Informative string to show after the tool is triggered in UI.
 	 */
 	public static function dequeue(): string {
-		$batch_processor = wc_get_container()->get( BatchProcessingController::class );
+		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		if ( ! $batch_processor->is_enqueued( self::class ) ) {
 			return __( 'Background process for updating subscritpion notifications not started, nothing done.', 'woocommerce-subscriptions' );
 		}
