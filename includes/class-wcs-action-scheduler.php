@@ -93,7 +93,6 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case WC_Subscription::STATUS_ACTIVE:
-
 				$this->unschedule_actions( 'woocommerce_scheduled_subscription_end_of_prepaid_term', $this->get_action_args( 'end', $subscription ) );
 
 				foreach ( $this->get_date_types_to_schedule() as $date_type ) {
@@ -126,7 +125,6 @@ class WCS_Action_Scheduler extends WCS_Scheduler {
 
 				break;
 			case WC_Subscription::STATUS_PENDING_CANCEL:
-
 				// Now that we have the current times, clear the scheduled hooks
 				foreach ( $this->get_date_types_to_schedule() as $date_type ) {
 

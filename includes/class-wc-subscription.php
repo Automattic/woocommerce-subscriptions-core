@@ -497,7 +497,7 @@ class WC_Subscription extends WC_Order {
 				}
 				break;
 			case self::STATUS_DELETED:
-				if ( self::STATUS_TRASH == $this->get_status() ) {
+				if ( self::STATUS_TRASH === $this->get_status() ) {
 					$can_be_updated = true;
 				} else {
 					$can_be_updated = false;
@@ -633,7 +633,7 @@ class WC_Subscription extends WC_Order {
 						);
 
 						// Also set the cancelled date to now if it wasn't set previously (when the status was changed to pending-cancellation)
-						if ( self::STATUS_CANCELLED === $new_status && 0 == $this->get_date( 'cancelled' ) ) {
+						if ( self::STATUS_CANCELLED === $new_status && 0 === $this->get_date( 'cancelled' ) ) {
 							$dates_to_update['cancelled'] = $dates_to_update['end'];
 						}
 
@@ -1397,7 +1397,7 @@ class WC_Subscription extends WC_Order {
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
 		// Don't display next payment date when the subscription is inactive
-		if ( 'next_payment' == $date_type && ! $this->has_status( self::STATUS_ACTIVE ) ) {
+		if ( 'next_payment' === $date_type && ! $this->has_status( self::STATUS_ACTIVE ) ) {
 			$timestamp_gmt = 0;
 		}
 

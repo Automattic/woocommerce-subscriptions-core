@@ -382,7 +382,7 @@ class WC_Subscriptions_Core_Payment_Gateways {
 	 */
 	public static function trigger_gateway_subscription_put_on_hold_hook( $user_id, $subscription_key ) {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::trigger_gateway_status_updated_hook()' );
-		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_ON_HOLD);
+		self::trigger_gateway_status_updated_hook( wcs_get_subscription_from_key( $subscription_key ), WC_Subscription::STATUS_ON_HOLD );
 	}
 
 	/**

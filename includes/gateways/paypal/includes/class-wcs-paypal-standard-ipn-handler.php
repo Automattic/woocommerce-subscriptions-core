@@ -461,7 +461,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 					WC_Gateway_Paypal::log( sprintf( 'IPN "recurring_payment_suspended" ignored for subscription %d - PayPal profile ID has changed', $subscription->get_id() ) );
 
-				} else if ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
+				} elseif ( $subscription->has_status( WC_Subscription::STATUS_ACTIVE ) ) {
 
 					// We don't need to suspend the subscription at PayPal because it's already on-hold there
 					remove_action( 'woocommerce_subscription_on-hold_paypal', 'WCS_PayPal_Status_Manager::suspend_subscription' );

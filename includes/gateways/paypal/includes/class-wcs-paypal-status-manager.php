@@ -129,7 +129,7 @@ class WCS_PayPal_Status_Manager extends WCS_PayPal {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function suspend_subscription_on_payment_changed( $status, $subscription ) {
-		return ( 'paypal' == $subscription->get_payment_method() ) ? WC_Subscription::STATUS_ON_HOLD : $status;
+		return ( 'paypal' === $subscription->get_payment_method() ) ? WC_Subscription::STATUS_ON_HOLD : $status;
 	}
 
 }

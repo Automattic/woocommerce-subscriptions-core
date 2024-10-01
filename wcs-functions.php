@@ -640,7 +640,7 @@ function wcs_get_line_items_with_a_trial( $subscription_id ) {
 function wcs_can_items_be_removed( $subscription ) {
 	$allow_remove = false;
 
-	if ( sizeof( $subscription->get_items() ) > 1 && $subscription->payment_method_supports( 'subscription_amount_changes' ) && $subscription->has_status( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES ) ) {
+	if ( count( $subscription->get_items() ) > 1 && $subscription->payment_method_supports( 'subscription_amount_changes' ) && $subscription->has_status( WC_Subscription::ACTIVE_OR_WAITING_PAYMENT_STATUSES ) ) {
 		$allow_remove = true;
 	}
 

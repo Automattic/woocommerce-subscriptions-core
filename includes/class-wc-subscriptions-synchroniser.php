@@ -1447,7 +1447,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::order_contains_synced_subscription( wcs_get_objects_property( $order, 'id' ) ) && 1 >= $subscription->get_payment_count() ) {
 
 			// Don't prematurely set the first payment date when manually adding a subscription from the admin
-			if ( ! is_admin() || WC_Subscription::STATUS_ACTIVE == $subscription->get_status() ) {
+			if ( ! is_admin() || WC_Subscription::STATUS_ACTIVE === $subscription->get_status() ) {
 
 				$first_payment_timestamp = self::calculate_first_payment_date( $product_id, 'timestamp', wcs_get_datetime_utc_string( wcs_get_objects_property( $order, 'date_created' ) ) );
 

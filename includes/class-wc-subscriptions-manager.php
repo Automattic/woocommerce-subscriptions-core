@@ -674,6 +674,7 @@ class WC_Subscriptions_Manager {
 					break;
 				case WC_Subscription::STATUS_PENDING:
 					_deprecated_argument( __METHOD__, '2.0', 'The "pending" status value is deprecated.' );
+					// no break
 				default:
 					self::create_pending_subscription_for_order( $order );
 					break;
@@ -706,7 +707,7 @@ class WC_Subscriptions_Manager {
 
 			$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-			if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED == $new_subscription_details['status'] ) {
+			if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED === $new_subscription_details['status'] ) {
 				wp_delete_post( $subscription->get_id() );
 			} else {
 				// There is no direct analog for this in WC_Subscription, so we need to call the deprecated method
@@ -740,7 +741,7 @@ class WC_Subscriptions_Manager {
 
 		$subscription = wcs_get_subscription_from_key( $subscription_key );
 
-		if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED == $new_subscription_details['status'] ) {
+		if ( isset( $new_subscription_details['status'] ) && WC_Subscription::STATUS_DELETED === $new_subscription_details['status'] ) {
 
 			wp_delete_post( $subscription->get_id() );
 
@@ -1087,9 +1088,9 @@ class WC_Subscriptions_Manager {
 
 		_deprecated_function( __METHOD__, '2.0', 'WC_Subscription::can_be_updated_to( $new_status_or_meta )' );
 
-		if ( 'new-payment-date' == $new_status_or_meta ) {
+		if ( 'new-payment-date' === $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "new-payment-date" parameter value is deprecated. Use WC_Subscription::can_date_be_updated( "next_payment" ) method instead.' );
-		} elseif ( WC_Subscription::STATUS_SUSPENDED == $new_status_or_meta ) {
+		} elseif ( WC_Subscription::STATUS_SUSPENDED === $new_status_or_meta ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
 			$new_status_or_meta = WC_Subscription::STATUS_ON_HOLD;
 		}
@@ -1665,7 +1666,7 @@ class WC_Subscriptions_Manager {
 		$subscriptions = self::get_users_subscriptions( $user_id );
 
 		foreach ( $subscriptions as $key => $subscription ) {
-			if ( WC_Subscription::STATUS_TRASH != $subscription['status'] ) {
+			if ( WC_Subscription::STATUS_TRASH !== $subscription['status'] ) {
 				unset( $subscriptions[ $key ] );
 			}
 		}
@@ -1763,7 +1764,7 @@ class WC_Subscriptions_Manager {
 	public static function get_users_change_status_link( $subscription_key, $status ) {
 		_deprecated_function( __METHOD__, '2.0', 'wcs_get_users_change_status_link( $subscription_id, $status )' );
 
-		if ( WC_Subscription::STATUS_SUSPENDED == $status ) {
+		if ( WC_Subscription::STATUS_SUSPENDED === $status ) {
 			_deprecated_argument( __METHOD__, '2.0', 'The "suspended" parameter value is deprecated. Use "on-hold" instead.' );
 			$status = WC_Subscription::STATUS_ON_HOLD;
 		}
