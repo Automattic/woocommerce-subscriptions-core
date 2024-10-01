@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						);
 					}
 
-					if ( in_array( $order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_cancel', array( Order_Status::PENDING, Order_Status::FAILED ), $order ) ) ) {
+					if ( in_array( $order->get_status(), apply_filters( 'woocommerce_valid_order_statuses_for_cancel', array( WCS_Order_Status::PENDING, WCS_Order_Status::FAILED ), $order ) ) ) {
 						$redirect = wc_get_page_permalink( 'myaccount' );
 
 						if ( wcs_is_view_subscription_page() ) {

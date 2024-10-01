@@ -378,14 +378,14 @@ class WC_Subscription extends WC_Order {
 		// If the subscription is pending or failed and it has a total > 0, it needs payment.
 		if ( parent::needs_payment() ) {
 			$needs_payment = true;
-		} elseif ( $parent_order && ( $parent_order->needs_payment() || $parent_order->has_status( array( Order_Status::ON_HOLD, Order_Status::CANCELLED ) ) ) ) {
+		} elseif ( $parent_order && ( $parent_order->needs_payment() || $parent_order->has_status( array( WCS_Order_Status::ON_HOLD, WCS_Order_Status::CANCELLED ) ) ) ) {
 			// If the subscription has an unpaid parent order, it needs payment.
 			$needs_payment = true;
 		} else {
 			// Lastly, check if the last non-early renewal order needs payment.
 			$order = wcs_get_last_non_early_renewal_order( $this );
 
-			if ( $order && ( $order->needs_payment() || $order->has_status( array( Order_Status::ON_HOLD, Order_Status::FAILED, Order_Status::CANCELLED ) ) ) ) {
+			if ( $order && ( $order->needs_payment() || $order->has_status( array( WCS_Order_Status::ON_HOLD, WCS_Order_Status::FAILED, WCS_Order_Status::CANCELLED ) ) ) ) {
 				$needs_payment = true;
 			}
 		}
@@ -789,13 +789,13 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function get_paid_order_statuses() {
 		$paid_statuses = array(
-			Order_Status::PROCESSING,
-			Order_Status::COMPLETED,
+			WCS_Order_Status::PROCESSING,
+			WCS_Order_Status::COMPLETED,
 			'wc-processing',
 			'wc-completed',
 		);
 
-		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', Order_Status::COMPLETED, $this->get_id(), $this );
+		$custom_status = apply_filters( 'woocommerce_payment_complete_order_status', WCS_Order_Status::COMPLETED, $this->get_id(), $this );
 
 		if ( '' !== $custom_status && ! in_array( $custom_status, $paid_statuses ) && ! in_array( 'wc-' . $custom_status, $paid_statuses ) ) {
 			$paid_statuses[] = $custom_status;
@@ -856,7 +856,7 @@ class WC_Subscription extends WC_Order {
 					if ( null !== $related_order->get_date_paid() ) {
 						$completed_payment_count++;
 
-						if ( $related_order->has_status( Order_Status::REFUNDED ) ) {
+						if ( $related_order->has_status( WCS_Order_Status::REFUNDED ) ) {
 							$refunded_payment_count++;
 						}
 					}
@@ -908,11 +908,11 @@ class WC_Subscription extends WC_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function get_failed_payment_count() {
-
-		$failed_payment_count = ( ( $parent_order = $this->get_parent() ) && $parent_order->has_status( Order_Status::FAILED ) ) ? 1 : 0;
+		$parent_order = $this->get_parent();
+		$failed_payment_count = $parent_order && $parent_order->has_status( WCS_Order_Status::FAILED ) ? 1 : 0;
 
 		foreach ( $this->get_related_orders( 'all', 'renewal' ) as $renewal_order ) {
-			if ( $renewal_order->has_status( Order_Status::FAILED ) ) {
+			if ( $renewal_order->has_status( WCS_Order_Status::FAILED ) ) {
 				$failed_payment_count++;
 			}
 		}
@@ -1994,9 +1994,9 @@ class WC_Subscription extends WC_Order {
 		if ( false !== $last_order ) {
 			$last_order->update_meta_data( self::RENEWAL_FAILED_META_KEY, wc_bool_to_string( true ) );
 
-			if ( false === $last_order->has_status( Order_Status::FAILED ) ) {
+			if ( false === $last_order->has_status( WCS_Order_Status::FAILED ) ) {
 				remove_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment' );
-				$last_order->update_status( Order_Status::FAILED );
+				$last_order->update_status( WCS_Order_Status::FAILED );
 				add_filter( 'woocommerce_order_status_changed', 'WC_Subscriptions_Renewal_Order::maybe_record_subscription_payment', 10, 3 );
 			} else {
 				// If we didn't update the status, save the order to make sure our self::RENEWAL_FAILED_META_KEY meta data is saved.

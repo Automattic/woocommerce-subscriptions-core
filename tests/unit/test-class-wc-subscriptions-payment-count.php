@@ -155,7 +155,7 @@ class WC_Subscriptions_Payment_Count_Test extends WP_UnitTestCase {
 	 * @param WC_Order $order
 	 */
 	protected function mark_related_order_as_refunded( $order ) {
-		$order->update_status( Order_Status::REFUNDED );
+		$order->update_status( WCS_Order_Status::REFUNDED );
 		$order->save();
 	}
 }

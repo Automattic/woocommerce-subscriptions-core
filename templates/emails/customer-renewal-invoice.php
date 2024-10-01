@@ -15,7 +15,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <?php /* translators: %s: Customer first name */ ?>
 <p><?php printf( esc_html__( 'Hi %s,', 'woocommerce-subscriptions' ), esc_html( $order->get_billing_first_name() ) ); ?></p>
 
-<?php if ( $order->has_status( Order_Status::PENDING ) ) : ?>
+<?php if ( $order->has_status( WCS_Order_Status::PENDING ) ) : ?>
 	<p><?php echo wp_kses(
 	sprintf(
 		// translators: %1$s: name of the blog, %2$s: link to checkout payment url, note: no full stop due to url at the end
@@ -24,7 +24,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		'<a href="' . esc_url( $order->get_checkout_payment_url() ) . '">' . esc_html__( 'Pay Now &raquo;', 'woocommerce-subscriptions' ) . '</a>'
 	), array( 'a' => array( 'href' => true ) ) ); ?>
 	</p>
-<?php elseif ( $order->has_status( Order_Status::FAILED ) ) : ?>
+<?php elseif ( $order->has_status( WCS_Order_Status::FAILED ) ) : ?>
 	<p><?php echo wp_kses(
 	sprintf(
 		// translators: %1$s: name of the blog, %2$s: link to checkout payment url, note: no full stop due to url at the end

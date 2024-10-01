@@ -420,7 +420,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 						wcs_set_paypal_id( $transaction_order, $transaction_details['subscr_id'] );
 					}
-				} elseif ( in_array( strtolower( $transaction_details['payment_status'] ), array( Order_Status::PENDING, Order_Status::FAILED ) ) ) {
+				} elseif ( in_array( strtolower( $transaction_details['payment_status'] ), array( WCS_Order_Status::PENDING, WCS_Order_Status::FAILED ) ) ) {
 
 					// Subscription Payment completed
 					// translators: placeholder is payment status (e.g. "completed")
@@ -430,12 +430,12 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 
 						wcs_set_objects_property( $transaction_order, 'transaction_id', $transaction_details['txn_id'] );
 
-						if ( Order_Status::FAILED == strtolower( $transaction_details['payment_status'] ) ) {
+						if ( WCS_Order_Status::FAILED == strtolower( $transaction_details['payment_status'] ) ) {
 							$subscription->payment_failed();
 							// translators: placeholder is payment status (e.g. "completed")
 							$this->add_order_note( sprintf( _x( 'IPN subscription payment %s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'] ), $transaction_order, $transaction_details );
 						} else {
-							$transaction_order->update_status( Order_Status::ON_HOLD );
+							$transaction_order->update_status( WCS_Order_Status::ON_HOLD );
 							// translators: 1: payment status (e.g. "completed"), 2: pending reason.
 							$this->add_order_note( sprintf( _x( 'IPN subscription payment %1$s for reason: %2$s.', 'used in order note', 'woocommerce-subscriptions' ), $transaction_details['payment_status'], $transaction_details['pending_reason'] ), $transaction_order, $transaction_details );
 						}
