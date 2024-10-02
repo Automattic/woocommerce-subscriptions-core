@@ -230,11 +230,11 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 	public static function enqueue(): string {
 		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		if ( $batch_processor->is_enqueued( self::class ) ) {
-			return __( 'Background process for updating subscritpion notifications already started, nothing done.', 'woocommerce-subscriptions' );
+			return __( 'Background process for updating subscription notifications already started, nothing done.', 'woocommerce-subscriptions' );
 		}
 
 		$batch_processor->enqueue_processor( self::class );
-		return __( 'Background process for updating subscritpion notifications started', 'woocommerce-subscriptions' );
+		return __( 'Background process for updating subscription notifications started.', 'woocommerce-subscriptions' );
 	}
 
 	/**
@@ -245,10 +245,10 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 	public static function dequeue(): string {
 		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		if ( ! $batch_processor->is_enqueued( self::class ) ) {
-			return __( 'Background process for updating subscritpion notifications not started, nothing done.', 'woocommerce-subscriptions' );
+			return __( 'Background process for updating subscription notifications not started, nothing done.', 'woocommerce-subscriptions' );
 		}
 
 		$batch_processor->remove_processor( self::class );
-		return __( 'Background process for updating subscritpion notifications stopped', 'woocommerce-subscriptions' );
+		return __( 'Background process for updating subscription notifications stopped.', 'woocommerce-subscriptions' );
 	}
 }

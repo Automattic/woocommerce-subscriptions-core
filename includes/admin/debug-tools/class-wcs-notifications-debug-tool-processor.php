@@ -286,19 +286,23 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 	 * @return array Updated tools array.
 	 */
 	public function handle_woocommerce_debug_tools( array $tools ): array {
+
+		if ( ! WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
+			$tools['start_add_subscription_notifications'] = array(
+				'name'     => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
+				'button'   => __( 'Add notifications', 'woocommerce-subscriptions' ),
+				'disabled' => true,
+				'desc'     => __( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler. Notifications are currently disabled.', 'woocommerce-subscriptions' ),
+			);
+			return $tools;
+		}
+
 		$batch_processor = WCS_Batch_Processing_Controller::instance();
 		$pending_count   = $this->get_total_pending_count();
 		$state           = $this->get_tool_state();
 		$total_done      = isset( $state['last_offset'] ) ? (int) $state['last_offset'] : 0;
 
-		if ( 0 === $pending_count ) {
-			$tools['start_add_subscription_notifications'] = array(
-				'name'     => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'   => __( 'Add notifications', 'woocommerce-subscriptions' ),
-				'disabled' => true,
-				'desc'     => __( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler. Currently, there are no subscriptions to process.', 'woocommerce-subscriptions' ),
-			);
-		} elseif ( $batch_processor->is_enqueued( self::class ) ) {
+		if ( $batch_processor->is_enqueued( self::class ) ) {
 			$tools['stop_add_subscription_notifications'] = array(
 				'name'     => __( 'Stop adding subscription notifications', 'woocommerce-subscriptions' ),
 				'button'   => __( 'Stop adding notifications', 'woocommerce-subscriptions' ),
