@@ -18,7 +18,7 @@ class WC_Subscriptions_Tracker {
 	public static function init() {
 		// Only add data if Tracker enabled
 		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-			add_filter( 'woocommerce_tracker_data', [ __CLASS__, 'add_subscriptions_tracking_data' ], 10, 1 );
+			add_filter( 'woocommerce_tracker_data', array( __CLASS__, 'add_subscriptions_tracking_data' ), 10, 1 );
 		}
 	}
 
@@ -41,7 +41,7 @@ class WC_Subscriptions_Tracker {
 	 * @return array Subscriptions options data.
 	 */
 	private static function get_subscriptions_options() {
-		return [
+		return array(
 			// Staging and live site
 			'wc_subscriptions_staging'             => WCS_Staging::is_duplicate_site() ? 'staging' : 'live',
 			'wc_subscriptions_live_url'            => esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ),
@@ -81,8 +81,8 @@ class WC_Subscriptions_Tracker {
 			'enable_retry'                         => get_option( WC_Subscriptions_Admin::$option_prefix . '_enable_retry' ),
 
 			// Notifications
-			'enable_notification_reminders'        => get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string ),
-		];
+			'enable_notification_reminders'        => get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'no' ),
+		);
 	}
 
 	/**
@@ -103,7 +103,7 @@ class WC_Subscriptions_Tracker {
 	 * @return array Subscription count by status. Keys are subscription status slugs, values are subscription counts (string).
 	 */
 	private static function get_subscription_counts() {
-		$subscription_counts = [];
+		$subscription_counts = array();
 		$count_by_status     = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
 		foreach ( wcs_get_subscription_statuses() as $status_slug => $status_name ) {
 			$subscription_counts[ $status_slug ] = $count_by_status[ $status_slug ] ?? 0;
@@ -119,35 +119,35 @@ class WC_Subscriptions_Tracker {
 	 * @return array Subscription order counts and totals by type (initial, switch, renewal, resubscribe). Values are returned as strings.
 	 */
 	private static function get_subscription_orders() {
-		$order_totals   = [];
-		$relation_types = [
+		$order_totals   = array();
+		$relation_types = array(
 			'switch',
 			'renewal',
 			'resubscribe',
-		];
+		);
 
 		// Get the subtotal and count for each subscription type.
 		foreach ( $relation_types as $relation_type ) {
 			// Get orders with the given relation type.
 			$relation_orders = wcs_get_orders_with_meta_query(
-				[
+				array(
 					'type'       => 'shop_order',
-					'status'     => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+					'status'     => array( 'wc-completed', 'wc-processing', 'wc-refunded' ),
 					'limit'      => -1,
-					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-						[
+					'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						array(
 							'key'     => '_subscription_' . $relation_type,
 							'compare' => 'EXISTS',
-						],
-					],
-				]
+						),
+					),
+				)
 			);
 
 			// Sum the totals and count the orders.
 			$count = count( $relation_orders );
 			$total = array_reduce(
 				$relation_orders,
-				function( $total, $order ) {
+				function ( $total, $order ) {
 					return $total + $order->get_total();
 				},
 				0
@@ -160,32 +160,32 @@ class WC_Subscriptions_Tracker {
 		// Finally, get the initial revenue and count.
 		// Get the orders for all initial subscription orders (no switch, renewal or resubscribe meta key).
 		$initial_subscription_orders = wcs_get_orders_with_meta_query(
-			[
+			array(
 				'type'       => 'shop_order',
-				'status'     => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+				'status'     => array( 'wc-completed', 'wc-processing', 'wc-refunded' ),
 				'limit'      => -1,
-				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					[
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					array(
 						'key'     => '_subscription_switch',
 						'compare' => 'NOT EXISTS',
-					],
-					[
+					),
+					array(
 						'key'     => '_subscription_renewal',
 						'compare' => 'NOT EXISTS',
-					],
-					[
+					),
+					array(
 						'key'     => '_subscription_resubscribe',
 						'compare' => 'NOT EXISTS',
-					],
-				],
-			]
+					),
+				),
+			)
 		);
 
 		// Sum the totals and count the orders.
 		$initial_order_count = count( $initial_subscription_orders );
 		$initial_order_total = array_reduce(
 			$initial_subscription_orders,
-			function( $total, $order ) {
+			function ( $total, $order ) {
 				return $total + $order->get_total();
 			},
 			0
@@ -208,27 +208,27 @@ class WC_Subscriptions_Tracker {
 	private static function get_subscription_dates() {
 		// Ignore subscriptions with status 'trash'.
 		$first = wcs_get_subscriptions(
-			[
+			array(
 				'subscriptions_per_page' => 1,
 				'orderby'                => 'date',
 				'order'                  => 'ASC',
-				'subscription_status'    => [ 'active', 'on-hold', 'pending', 'cancelled', 'expired' ],
-			]
+				'subscription_status'    => array( 'active', 'on-hold', 'pending', 'cancelled', 'expired' ),
+			)
 		);
 		$last  = wcs_get_subscriptions(
-			[
+			array(
 				'subscriptions_per_page' => 1,
 				'orderby'                => 'date',
 				'order'                  => 'DESC',
-				'subscription_status'    => [ 'active', 'on-hold', 'pending', 'cancelled', 'expired' ],
-			]
+				'subscription_status'    => array( 'active', 'on-hold', 'pending', 'cancelled', 'expired' ),
+			)
 		);
 
 		// Return each date in 'Y-m-d H:i:s' format or '-' if no subscriptions found.
-		$min_max = [
+		$min_max = array(
 			'first' => count( $first ) ? array_shift( $first )->get_date( 'date_created' ) : '-',
 			'last'  => count( $last ) ? array_shift( $last )->get_date( 'date_created' ) : '-',
-		];
+		);
 
 		return $min_max;
 	}
