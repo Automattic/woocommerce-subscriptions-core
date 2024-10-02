@@ -78,7 +78,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		if ( ! $this->is_enabled()
 			|| ! $this->get_recipient()
 			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
-			|| WC_Subscriptions_Email_Notifications::subscription_period_too_short( $subscription )
+			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
 		) {
 			if ( is_admin() ) {
 				// TODO: add admin notice here
