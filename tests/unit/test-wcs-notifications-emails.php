@@ -52,7 +52,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$too_short1 = WC_Subscriptions_Email_Notifications::subscription_period_too_short( $subscription1 );
+		$too_short1 = WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription1 );
 		$this->assertTrue( $too_short1 );
 
 		$subscription2 = WCS_Helper_Subscription::create_subscription(
@@ -62,7 +62,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$too_short2 = WC_Subscriptions_Email_Notifications::subscription_period_too_short( $subscription2 );
+		$too_short2 = WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription2 );
 		$this->assertTrue( $too_short2 );
 
 		$subscription3 = WCS_Helper_Subscription::create_subscription(
@@ -72,7 +72,7 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$too_short3 = WC_Subscriptions_Email_Notifications::subscription_period_too_short( $subscription3 );
+		$too_short3 = WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription3 );
 		$this->assertFalse( $too_short3 );
 	}
 
