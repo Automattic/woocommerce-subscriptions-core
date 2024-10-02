@@ -232,15 +232,17 @@ class WC_Subscriptions_Email_Notifications {
 				return $actions;
 			}
 
-			if ( $subscription->get_date( 'trial_end' ) ) {
+			$valid_notifications = WCS_Action_Scheduler_Customer_Notifications::get_valid_notifications( $subscription );
+
+			if ( in_array( 'trial_end', $valid_notifications, true ) ) {
 				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send trial is ending notification', 'woocommerce-subscriptions' );
 			}
 
-			if ( $subscription->get_date( 'end' ) ) {
+			if ( in_array( 'end', $valid_notifications, true ) ) {
 				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send upcoming subscription expiration notification', 'woocommerce-subscriptions' );
 			}
 
-			if ( $subscription->get_date( 'next_payment' ) ) {
+			if ( in_array( 'next_payment', $valid_notifications, true ) ) {
 				$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send upcoming renewal notification', 'woocommerce-subscriptions' );
 			}
 		}
