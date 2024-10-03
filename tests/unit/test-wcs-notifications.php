@@ -1384,9 +1384,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							},
 						],
 						[
-							'message'  => 'Check that the correct notification types got updated.',
-							'expected' => 'woocommerce_scheduled_subscription_customer_notification_expiration',
-							'actual'   => function ( $subscription, $actions_diff ) {
+							'message' => 'Check that the correct notification types got updated.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
 								return (
 									'added' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['change']
 									&& 'deleted' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['change']
