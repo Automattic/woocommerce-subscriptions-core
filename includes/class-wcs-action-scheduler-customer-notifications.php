@@ -307,6 +307,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		if ( $action ) {
 			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
 		}
+		//TODO: double check, if this is necessary.
+		$this->schedule_all_notifications( $subscription );
 	}
 
 	public function unschedule_all_notifications( $subscription = null, $exceptions = [] ) {
