@@ -1,9 +1,9 @@
 <?php
 /**
- * Customer Notification: Nudge for the customer to renew their subscription manually.
+ * Customer Notification: Manual renewal needed.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails
- * @version 1.0.0
+ * @version x.x.x
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -12,42 +12,89 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * @hooked WC_Emails::email_header() Output the email header.
  *
- * @since 8.0.0
+ * @since x.x.x
  */
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 	<p>
 		<?php
-			printf(
-				/* translators: %s: Customer first name */
-				esc_html__( 'Hi %s,', 'woocommerce-subscriptions' ),
-				esc_html( $subscription->get_billing_first_name() )
-			);
-			?>
+		echo esc_html(
+			sprintf(
+					/* translators: %s: Customer first name */
+				__( 'Hi %s.', 'woocommerce-subscriptions' ),
+				$subscription->get_billing_first_name()
+			)
+		);
+		?>
 	</p>
 
 
 	<p>
 		<?php
-			echo wp_kses(
-				sprintf(
-					// translators: %1$s: name of the blog, %2$s: link to checkout payment url, note: no full stop due to url at the end
-					_x( 'Your subscription for XYZ on %1$s is about to expire. To keep receiving the goodies, renew it manually over here: %2$s', 'In customer renewal invoice email', 'woocommerce-subscriptions' ),
-					esc_html( get_bloginfo( 'name' ) ),
-					'<a href="' . esc_url( $subscription->get_checkout_payment_url() ) . '">' . esc_html__( 'Pay Now &raquo;', 'woocommerce-subscriptions' ) . '</a>'
-				),
-				[ 'a' => [ 'href' => true ] ]
-			);
-			?>
+		echo wp_kses(
+			sprintf(
+			// translators: %1$s: number of days until expiry, %2$s: date in local format.
+				__( 'Your subscription is up for renewal in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
+				(int) $subscription_days_til_event,
+				$subscription_event_date
+			),
+			[ 'strong' => [] ]
+		);
+		?>
 	</p>
 
+	<p>
+		<strong>
+		<?php
+			esc_html_e( 'This subscription will not renew automatically.', 'woocommerce-subscriptions' );
+		?>
+		</strong>
+		<?php
+		if ( $can_renew_early ) {
+			echo wp_kses(
+				__( 'You can <strong>renew it manually</strong> in a few short steps via the <em>Subscriptions</em> tab in your account dashboard.', 'woocommerce-subscriptions' ),
+				[
+					'strong' => [],
+					'em'     => [],
+				]
+			);
+		}
+
+		?>
+	</p>
+
+
+	<table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+		<tr>
+			<td>
+			<?php
+			if ( $can_renew_early ) {
+				$link_text = __( 'Renew Subscription', 'woocommerce-subscriptions' );
+			} else {
+				$link_text = __( 'Manage Subscription', 'woocommerce-subscriptions' );
+			}
+				echo wp_kses(
+					'<a href="' . esc_url( $url_for_renewal ) . '">' . esc_html( $link_text ) . '</a>',
+					[ 'a' => [ 'href' => true ] ]
+				);
+				?>
+
+			</td>
+		</tr>
+	</table>
+
+	<br>
+	<p>
+		<?php
+		esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
+		?>
+	</p>
+
+
 <?php
-/**
- * @hooked WC_Emails::order_details() Shows the order details table.
- *
- * @since 8.0.0
- */
-do_action( 'woocommerce_subscriptions_email_order_details', $subscription, $sent_to_admin, $plain_text, $email );
+
+// Show subscription details.
+\WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text );
 
 /**
  * Show user-defined additional content - this is set in each email's settings.
@@ -59,6 +106,6 @@ if ( $additional_content ) {
 /**
  * @hooked WC_Emails::email_footer() Output the email footer.
  *
- * @since 8.0.0
+ * @since x.x.x
  */
 do_action( 'woocommerce_email_footer', $email );

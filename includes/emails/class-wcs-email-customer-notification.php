@@ -1,6 +1,20 @@
 <?php
 
 class WCS_Email_Customer_Notification extends WC_Email {
+
+	public function __construct() {
+		// These values are only available later, but it's an available placeholder.
+		$this->placeholders = array_merge(
+			[
+				'{customers_first_name}' => '',
+				'{days_until_renewal}'   => '',
+			],
+			$this->placeholders
+		);
+
+		parent::__construct();
+	}
+
 	/**
 	 * Initialise Settings Form Fields - these are generic email options most will use.
 	 */
@@ -51,7 +65,6 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		);
 	}
 
-
 	/**
 	 * Trigger function.
 	 *
@@ -67,20 +80,32 @@ class WCS_Email_Customer_Notification extends WC_Email {
 			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
 			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
 		) {
+			if ( is_admin() ) {
+				// TODO: add admin notice here
+			}
 			return;
 		}
 
-		$result = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+		$this->setup_locale();
 
-		if ( $result ) {
-			/* translators: 1: Notification type, 2: customer's email. */
-			$order_note_msg = sprintf( __( '%1$s was successfully sent to %2$s.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
-		} else {
-			/* translators: 1: Notification type, 2: customer's email. */
-			$order_note_msg = sprintf( __( 'Attempt to send %1$s to %2$s failed successfully.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
+		try {
+			$this->placeholders['{customers_first_name}'] = $subscription->get_billing_first_name();
+			$this->placeholders['{days_until_renewal}']   = $this->get_time_until_date( $subscription, 'next_payment' );
+
+			$result = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+
+			if ( $result ) {
+				/* translators: 1: Notification type, 2: customer's email. */
+				$order_note_msg = sprintf( __( '%1$s was successfully sent to %2$s.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
+			} else {
+				/* translators: 1: Notification type, 2: customer's email. */
+				$order_note_msg = sprintf( __( 'Attempt to send %1$s to %2$s failed successfully.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
+			}
+
+			$subscription->add_order_note( $order_note_msg );
+		} finally {
+			$this->restore_locale();
 		}
-
-		$subscription->add_order_note( $order_note_msg );
 	}
 
 	/**
@@ -89,22 +114,41 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 * @return string
 	 */
 	public function get_content_html() {
+		$subscription = $this->object;
+
+		if ( wcs_can_user_renew_early( $subscription )
+			&& $subscription->payment_method_supports( 'subscription_date_changes' )
+			&& WCS_Early_Renewal_Manager::is_early_renewal_enabled()
+			&& WCS_Manual_Renewal_Manager::is_manual_renewal_enabled()
+		) {
+			$url_for_renewal = wcs_get_early_renewal_url( $subscription );
+			$can_renew_early = true;
+		} else {
+			$url_for_renewal = $subscription->get_view_order_url();
+			$can_renew_early = false;
+		}
+
 		return wc_get_template_html(
 			$this->template_html,
-			array(
-				'subscription'       => $this->object,
-				'email_heading'      => $this->get_heading(),
-				'additional_content' => is_callable(
-					array(
+			[
+				'subscription'                => $subscription,
+				'order'                       => $subscription->get_parent(),
+				'email_heading'               => $this->get_heading(),
+				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
+				'url_for_renewal'             => $url_for_renewal,
+				'can_renew_early'             => $can_renew_early,
+				'additional_content'          => is_callable(
+					[
 						$this,
 						'get_additional_content',
-					)
+					]
 				) ? $this->get_additional_content() : '',
 				// WC 3.7 introduced an additional content field for all emails.
-				'sent_to_admin'      => true,
-				'plain_text'         => false,
-				'email'              => $this,
-			),
+				'sent_to_admin'               => false,
+				'plain_text'                  => false,
+				'email'                       => $this,
+			],
 			'',
 			$this->template_base
 		);
@@ -116,24 +160,70 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 * @return string
 	 */
 	public function get_content_plain() {
+		$subscription = $this->object;
+
+		if ( wcs_can_user_renew_early( $subscription )
+			&& $subscription->payment_method_supports( 'subscription_date_changes' )
+			&& WCS_Early_Renewal_Manager::is_early_renewal_enabled()
+			&& WCS_Manual_Renewal_Manager::is_manual_renewal_enabled()
+		) {
+			$url_for_renewal = wcs_get_early_renewal_url( $subscription );
+			$can_renew_early = true;
+		} else {
+			$url_for_renewal = $subscription->get_view_order_url();
+			$can_renew_early = false;
+		}
+
 		return wc_get_template_html(
 			$this->template_plain,
-			array(
-				'subscription'       => $this->object,
-				'email_heading'      => $this->get_heading(),
-				'additional_content' => is_callable(
-					array(
+			[
+				'subscription'                => $subscription,
+				'order'                       => $subscription->get_parent(),
+				'email_heading'               => $this->get_heading(),
+				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
+				'url_for_renewal'             => $url_for_renewal,
+				'can_renew_early'             => $can_renew_early,
+				'additional_content'          => is_callable(
+					[
 						$this,
 						'get_additional_content',
-					)
+					]
 				) ? $this->get_additional_content() : '',
 				// WC 3.7 introduced an additional content field for all emails.
-				'sent_to_admin'      => true,
-				'plain_text'         => true,
-				'email'              => $this,
-			),
+				'sent_to_admin'               => false,
+				'plain_text'                  => true,
+				'email'                       => $this,
+			],
 			'',
 			$this->template_base
 		);
+	}
+
+	public function get_time_until_date( $subscription, $date_type ) {
+		$next_event = $subscription->get_date( $date_type );
+		if ( ! $next_event ) {
+			return '';
+		}
+
+		$next_event_dt = new DateTime( $next_event, new DateTimeZone( 'UTC' ) );
+		$now           = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+		// Add some buffer, otherwise it will claim that only 2 full days are left when in reality it's 2 days, 23 hours and 59 minutes.
+		$now->modify( '+1 hour' );
+		$interval = $next_event_dt->diff( $now );
+		return $interval->days;
+	}
+
+	public function get_formatted_date( $subscription, $date_type ) {
+		return date_i18n( wc_date_format(), $subscription->get_time( $date_type, 'site' ) );
+	}
+
+	/**
+	 * Default content to show below main email content.
+	 *
+	 * @return string
+	 */
+	public function get_default_additional_content() {
+		return __( 'Thank you for choosing {site_title}!', 'woocommerce-subscriptions' );
 	}
 }
