@@ -19,22 +19,36 @@ class WCS_Email_Customer_Notification_Subscription_Expiration extends WCS_Email_
 	 * Create an instance of the class.
 	 */
 	public function __construct() {
-		parent::__construct();
-
 		$this->plugin_id = 'woocommerce-subscriptions_';
 
 		$this->id          = 'customer_notification_subscription_expiry';
-		$this->title       = __( 'Customer Notification: Subscription Is About To Expire', 'woocommerce-subscriptions' );
-		$this->description = __( 'Subscription Expiting Notification emails are sent when a customer\'s subscription is about to expire.', 'woocommerce-subscriptions' );
+		$this->title       = __( 'Customer Notification: Subscription expiration notice', 'woocommerce-subscriptions' );
+		$this->description = __( 'Subscription expiration notification emails are sent when customer\'s subscription is about to expire.', 'woocommerce-subscriptions' );
 
-		$this->heading = __( 'Subscription Expiring Notification', 'woocommerce-subscriptions' );
-		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
-		$this->subject = sprintf( _x( '[%s] Subscription is about to expire', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
+		$this->heading = __( 'Subscription expiration notice', 'woocommerce-subscriptions' );
+		// translators: placeholder is {customers_first_name}, a variable that will be substituted when email is sent out
+		$this->subject = sprintf( _x( 'Your subscription is about to expire, %s ⏱️', 'default email subject for subscription expiry notification email sent to the customer', 'woocommerce-subscriptions' ), '{customers_first_name}' );
 
 		$this->template_html  = 'emails/customer-notification-expiring-subscription.php';
 		$this->template_plain = 'emails/plain/customer-notification-expiring-subscription.php';
 		$this->template_base  = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
 
 		$this->customer_email = true;
+
+		// Constructor in parent uses the values above in the initialization.
+		parent::__construct();
+	}
+
+	public function get_relevant_date_type() {
+		return 'end';
+	}
+
+	/**
+	 * Default content to show below main email content.
+	 *
+	 * @return string
+	 */
+	public function get_default_additional_content() {
+		return __( 'Thank you for choosing {site_title}, {customers_first_name}.', 'woocommerce-subscriptions' );
 	}
 }

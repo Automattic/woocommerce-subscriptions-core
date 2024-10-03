@@ -1,6 +1,6 @@
 <?php
 /**
- * Customer Notification: Notify the customer that an automated renewal their subscription is about to happen.
+ * Customer Notification: Free trial of an automatically renewed subscription is about to expire email.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails
  * @version x.x.x
@@ -21,7 +21,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		echo esc_html(
 			sprintf(
 					/* translators: %s: Customer first name */
-				__( 'Hi %s.', 'woocommerce-subscriptions' ),
+				__( 'Hi, %s.', 'woocommerce-subscriptions' ),
 				$subscription->get_billing_first_name()
 			)
 		);
@@ -33,8 +33,8 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		<?php
 		echo wp_kses(
 			sprintf(
-				// translators: %1$s: number of days until expiry, %2$s: date in local format.
-				__( 'Your subscription will <strong>automatically renew</strong> in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
+			// translators: %1$s: number of days until expiry, %2$s: date in local format.
+				__( 'Your paid subscription begins when your free trial expires in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
 				(int) $subscription_days_til_event,
 				$subscription_event_date
 			),
@@ -45,31 +45,28 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 	<p>
 		<?php
-			esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
+
+		echo wp_kses(
+			sprintf(
+			// translators: %1$s: link to account dashboard.
+				__( 'Payment will be deducted using the payment method on file. You can manage this subscription from your %1$s.', 'woocommerce-subscriptions' ),
+				'<a href="' . esc_url( $subscription->get_view_order_url() ) . '">' . esc_html__( 'account dashboard', 'woocommerce-subscriptions' ) . '</a>'
+			),
+			[ 'a' => [ 'href' => true ] ]
+		);
 		?>
 	</p>
 
+	<p>
+		<?php
+			esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
+		?>
+	</p>
 
 <?php
 
 // Show subscription details.
 \WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text, true );
-?>
-	<p>
-		<small>
-			<?php
-			echo wp_kses_post(
-				sprintf(
-							// translators: %s: link to subscription detail in the customer's dashboard.
-					__( 'You can manage this subscription from your %s', 'woocommerce-subscriptions' ),
-					'<a href="' . esc_url( $subscription->get_view_order_url() ) . '">' . esc_html__( 'account dashboard', 'woocommerce-subscriptions' ) . '</a>',
-				)
-			);
-			?>
-		</small>
-	</p>
-
-<?php
 
 /**
  * Show user-defined additional content - this is set in each email's settings.
