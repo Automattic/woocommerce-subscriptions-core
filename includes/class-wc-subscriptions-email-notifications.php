@@ -104,7 +104,8 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static function add_emails( $email_classes ) {
 
-		$email_classes['WCS_Email_Customer_Notification_Free_Trial_Expiration']   = new WCS_Email_Customer_Notification_Free_Trial_Expiration();
+		$email_classes['WCS_Email_Customer_Notification_Auto_Trial_Expiration']   = new WCS_Email_Customer_Notification_Auto_Trial_Expiration();
+		$email_classes['WCS_Email_Customer_Notification_Manual_Trial_Expiration'] = new WCS_Email_Customer_Notification_Manual_Trial_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Subscription_Expiration'] = new WCS_Email_Customer_Notification_Subscription_Expiration();
 		$email_classes['WCS_Email_Customer_Notification_Manual_Renewal']          = new WCS_Email_Customer_Notification_Manual_Renewal();
 		$email_classes['WCS_Email_Customer_Notification_Auto_Renewal']            = new WCS_Email_Customer_Notification_Auto_Renewal();
