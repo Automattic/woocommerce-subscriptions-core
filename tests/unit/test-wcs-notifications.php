@@ -516,7 +516,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 
 		foreach ( $assertions_config as $assertion ) {
 			// Extract assertion type, expected value, and actual value from the config
-			$assertion_type = $assertion['type'] ?? 'assertEquals';
+			$assertion_type = $assertion['type'] ?? 'assertSame';
 
 			if ( isset( $assertion['expected'] ) ) {
 				if ( is_callable( $assertion['expected'] ) ) {
@@ -538,6 +538,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 			switch ( $assertion_type ) {
 				case 'assertEquals':
 					$this->assertEquals( $expected, $actual, $msg );
+					break;
+				case 'assertSame':
+					$this->assertSame( $expected, $actual, $msg );
 					break;
 				case 'assertTrue':
 					$this->assertTrue( $actual, $msg );
@@ -690,6 +693,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -745,6 +749,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -802,6 +807,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'trial_end' ) );
 								$next_payment->modify( $this->offset );
@@ -857,6 +863,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'trial_end' ) );
 								$next_payment->modify( $this->offset );
@@ -912,6 +919,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -967,6 +975,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -1044,6 +1053,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check the subscription expiry notification date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$end_date = new DateTime( $subscription->get_date( 'end_date' ) );
 								$end_date->modify( $this->offset );
@@ -1058,6 +1068,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check the next payment date notification is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -1135,6 +1146,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check the subscription expiry notification date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$end_date = new DateTime( $subscription->get_date( 'end_date' ) );
 								$end_date->modify( $this->offset );
@@ -1149,6 +1161,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check the trial expiry notification date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -1227,6 +1240,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check the subscription expiry notification date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$end_date = new DateTime( $subscription->get_date( 'end_date' ) );
 								$end_date->modify( $this->offset );
@@ -1241,6 +1255,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check the next payment date notification is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
@@ -1318,6 +1333,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 					],
 					[
 						'message'  => 'Check that the date is correct.',
+						'type'     => 'assertEquals',
 						'expected' => function ( $subscription, $actions_diff ) {
 							$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 							$next_payment->modify( $this->offset );
@@ -1415,6 +1431,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'end' ) );
 								$next_payment->modify( $this->offset );
@@ -1456,9 +1473,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 					'params'            => [ $subscription, 'trial_end' ],
 					'assertions_config' => [
 						[
-							'message'  => 'Check that exactly one notification was deleted and one added.',
-							'expected' => 1,
-							'actual'   => function ( $subscription, $actions_diff ) {
+							'message' => 'Check that exactly one notification was deleted and one added.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
 								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 1 );
 							},
 						],
@@ -1494,6 +1511,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
 								$next_payment->modify( $this->offset );
