@@ -65,6 +65,9 @@ class WC_Subscriptions_Admin {
 		// Add subscription pricing fields on edit product page
 		add_action( 'woocommerce_product_options_general_product_data', __CLASS__ . '::subscription_pricing_fields' );
 
+		// Add subscription fields to product editor
+		add_action( 'woocommerce_block_template_area_product-form_after_add_block_product-pricing-section', __CLASS__ . '::add_product_editor_fields' );
+
 		// Add listener to clear our own transients when WooCommerce -> Clear Transients is
 		// triggered from the admin panel
 		add_action( 'woocommerce_page_wc-status', __CLASS__ . '::clear_subscriptions_transients' );
@@ -153,6 +156,35 @@ class WC_Subscriptions_Admin {
 
 		// Prevent variations from being deleted if switching from a variable product type to a variable product type.
 		add_filter( 'woocommerce_delete_variations_on_product_type_change', array( __CLASS__, 'maybe_keep_variations' ), 10, 4 );
+	}
+
+	public static function add_product_editor_fields( $pricing_section ) {
+		if ( ! $pricing_section->get_root_template()->get_id() === 'simple-product' ) {
+			return;
+		}
+
+		$pricing_section->add_block(
+			[
+				'id'         => 'subscriptions-enabled',
+				'blockName'  => 'woocommerce/product-checkbox-field',
+				'order'      => 20,
+				'attributes' => [
+					'title'    => __(
+						'Subscriptions',
+						'woocommerce-subscriptions'
+					),
+					'label'    => __(
+						'Subscribable',
+						'woocommerce-subscriptions'
+					),
+					'property' => 'is_subscribable',
+					'tooltip'  => __(
+						'When checked, this product will act as a subscription.',
+						'woocommerce-subscriptions'
+					),
+				],
+			]
+		);
 	}
 
 	/**
@@ -849,6 +881,7 @@ class WC_Subscriptions_Admin {
 				'users',
 				'woocommerce_page_wc-settings',
 				'woocommerce_page_wc-orders',
+				'woocommerce_page_wc-admin',
 				wcs_get_page_screen_id( 'shop_subscription' ),
 			],
 			true
