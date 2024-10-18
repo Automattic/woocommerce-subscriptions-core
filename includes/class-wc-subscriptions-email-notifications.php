@@ -88,15 +88,13 @@ class WC_Subscriptions_Email_Notifications {
 
 		// Shortcut to unschedule all notifications more efficiently instead of processing them subscription by subscription.
 		if ( ! self::notifications_globally_enabled() ) {
-			\WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler->unschedule_all_notifications();
-
-			$message = __( 'Unscheduling all notifications now.', 'woocommerce-subscriptions' );
+			as_unschedule_all_actions( null, [], 'wcs_customer_notifications' );
 		} else {
-			$message = WCS_Notifications_Batch_Processor::enqueue();
+			$message      = WCS_Notifications_Batch_Processor::enqueue();
+			$admin_notice = new WCS_Admin_Notice( 'updated' );
+			$admin_notice->set_simple_content( $message );
+			$admin_notice->display();
 		}
-
-		//TODO: make sure this works first.
-		wc_add_notice( $message, 'notice' );
 	}
 
 	/**

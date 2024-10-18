@@ -113,11 +113,7 @@ class WCS_Subscription_Notifications_Processor_Test extends WP_UnitTestCase {
 			$action_name  = $batch['action_name'];
 			$action_args  = [ 'subscription_id' => $subscription->get_id() ];
 
-			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
-			$this->assertTrue( $has_notification );
-
-			$processor->process_batch( [ $subscription->get_id() ] );
-
+			// No processor this time. It's a bulk update while disabling the feature.
 			$has_notification = false !== as_next_scheduled_action( $action_name, $action_args, 'wcs_customer_notifications' );
 			$this->assertFalse( $has_notification );
 		}
