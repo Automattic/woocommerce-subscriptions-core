@@ -63,7 +63,7 @@ function wcs_is_product_limited_for_user( $product, $user_id = 0 ) {
 
 			foreach ( wcs_get_users_subscriptions( $user_id ) as $subscription ) {
 				// Skip if the subscription is not for the product we are checking.
-				if ( $subscription->has_product( $product->get_id() ) ) {
+				if ( ! $subscription->has_product( $product->get_id() ) ) {
 					continue;
 				}
 
