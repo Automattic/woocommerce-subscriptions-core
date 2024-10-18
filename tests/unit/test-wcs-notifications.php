@@ -1379,7 +1379,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_notification_updated_when_subscription_up_downgraded() {
+		$this->enable_notifications_globally();
 
+		// Create a simple subscription (notification for creating already checked before).
 	}
 
 	/**
@@ -1451,6 +1453,164 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						],
 						[
 							'message'  => 'Check that the date is correct.',
+							'type'     => 'assertEquals',
+							'expected' => function ( $subscription, $actions_diff ) {
+								$next_payment = new DateTime( $subscription->get_date( 'end' ) );
+								$next_payment->modify( $this->offset );
+
+								return $next_payment;
+							},
+							'actual'   => function ( $subscription, $actions_diff ) {
+								$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+								return $new_action->get_schedule()->get_date();
+							},
+						],
+					],
+				],
+		];
+
+		$this->notifications_general_tester( $config );
+	}
+
+	/**
+	 * Check that all notifications except for expiry gets removed when expiring subscription
+	 * without trial gets cancelled. Expiry notification's schedule should be updated.
+	 *
+	 * @return void
+	 */
+	public function test_notifications_removed_when_simple_expiring_subscription_without_trial_cancelled() {
+
+		$this->enable_notifications_globally();
+
+		// Create a simple subscription (notification for creating already checked before).
+		$subscription = $this->create_expiring_subscription();
+
+		// Cancel subscription and check the notification.
+		$config = [
+			'Cancelling simple subscription with expiry updates the expiry notification, removes the rest' =>
+				[
+					'callback'          => [ self::class, 'cancel_subscription' ], // this should update to pending-cancelled.
+					'params'            => [ $subscription ],
+					'assertions_config' => [
+						[
+							'message' => 'Check that one notification was deleted (next_payment) and one was updated (expiry).',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
+								return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 1 );
+							},
+						],
+						[
+							'message' => 'Check that the correct notification types got updated.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
+								return (
+									'updated' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['change']
+									&& 'deleted' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['change']
+								);
+							},
+						],
+						[
+							'message'  => 'Check that the correct args are used.',
+							'expected' => function ( $subscription, $actions_diff ) {
+								return WCS_Action_Scheduler_Customer_Notifications::get_action_args( $subscription );
+							},
+							'actual'   => function ( $subscription, $actions_diff ) {
+								$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+								return $new_action->get_args();
+							},
+						],
+						[
+							'message'  => 'Check that the notification is in the correct group.',
+							'expected' => $this->notifications_as_group,
+							'actual'   => function ( $subscription, $actions_diff ) {
+								$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+								return $new_action->get_group();
+							},
+						],
+						[
+							'message'  => 'Check that the date is correct.', //i.e. the notification date matches the end date - offset.
+							'type'     => 'assertEquals',
+							'expected' => function ( $subscription, $actions_diff ) {
+								$next_payment = new DateTime( $subscription->get_date( 'end' ) );
+								$next_payment->modify( $this->offset );
+
+								return $next_payment;
+							},
+							'actual'   => function ( $subscription, $actions_diff ) {
+								$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+								return $new_action->get_schedule()->get_date();
+							},
+						],
+					],
+				],
+		];
+
+		$this->notifications_general_tester( $config );
+	}
+
+	/**
+	 * Check that all notifications except for expiry gets removed when expiring subscription
+	 * without trial gets cancelled. Expiry notification's schedule should be updated.
+	 *
+	 * @return void
+	 */
+	public function test_notifications_removed_when_simple_expiring_subscription_with_trial_cancelled() {
+
+		$this->enable_notifications_globally();
+
+		// Create a simple subscription (notification for creating already checked before).
+		$subscription = $this->create_expiring_subscription_with_trial();
+
+		// Cancel subscription and check the notification.
+		$config = [
+			'Cancelling simple subscription with expiry and trial updates the expiry notification, removes the rest' =>
+				[
+					'callback'          => [ self::class, 'cancel_subscription' ], // this should update to pending-cancelled.
+					'params'            => [ $subscription ],
+					'assertions_config' => [
+						[
+							'message' => 'Check that 1 notification were deleted (trial_end) and one was updated (expiry).',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
+								return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 1 );
+							},
+						],
+						[
+							'message' => 'Check that the correct notification types got updated.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
+								return (
+									'updated' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['change']
+									&& 'deleted' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_trial_expiration']['change']
+								);
+							},
+						],
+						[
+							'message'  => 'Check that the correct args are used.',
+							'expected' => function ( $subscription, $actions_diff ) {
+								return WCS_Action_Scheduler_Customer_Notifications::get_action_args( $subscription );
+							},
+							'actual'   => function ( $subscription, $actions_diff ) {
+								$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+								return $new_action->get_args();
+							},
+						],
+						[
+							'message'  => 'Check that the notification is in the correct group.',
+							'expected' => $this->notifications_as_group,
+							'actual'   => function ( $subscription, $actions_diff ) {
+								$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+								return $new_action->get_group();
+							},
+						],
+						[
+							'message'  => 'Check that the date is correct.', //i.e. the notification date matches the end date - offset.
 							'type'     => 'assertEquals',
 							'expected' => function ( $subscription, $actions_diff ) {
 								$next_payment = new DateTime( $subscription->get_date( 'end' ) );
