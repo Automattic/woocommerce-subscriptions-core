@@ -160,6 +160,13 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
 	}
 
+	/**
+	 * Get the notification action name based on the date type.
+	 *
+	 * @param string $date_type
+	 *
+	 * @return array
+	 */
 	protected static function get_action_from_date_type( $date_type ) {
 		$action = '';
 
@@ -305,10 +312,18 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	public function delete_date( $subscription, $date_type ) {
 		$action = $this->get_action_from_date_type( $date_type );
 		if ( $action ) {
-			$this->unschedule_actions( $action, $this->get_action_args( $subscription ) );
+			$this->unschedule_actions( $action, self::get_action_args( $subscription ) );
 		}
 	}
 
+	/**
+	 * Unschedule all notifications for a subscription.
+	 *
+	 * @param object $subscription An instance of a WC_Subscription object
+	 * @param array $exceptions Array of notification actions to not unschedule
+	 *
+	 * @return void
+	 */
 	public function unschedule_all_notifications( $subscription = null, $exceptions = [] ) {
 		foreach ( self::$notification_actions as $action ) {
 			if ( in_array( $action, $exceptions, true ) ) {
