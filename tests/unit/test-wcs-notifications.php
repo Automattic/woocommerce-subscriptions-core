@@ -1373,8 +1373,208 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 		$this->notifications_general_tester( $config );
 	}
 
+	protected function simple_subscription_updowngrade_checks( $subscription ) {
+
+		$one_month_later_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
+		$one_month_later_payment->modify( '+1 month' );
+		$one_month_later_payment_str = $one_month_later_payment->format( 'Y-m-d H:i:s' );
+
+		$one_month_later_expiry = new DateTime( $subscription->get_date( 'end' ) );
+		$one_month_later_expiry->modify( '+1 month' );
+		$one_month_later_expiry_str = $one_month_later_expiry->format( 'Y-m-d H:i:s' );
+
+		// Now switch and check the notification.
+		return [
+			'Test 1: Switch simple subscription from monthly to yearly' =>
+				[
+					'callback'          => [ self::class, 'update_billing_period' ],
+					'params'            => [ $subscription ],
+					'assertions_config' => [
+						[
+							'message' => 'Check that no notification was updated.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscription, $actions_diff ) {
+								return $this->verify_notification_count( $subscription, $actions_diff, 0, 0, 0 );
+							},
+						],
+					],
+				],
+			'Test 2: Switch subscription: update next_payment' => [
+				'callback'          => [ self::class, 'update_dates' ],
+				'params'            => [
+					$subscription,
+					[
+						'next_payment' => $one_month_later_payment_str,
+					],
+				],
+				'assertions_config' => [
+					[
+						'message' => 'Check that exactly one notification was updated.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 0 );
+						},
+					],
+					[
+						'message' => 'Check that the correct hook is used.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return 'woocommerce_scheduled_subscription_customer_notification_renewal' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['action']->get_hook();
+						},
+					],
+					[
+						'message'  => 'Check that the correct args are used.',
+						'expected' => function ( $subscription, $actions_diff ) {
+							return WCS_Action_Scheduler_Customer_Notifications::get_action_args( $subscription );
+						},
+						'actual'   => function ( $subscription, $actions_diff ) {
+							$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['action'];
+
+							return $new_action->get_args();
+						},
+					],
+					[
+						'message'  => 'Check that the notification is in the correct group.',
+						'expected' => $this->notifications_as_group,
+						'actual'   => function ( $subscription, $actions_diff ) {
+							$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['action'];
+
+							return $new_action->get_group();
+						},
+					],
+					[
+						'message'  => 'Check that the date is correct.',
+						'type'     => 'assertEquals',
+						'expected' => function ( $subscription, $actions_diff ) {
+							$next_payment = new DateTime( $subscription->get_date( 'next_payment' ) );
+							$next_payment->modify( $this->offset );
+
+							return $next_payment;
+						},
+						'actual'   => function ( $subscription, $actions_diff ) {
+							$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['action'];
+
+							return $new_action->get_schedule()->get_date();
+						},
+					],
+				],
+			],
+			'Test 3: Switch subscription: update expiry' => [
+				'callback'          => [ self::class, 'update_dates' ],
+				'params'            => [
+					$subscription,
+					[
+						'end' => $one_month_later_expiry_str,
+					],
+				],
+				'assertions_config' => [
+					[
+						'message' => 'Check that exactly one notification was updated.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 0 );
+						},
+					],
+					[
+						'message' => 'Check that the correct hook is used.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return 'woocommerce_scheduled_subscription_customer_notification_expiration' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action']->get_hook();
+						},
+					],
+					[
+						'message'  => 'Check that the correct args are used.',
+						'expected' => function ( $subscription, $actions_diff ) {
+							return WCS_Action_Scheduler_Customer_Notifications::get_action_args( $subscription );
+						},
+						'actual'   => function ( $subscription, $actions_diff ) {
+							$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+							return $new_action->get_args();
+						},
+					],
+					[
+						'message'  => 'Check that the notification is in the correct group.',
+						'expected' => $this->notifications_as_group,
+						'actual'   => function ( $subscription, $actions_diff ) {
+							$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+							return $new_action->get_group();
+						},
+					],
+					[
+						'message'  => 'Check that the date is correct.',
+						'type'     => 'assertEquals',
+						'expected' => function ( $subscription, $actions_diff ) {
+							$end = new DateTime( $subscription->get_date( 'end' ) );
+							$end->modify( $this->offset );
+
+							return $end;
+						},
+						'actual'   => function ( $subscription, $actions_diff ) {
+							$new_action = $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['action'];
+
+							return $new_action->get_schedule()->get_date();
+						},
+					],
+				],
+
+			],
+			'Test 4: Switch subscription: delete next_payment' => [
+				'callback'          => [ self::class, 'delete_subscription_date' ],
+				'params'            => [ $subscription, 'next_payment' ],
+				'assertions_config' => [
+					[
+						'message' => 'Check that exactly one notification was deleted.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return $this->verify_notification_count( $subscription, $actions_diff, 0, 0, 1 );
+						},
+					],
+					[
+						'message' => 'Check that the correct hook is used.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return 'deleted' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_renewal']['change'];
+						},
+					],
+				],
+			],
+			'Test 5: Switch subscription: delete expiry' => [
+				'callback'          => [ self::class, 'delete_subscription_date' ],
+				'params'            => [ $subscription, 'end' ],
+				'assertions_config' => [
+					[
+						'message' => 'Check that exactly one notification was updated.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return $this->verify_notification_count( $subscription, $actions_diff, 0, 0, 1 );
+						},
+					],
+					[
+						'message' => 'Check that the correct hook is used.',
+						'type'    => 'assertTrue',
+						'actual'  => function ( $subscription, $actions_diff ) {
+							return 'deleted' === $actions_diff[ $subscription->get_id() ]['woocommerce_scheduled_subscription_customer_notification_expiration']['change'];
+						},
+					],
+				],
+			],
+		];
+
+	}
+
 	/**
 	 * Check that notification gets updated correctly when subscription is up- or downgraded.
+	 *
+	 * Based on WC_Subscriptions_Switcher::complete_subscription_switches, subscription switch
+	 * can update or delete the dates of the subscription, update the billing period, interval, or address.
+	 *
+	 * The easiest way to test this is to create a subscription, then update all dates, then to delete them,
+	 * as other changes won't affect the notification.
+	 *
+	 * Alternative would be to construct the switching order manually, but there's no easily usable helper
+	 * (besides WCS_Helper_Subscription::create_switch_order, which just creates the order, but doesn't add any changes).
 	 *
 	 * @return void
 	 */
@@ -1382,6 +1582,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 		$this->enable_notifications_globally();
 
 		// Create a simple subscription (notification for creating already checked before).
+		$subscription = $this->create_expiring_subscription();
+
+		$this->notifications_general_tester( $this->simple_subscription_updowngrade_checks( $subscription ) );
 	}
 
 	/**
@@ -1634,7 +1837,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	/**
 	 * Check that all notifications are created again when subscription gets reactivated.
 	 *
-	 * TODO: test for expiring subscription with and without trial.
+	 * TODO: test for expiring subscription with and without trial?
 	 *
 	 * @return void
 	 */
@@ -1935,10 +2138,42 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 * @param $subscription
 	 * @param $date_type
 	 *
-	 * @return mixed
+	 * @return WC_Subscription
 	 */
 	protected static function delete_subscription_date( $subscription, $date_type ) {
 		$subscription->delete_date( $date_type );
+		$subscription->save(); // Is this needed?
+		return $subscription;
+	}
+
+	/**
+	 * Wrapper to update the subscription's billing period (and return the subscription back).
+	 *
+	 * @param $subscription
+	 * @param $new_period
+	 *
+	 * @return WC_Subscription
+	 */
+	protected static function update_billing_period( $subscription, $new_period = 'year' ) {
+		$subscription->set_billing_period( $new_period );
+		$subscription->save(); // Is this needed?
+		return $subscription;
+	}
+
+	/**
+	 * Wrapper to update the subscription's billing period (and return the subscription back).
+	 *
+	 * @param $subscription
+	 * @param $dates_to_update
+	 *
+	 * @return WC_Subscription
+	 */
+	protected static function update_dates( $subscription, $dates_to_update ) {
+		if ( ! empty( $dates_to_update ) ) {
+			$subscription->update_dates( $dates_to_update );
+			$subscription->save();
+		}
+
 		return $subscription;
 	}
 }
