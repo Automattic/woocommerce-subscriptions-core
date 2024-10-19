@@ -40,10 +40,10 @@ class WC_Subscriptions_Email_Notifications {
 		// Add settings UI.
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ] );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
 	}
 
 	/**
@@ -80,6 +80,8 @@ class WC_Subscriptions_Email_Notifications {
 	 * 1. Updates the wcs_notification_settings_update_time option so that the code knows which subscriptions to update
 	 * 2. Triggers rescheduling/unscheduling of existing notifications.
 	 * 3. Adds a notice with info about the actions that got triggered to the store manager.
+	 *
+	 * Side note: offset gets updated in WCS_Action_Scheduler_Customer_Notifications::set_time_offset_from_option.
 	 *
 	 * @return void
 	 */

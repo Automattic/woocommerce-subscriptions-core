@@ -52,6 +52,15 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		return false;
 	}
 
+	/**
+	 * Return time offset for notifications for given subscription.
+	 *
+	 * Generally, there is one offset for all subscriptions, but there's a filter.
+	 *
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return mixed|null
+	 */
 	public function get_time_offset( $subscription ) {
 		/**
 		 * Offset between a subscription event and related notification.
@@ -63,8 +72,27 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		return apply_filters( 'woocommerce_subscriptions_customer_notification_time_offset', $this->time_offset, $subscription );
 	}
 
+	/**
+	 * General time offset setter.
+	 *
+	 * @param int $time_offset In seconds
+	 *
+	 * @return void
+	 */
 	public function set_time_offset( $time_offset ) {
 		$this->time_offset = $time_offset;
+	}
+
+	/**
+	 * Set the offset based on new value set in the option.
+	 *
+	 * @param $_
+	 * @param $new_option_value
+	 *
+	 * @return void
+	 */
+	public function set_time_offset_from_option( $_, $new_option_value ) {
+		$this->time_offset = self::convert_offset_to_seconds( $new_option_value );
 	}
 
 	public function __construct() {
@@ -80,6 +108,9 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$this->time_offset = self::convert_offset_to_seconds( $setting_option );
 
 		add_action( 'woocommerce_before_subscription_object_save', [ $this, 'update_notifications' ], 10, 2 );
+
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $this, 'set_time_offset_from_option' ], 5, 3 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $this, 'set_time_offset_from_option' ], 5, 2 );
 	}
 
 	/**
