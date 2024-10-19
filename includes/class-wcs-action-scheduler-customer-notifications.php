@@ -196,9 +196,9 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * @param string $date_type
 	 *
-	 * @return array
+	 * @return string
 	 */
-	protected static function get_action_from_date_type( $date_type ) {
+	public static function get_action_from_date_type( $date_type ) {
 		$action = '';
 
 		switch ( $date_type ) {
@@ -420,6 +420,13 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		as_unschedule_all_actions( $action_hook, $action_args, self::$notifications_as_group );
 	}
 
+	protected static function date_in_the_future_or_now( $subscription, $date_type ) {
+		$dt        = new DateTime( $subscription->get_date( $date_type ), new DateTimeZone( 'UTC' ) );
+		$timestamp = $dt->getTimestamp();
+
+		return $timestamp >= time();
+	}
+
 	/**
 	 * Return an array of notifications valid for given subscription based on the dates set on the subscription.
 	 *
@@ -435,11 +442,11 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	public static function get_valid_notifications( $subscription ) {
 		$notifications = [];
 
-		if ( $subscription->get_date( 'end' ) ) {
+		if ( $subscription->get_date( 'end' ) && self::date_in_the_future_or_now( $subscription, 'end' ) ) {
 			$notifications[] = 'end';
 		}
 
-		if ( $subscription->get_date( 'trial_end' ) ) {
+		if ( $subscription->get_date( 'trial_end' ) && self::date_in_the_future_or_now( $subscription, 'trial_end' ) ) {
 			$notifications[] = 'trial_end';
 		}
 
@@ -451,10 +458,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 				$trial_end_dt        = new DateTime( $trial_end, new DateTimeZone( 'UTC' ) );
 				$trial_end_timestamp = $trial_end_dt->getTimestamp();
 
-				if ( $trial_end_timestamp < time() ) {
+				if ( $trial_end_timestamp < time() && self::date_in_the_future_or_now( $subscription, 'next_payment' ) ) {
 					$notifications[] = 'next_payment';
 				}
-			} else {
+			} elseif ( self::date_in_the_future_or_now( $subscription, 'next_payment' ) ) {
 				$notifications[] = 'next_payment';
 			}
 		}
