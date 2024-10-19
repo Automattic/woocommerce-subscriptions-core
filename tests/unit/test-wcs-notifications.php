@@ -636,7 +636,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	/**
 	 * Checks that the expected number of notifications got created, updated and deleted for given subscription.
 	 *
-	 * @param WC_Subscription $subscription
+	 * @param array(WC_Subscription) $subscriptions
 	 * @param array $actions_diff Diff of actions before and after the callback.
 	 * @param int $expected_additions
 	 * @param int $expected_updates
@@ -644,18 +644,20 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 *
 	 * @return bool
 	 */
-	protected function verify_notification_count( $subscription, $actions_diff, $expected_additions = 0, $expected_updates = 0, $expected_deletes = 0 ) {
+	protected function verify_notification_count( $subscriptions, $actions_diff, $expected_additions = 0, $expected_updates = 0, $expected_deletes = 0 ) {
 		$added   = 0;
 		$updated = 0;
 		$deleted = 0;
 
-		foreach ( $this->notification_types as $notification_type ) {
-			if ( ! isset( $actions_diff[ $subscription->get_id() ][ $notification_type ] ) ) {
-				continue;
+		foreach ( $subscriptions as $subscription ) {
+			foreach ( $this->notification_types as $notification_type ) {
+				if ( ! isset( $actions_diff[ $subscription->get_id() ][ $notification_type ] ) ) {
+					continue;
+				}
+				$added   += 'added' === $actions_diff[ $subscription->get_id() ][ $notification_type ]['change'] ? 1 : 0;
+				$updated += 'updated' === $actions_diff[ $subscription->get_id() ][ $notification_type ]['change'] ? 1 : 0;
+				$deleted += 'deleted' === $actions_diff[ $subscription->get_id() ][ $notification_type ]['change'] ? 1 : 0;
 			}
-			$added   += 'added' === $actions_diff[ $subscription->get_id() ][ $notification_type ]['change'] ? 1 : 0;
-			$updated += 'updated' === $actions_diff[ $subscription->get_id() ][ $notification_type ]['change'] ? 1 : 0;
-			$deleted += 'deleted' === $actions_diff[ $subscription->get_id() ][ $notification_type ]['change'] ? 1 : 0;
 		}
 
 		return $expected_additions === $added && $expected_updates === $updated && $expected_deletes === $deleted;
@@ -676,7 +678,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification is created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 0 );
 							},
 						],
 						[
@@ -732,7 +734,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification is created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 0 );
 							},
 						],
 						[
@@ -788,7 +790,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification is created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 0 );
 							},
 						],
 						[
@@ -846,7 +848,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification is created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 0 );
 							},
 						],
 						[
@@ -902,7 +904,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification is created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 0 );
 							},
 						],
 						[
@@ -958,7 +960,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification is created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 0 );
 							},
 						],
 						[
@@ -1014,7 +1016,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly two notifications are created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 2, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 2, 0, 0 );
 							},
 						],
 						[
@@ -1107,7 +1109,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly two notifications are created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 2, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 2, 0, 0 );
 							},
 						],
 						[
@@ -1201,7 +1203,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly two notifications are created.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 2, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 2, 0, 0 );
 							},
 						],
 						[
@@ -1319,7 +1321,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						'message' => 'Check that exactly one notification was updated.',
 						'type'    => 'assertTrue',
 						'actual'  => function ( $subscription, $actions_diff ) {
-							return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 0 );
+							return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 1, 0 );
 						},
 					],
 					[
@@ -1394,7 +1396,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that no notification was updated.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 0, 0, 0 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 0, 0 );
 							},
 						],
 					],
@@ -1412,7 +1414,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						'message' => 'Check that exactly one notification was updated.',
 						'type'    => 'assertTrue',
 						'actual'  => function ( $subscription, $actions_diff ) {
-							return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 0 );
+							return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 1, 0 );
 						},
 					],
 					[
@@ -1472,7 +1474,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						'message' => 'Check that exactly one notification was updated.',
 						'type'    => 'assertTrue',
 						'actual'  => function ( $subscription, $actions_diff ) {
-							return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 0 );
+							return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 1, 0 );
 						},
 					],
 					[
@@ -1528,7 +1530,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						'message' => 'Check that exactly one notification was deleted.',
 						'type'    => 'assertTrue',
 						'actual'  => function ( $subscription, $actions_diff ) {
-							return $this->verify_notification_count( $subscription, $actions_diff, 0, 0, 1 );
+							return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 0, 1 );
 						},
 					],
 					[
@@ -1548,7 +1550,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 						'message' => 'Check that exactly one notification was updated.',
 						'type'    => 'assertTrue',
 						'actual'  => function ( $subscription, $actions_diff ) {
-							return $this->verify_notification_count( $subscription, $actions_diff, 0, 0, 1 );
+							return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 0, 1 );
 						},
 					],
 					[
@@ -1621,7 +1623,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that one notification was deleted (next_payment) and one was added (expiry).',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 1 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 1 );
 							},
 						],
 						[
@@ -1700,7 +1702,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that one notification was deleted (next_payment) and one was updated (expiry).',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 1 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 1, 1 );
 							},
 						],
 						[
@@ -1779,7 +1781,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that 1 notification were deleted (trial_end) and one was updated (expiry).',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 0, 1, 1 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 0, 1, 1 );
 							},
 						],
 						[
@@ -1862,7 +1864,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that one notification was deleted (expiry) and one was added (next_payment).',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 1 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 1 );
 							},
 						],
 						[
@@ -1942,7 +1944,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 							'message' => 'Check that exactly one notification was deleted and one added.',
 							'type'    => 'assertTrue',
 							'actual'  => function ( $subscription, $actions_diff ) {
-								return $this->verify_notification_count( $subscription, $actions_diff, 1, 0, 1 );
+								return $this->verify_notification_count( [ $subscription ], $actions_diff, 1, 0, 1 );
 							},
 						],
 						[
@@ -2020,7 +2022,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_set_notification_period() {
-
+		//TODO:
 	}
 
 	/**
@@ -2029,7 +2031,59 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_change_notification_period() {
+		// Create all kinds of subscriptions.
+		$subscriptions = [
+			$this->create_free_trial_subscription(), // trial_expiration notification.
+			$this->create_free_trial_subscription( [], 'true', false ), // next_payment notification.
+			$this->create_expiring_subscription(), // next_payment and expiry notification.
+			$this->create_expiring_subscription_with_trial(), // trial_expiration and expiry notification.
+			$this->create_expiring_subscription_with_trial( [], false ), // next_payment and expiry notification.
+			$this->create_simple_subscription(), // next_payment notification.
+		];
 
+		// Change the offset.
+		$config = [
+			'Change the notification period' =>
+				[
+					'callback'          => [ $this, 'change_notification_period_days' ],
+					'params'            => [ $subscriptions ],
+					'assertions_config' => [
+						[
+							'message' => 'Check that 9 notifications got updated.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscriptions, $actions_diff ) {
+								return $this->verify_notification_count( $subscriptions, $actions_diff, 0, 9, 0 );
+							},
+						],
+						[
+							'message' => 'Check that all the dates have been updated correctly.',
+							'type'    => 'assertTrue',
+							'actual'  => function ( $subscriptions, $actions_diff ) {
+								foreach ( $subscriptions as $subscription ) {
+									$valid_notifications = WCS_Action_Scheduler_Customer_Notifications::get_valid_notifications( $subscription );
+
+									foreach ( $valid_notifications as $notification_date ) {
+										$expected_date = new DateTime( $subscription->get_date( $notification_date ) );
+										$expected_date->modify( $this->offset );
+
+										$updated_action = $actions_diff[ $subscription->get_id() ][ WCS_Action_Scheduler_Customer_Notifications::get_action_from_date_type( $notification_date ) ]['action'];
+										$actual_date    = $updated_action->get_schedule()->get_date();
+
+										if ( $expected_date->getTimestamp() !== $actual_date->getTimestamp() ) {
+											return false;
+										}
+									}
+								}
+
+								return true;
+							},
+						],
+					],
+				],
+		];
+
+		// Check that the notifications got updated.
+		$this->notifications_general_tester( $config );
 	}
 
 	/**
@@ -2056,15 +2110,6 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_customize_email_content() {
-
-	}
-
-	/**
-	 * Check that enabling and disabling of notifications works.
-	 *
-	 * @return void
-	 */
-	public function test_enable_disable_notifications() {
 
 	}
 
@@ -2175,6 +2220,25 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 		}
 
 		return $subscription;
+	}
+
+	protected function change_notification_period_days( $subscriptions, $new_offset = 4 ) {
+
+		$this->offset              = '-4 days';
+		$this->offset_for_settings = [
+			'number' => '4',
+			'unit'   => 'days',
+		];
+		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, $this->offset_for_settings );
+
+		// Now the batch processing needs to process everything, otherwise comparison of actions will fail.
+		$processor = new WCS_Notifications_Debug_Tool_Processor();
+		while ( $processor->get_total_pending_count() > 0 ) {
+			$batch = $processor->get_next_batch_to_process( 10 );
+			$processor->process_batch( $batch );
+		}
+
+		return $subscriptions;
 	}
 }
 
