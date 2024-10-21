@@ -1603,15 +1603,6 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Check that free-trial -> paid subscription correctly created a notification.
-	 *
-	 * @return void
-	 */
-	public function test_notification_updated_when_subscription_converted_to_paid() {
-
-	}
-
-	/**
 	 * Check that all notifications except for expiry gets removed when subscription gets cancelled.
 	 *
 	 * TODO: test for expiring subscription with and without trial.
@@ -2013,32 +2004,6 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Check that notification can be triggered manually.
-	 *
-	 * @return void
-	 */
-	public function test_manually_trigger_notification() {
-
-	}
-
-	public function test_auto_notification_adds_order_note() {
-
-	}
-
-	public function test_manual_notification_adds_order_note() {
-
-	}
-
-	/**
-	 * Check that store manager can set notification period.
-	 *
-	 * @return void
-	 */
-	public function test_set_notification_period() {
-		//TODO:
-	}
-
-	/**
 	 * Check that store manager can change notification period and notifications are updated.
 	 *
 	 * @return void
@@ -2097,42 +2062,6 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 
 		// Check that the notifications got updated.
 		$this->notifications_general_tester( $config );
-	}
-
-	/**
-	 * Check that notification gets created for all existing subscriptions.
-	 *
-	 * @return void
-	 */
-	public function test_notifications_created_for_all_existing_subscriptions() {
-
-	}
-
-	/**
-	 * Check that developers can filter notifications.
-	 *
-	 * @return void
-	 */
-	public function test_filter_notification() {
-
-	}
-
-	/**
-	 * Check that developers can customize email notification.
-	 *
-	 * @return void
-	 */
-	public function test_customize_email_content() {
-
-	}
-
-	/**
-	 * Check that subscription notifications are disabled on staging/non-live sites.
-	 *
-	 * @return void
-	 */
-	public function test_disable_notifications_in_staging() {
-
 	}
 
 	/**
