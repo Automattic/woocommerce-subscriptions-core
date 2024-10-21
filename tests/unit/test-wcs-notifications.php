@@ -29,7 +29,17 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 		parent::setUp();
 
 		// Start with a clean slate. Previous Subscription IDs are reused, so it can be a headache if we kept them.
-		as_unschedule_all_actions( '', '', $this->notifications_as_group );
+		as_unschedule_all_actions( '', [], $this->notifications_as_group );
+
+		// Setting the option to default is not necessary as it gets rolled back before each test by WP_UnitTestCase, but
+		// the state of the notfication_scheduler class won't get rolled back with the transaction.
+		WC_Subscriptions_Core_Plugin::instance()->notifications_scheduler->set_time_offset_from_option(
+			'',
+			[
+				'number' => '3',
+				'unit'   => 'days',
+			]
+		);
 	}
 
 	/**
@@ -423,6 +433,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 		remove_action( 'woocommerce_subscription_date_updated', array( $instance, 'update_date' ), 10, 3 );
 		remove_action( 'woocommerce_subscription_date_deleted', array( $instance, 'delete_date' ), 10, 2 );
 		remove_action( 'woocommerce_subscription_status_updated', array( $instance, 'update_status' ), 10, 3 );
+
+		remove_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $instance, 'set_time_offset_from_option' ], 5, 3 );
+		remove_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $instance, 'set_time_offset_from_option' ], 5, 2 );
 
 		$this->notifications_as_group = $as_group_name->getValue( $instance );
 
@@ -2224,9 +2237,9 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 
 	protected function change_notification_period_days( $subscriptions, $new_offset = 4 ) {
 
-		$this->offset              = '-4 days';
+		$this->offset              = '-' . $new_offset . ' days';
 		$this->offset_for_settings = [
-			'number' => '4',
+			'number' => "$new_offset",
 			'unit'   => 'days',
 		];
 		update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, $this->offset_for_settings );
