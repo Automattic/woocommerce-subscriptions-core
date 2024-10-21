@@ -98,14 +98,14 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	public function __construct() {
 		parent::__construct();
 
-		$setting_option    = get_option(
+		$setting_option = get_option(
 			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
 			[
 				'number' => 3,
 				'unit'   => 'days',
 			]
 		);
-		$this->time_offset = self::convert_offset_to_seconds( $setting_option );
+		$this->set_time_offset( self::convert_offset_to_seconds( $setting_option ) );
 
 		add_action( 'woocommerce_before_subscription_object_save', [ $this, 'update_notifications' ], 10, 2 );
 
@@ -146,12 +146,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 			return;
 		}
 
-		if (
-			! (
-				$subscription->has_status( 'active' )
-				|| $subscription->has_status( 'pending-cancel' )
-			)
-		) {
+		if ( ! $subscription->has_status( [ 'active', 'pending-cancel' ] ) ) {
 			return;
 		}
 
@@ -185,7 +180,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * @return int
 	 */
-	protected function sub_time_offset( $datetime, $subscription ) {
+	protected function subtract_time_offset( $datetime, $subscription ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
 
 		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
@@ -272,7 +267,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$action_name = self::get_action_from_date_type( $notification_type );
 
 		$event_date = $subscription->get_date( $notification_type );
-		$timestamp  = $this->sub_time_offset( $event_date, $subscription );
+		$timestamp  = $this->subtract_time_offset( $event_date, $subscription );
 
 		$this->maybe_schedule_notification(
 			$subscription,
