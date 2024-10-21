@@ -297,7 +297,7 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 					'%1$s<br/><strong class="red">%2$s</strong> %3$s <a href="%4$s">%5$s</a>',
 					__( 'This tool will add notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler.', 'woocommerce-subscriptions' ),
 					__( 'Note:', 'woocommerce-subscriptions' ),
-					__( 'Notifications are currently turned off. To activate them, check the "Enable customer renewal reminder notification emails." option (via Settings > Subscriptions > Customer Notifications).', 'woocommerce-subscriptions' ),
+					__( 'Notifications are currently turned off. To activate them, check the "Enable customer renewal reminder notification emails." option (via WooCommerce > Settings > Subscriptions > Customer Notifications).', 'woocommerce-subscriptions' ),
 					esc_url( admin_url( 'admin.php?page=wc-settings&tab=subscriptions' ) ),
 					__( 'Manage settings.', 'woocommerce-subscriptions' ),
 				),
