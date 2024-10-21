@@ -80,9 +80,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
 			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
 		) {
-			if ( is_admin() ) {
-				// TODO: add admin notice here
-			}
+			// TODO: add admin notice here if in admin
 			return;
 		}
 
