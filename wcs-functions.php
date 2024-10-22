@@ -458,7 +458,7 @@ function wcs_get_subscriptions( $args ) {
 		'status'     => $args['subscription_status'],
 		'limit'      => $args['subscriptions_per_page'],
 		'page'       => $args['paged'],
-		'offset'     => $args['offset'],
+		'offset'     => $args['offset'] > 0 ? $args['offset'] : null,
 		'order'      => $args['order'],
 		'return'     => 'ids',
 		// just in case we need to filter or order by meta values later
