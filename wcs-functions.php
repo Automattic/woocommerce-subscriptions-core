@@ -519,7 +519,9 @@ function wcs_get_subscriptions( $args ) {
 		if ( $product_query_handler->should_filter_query_results() ) {
 			// We will filter the results and apply any paging, limit and offset after the query has been run.
 			unset( $args['product_id'], $args['variation_id'], $query_args['limit'], $query_args['paged'], $query_args['offset'] );
-			$query_args['limit'] = -1; // We need to get all subscriptions to filter them.
+
+			// We need to get all subscriptions otherwise the limit could be filled with subscriptions that don't contain the product.
+			$query_args['limit'] = -1;
 		} else {
 			$subscriptions_for_product = wcs_get_subscriptions_for_product( array( $args['product_id'], $args['variation_id'] ) );
 			$query_args                = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $subscriptions_for_product );
