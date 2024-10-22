@@ -509,10 +509,21 @@ function wcs_get_subscriptions( $args ) {
 		}
 	}
 
-	// We need to restrict subscriptions to those which contain a certain product/variation
-	if ( ( 0 !== $args['product_id'] && is_numeric( $args['product_id'] ) ) || ( 0 !== $args['variation_id'] && is_numeric( $args['variation_id'] ) ) ) {
-		$subscriptions_for_product = wcs_get_subscriptions_for_product( array( $args['product_id'], $args['variation_id'] ) );
-		$query_args                = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $subscriptions_for_product );
+	// It's more efficient to filter the results by product ID or variation ID rather than querying for via a "post__in" clause.
+	// This can only work where we know that the results will be sufficiently limited by the other query args. ie when we're querying by customer_id or order_id.
+	// We store the filters in a separate array so that we can apply them after the query has been run.
+	$product_query_handler = new WC_Subscription_Product_Query_Controller( $args );
+
+	// We need to restrict subscriptions to those which contain a certain product/variation.
+	if ( $product_query_handler->has_product_query() ) {
+		if ( $product_query_handler->should_filter_query_results() ) {
+			// We will filter the results and apply any paging, limit and offset after the query has been run.
+			unset( $args['product_id'], $args['variation_id'], $query_args['limit'], $query_args['paged'], $query_args['offset'] );
+			$query_args['limit'] = -1; // We need to get all subscriptions to filter them.
+		} else {
+			$subscriptions_for_product = wcs_get_subscriptions_for_product( array( $args['product_id'], $args['variation_id'] ) );
+			$query_args                = WCS_Admin_Post_Types::set_post__in_query_var( $query_args, $subscriptions_for_product );
+		}
 	}
 
 	if ( ! empty( $query_args['meta_query'] ) ) {
@@ -530,6 +541,12 @@ function wcs_get_subscriptions( $args ) {
 
 	foreach ( wcs_get_orders_with_meta_query( $query_args ) as $subscription_id ) {
 		$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+	}
+
+	// If we didn't query the database for subscriptions to a product, filter the results now.
+	if ( $product_query_handler->has_product_query() && $product_query_handler->should_filter_query_results() ) {
+		$subscriptions = $product_query_handler->filter_subscriptions( $subscriptions );
+		$subscriptions = $product_query_handler->paginate_results( $subscriptions );
 	}
 
 	return apply_filters( 'woocommerce_got_subscriptions', $subscriptions, $args );
