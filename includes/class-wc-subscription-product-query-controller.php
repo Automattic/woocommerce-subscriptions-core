@@ -58,9 +58,11 @@ class WC_Subscription_Product_Query_Controller {
 	 */
 	public function should_filter_query_results() {
 		$can_filter_results = false;
+		$order_id           = $this->query_vars['order_id'] ?? 0;
+		$customer_id        = $this->query_vars['customer_id'] ?? 0;
 
 		// If we're querying by order ID or customer ID, we can filter the results by product ID after the query has been run.
-		if ( isset( $this->query_vars['order_id'] ) || isset( $this->query_vars['customer_id'] ) ) {
+		if ( ! empty( $order_id ) || ! empty( $customer_id ) ) {
 			$can_filter_results = apply_filters( 'wcs_should_filter_subscriptions_results_by_product_id', true, $this->query_vars );
 		}
 
