@@ -290,8 +290,8 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 		if ( ! WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
 
 			$tools['start_add_subscription_notifications'] = array(
-				'name'             => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'           => __( 'Add notifications', 'woocommerce-subscriptions' ),
+				'name'             => __( 'Regenerate subscription notifications', 'woocommerce-subscriptions' ),
+				'button'           => __( 'Regenerate notifications', 'woocommerce-subscriptions' ),
 				'disabled'         => true,
 				'desc'             => sprintf(
 					'%1$s<br/><strong class="red">%2$s</strong> %3$s <a href="%4$s">%5$s</a>',
@@ -312,8 +312,8 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 
 			$pending_count                                = $this->get_total_pending_count();
 			$tools['stop_add_subscription_notifications'] = array(
-				'name'             => __( 'Stop adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'           => __( 'Stop adding notifications', 'woocommerce-subscriptions' ),
+				'name'             => __( 'Regenerate subscription notifications', 'woocommerce-subscriptions' ),
+				'button'           => __( 'Stop regenerating notifications', 'woocommerce-subscriptions' ),
 				'desc'             =>
 					/* translators: %1$d=count of total entries needing conversion */
 					sprintf( __( 'Stopping this will halt the background process that adds notifications to pending, active, and on-hold subscriptions. %1$d subscriptions remain to be processed.', 'woocommerce-subscriptions' ), $pending_count ),
@@ -322,8 +322,8 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 			);
 		} else {
 			$tools['start_add_subscription_notifications'] = array(
-				'name'             => __( 'Start adding subscription notifications', 'woocommerce-subscriptions' ),
-				'button'           => __( 'Add notifications', 'woocommerce-subscriptions' ),
+				'name'             => __( 'Regenerate subscription notifications', 'woocommerce-subscriptions' ),
+				'button'           => __( 'Regenerate notifications', 'woocommerce-subscriptions' ),
 				'desc'             => __( 'This tool will regenerate notifications to pending, active, and on-hold subscriptions. These updates will occur gradually in the background using Action Scheduler.', 'woocommerce-subscriptions' ),
 				'callback'         => array( $this, 'enqueue' ),
 				'requires_refresh' => true,
