@@ -339,7 +339,7 @@ class WC_Subscriptions_Email_Notifications {
 		$admin_notice = new WCS_Admin_Notice( 'notice' );
 		$admin_notice->set_simple_content(
 			esc_html__(
-				'New customer email reminders for renewals, expirations, and free trials are now available! Enable and configure these features in WooCommerce > Settings > Susbcriptions to control when your customers receive important updates.',
+				'New customer email reminders for renewals, expirations, and free trials are now available! Enable and configure these features in WooCommerce > Settings > Subscriptions to control when your customers receive important updates.',
 				'woocommerce-subscriptions'
 			)
 		);
