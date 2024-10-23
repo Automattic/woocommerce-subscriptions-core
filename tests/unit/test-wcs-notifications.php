@@ -2129,7 +2129,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 */
 	protected static function delete_subscription_date( $subscription, $date_type ) {
 		$subscription->delete_date( $date_type );
-		$subscription->save(); // Is this needed?
+		$subscription->save();
 		return $subscription;
 	}
 
@@ -2143,7 +2143,7 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 */
 	protected static function update_billing_period( $subscription, $new_period = 'year' ) {
 		$subscription->set_billing_period( $new_period );
-		$subscription->save(); // Is this needed?
+		$subscription->save();
 		return $subscription;
 	}
 
