@@ -210,9 +210,12 @@ class WC_Subscriptions_Email_Notifications {
 		 *
 		 * @since x.x.x
 		 *
-		 * @param string $notification_enabled
+		 * @param bool $notification_enabled
+		 * @param WC_Subscription $subscription
+		 *
+		 * @return bool
 		 */
-		return apply_filters( 'wcs_customer_email_notifications_enabled', $notification_enabled, $subscription );
+		return apply_filters( 'woocommerce_subscription_customer_email_notifications_enabled', $notification_enabled, $subscription );
 	}
 
 	/**

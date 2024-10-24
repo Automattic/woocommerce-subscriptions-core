@@ -95,7 +95,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		 *
 		 * @return int
 		 */
-		return apply_filters( 'woocommerce_subscriptions_customer_notification_time_offset', $this->time_offset, $subscription, $notification_type );
+		return apply_filters( 'woocommerce_subscription_customer_notification_time_offset', $this->time_offset, $subscription, $notification_type );
 	}
 
 	/**
