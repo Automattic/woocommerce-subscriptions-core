@@ -40,6 +40,9 @@ class WC_Subscriptions_Email_Notifications {
 		// Add settings UI.
 		add_filter( 'woocommerce_subscription_settings', [ __CLASS__, 'add_settings' ], 20 );
 
+		// Add admin notice.
+		add_action( 'admin_notices', [ __CLASS__, 'maybe_add_admin_notice' ] );
+
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
 		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
 		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
@@ -296,5 +299,54 @@ class WC_Subscriptions_Email_Notifications {
 
 		WC_Subscriptions_Admin::insert_setting_after( $settings, WC_Subscriptions_Admin::$option_prefix . '_miscellaneous', $notification_settings, 'multiple_settings', 'sectionend' );
 		return $settings;
+	}
+
+	/**
+	 * Maybe add an admin notice to inform the store manager about the existance of the notifications feature.
+	 */
+	public static function maybe_add_admin_notice() {
+
+		// If the notifications feature is enabled, don't show the notice.
+		if ( self::notifications_globally_enabled() ) {
+			return;
+		}
+
+		$option_name = 'wcs_hide_customer_notifications_notice';
+		$nonce       = '_wcsnonce';
+		$action      = 'wcs_hide_customer_notifications_notice_action';
+
+		// First, check if the notice is being dismissed.
+		$nonce_argument = sanitize_text_field( wp_unslash( $_GET[ $nonce ] ?? '' ) );
+		if ( isset( $_GET[ $action ], $nonce_argument ) && wp_verify_nonce( $nonce_argument, $action ) ) {
+			update_option( $option_name, 'yes' );
+			wp_safe_redirect( remove_query_arg( [ $action, $nonce ] ) );
+			return;
+		}
+
+		if ( 'yes' === get_option( $option_name ) ) {
+			return;
+		}
+
+		$admin_notice = new WCS_Admin_Notice( 'notice' );
+		$admin_notice->set_simple_content(
+			esc_html__(
+				'New customer email reminders for renewals, expirations, and free trials are now available! Enable and configure these features in WooCommerce > Settings > Subscriptions to control when your customers receive important updates.',
+				'woocommerce-subscriptions'
+			)
+		);
+		$admin_notice->set_actions(
+			array(
+				array(
+					'name' => 'Manage Settings',
+					'url'  => admin_url( 'admin.php?page=wc-settings&tab=subscriptions' ),
+				),
+				array(
+					'name' => 'Dismiss',
+					'url'  => wp_nonce_url( add_query_arg( $action, 'dismiss' ), $action, $nonce ),
+				),
+			)
+		);
+
+		$admin_notice->display();
 	}
 }
