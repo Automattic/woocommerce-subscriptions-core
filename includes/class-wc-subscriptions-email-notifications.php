@@ -206,16 +206,7 @@ class WC_Subscriptions_Email_Notifications {
 			$notification_enabled = false;
 		}
 
-		/**
-		 * Enables/disables all customer subscription notifications.
-		 *
-		 * Values 'yes' or 'no' expected, since it works with WC_Settings_API.
-		 *
-		 * @since x.x.x
-		 *
-		 * @param string $notification_enabled
-		 */
-		return apply_filters( 'wcs_customer_email_notifications_enabled', $notification_enabled );
+		return $notification_enabled;
 	}
 
 	/**

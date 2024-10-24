@@ -34,6 +34,27 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	protected static $notifications_as_group = 'wcs_customer_notifications';
 
 	/**
+	 * Constructor.
+	 */
+	public function __construct() {
+		parent::__construct();
+
+		$setting_option = get_option(
+			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
+			[
+				'number' => 3,
+				'unit'   => 'days',
+			]
+		);
+		$this->set_time_offset( self::convert_offset_to_seconds( $setting_option ) );
+
+		add_action( 'woocommerce_before_subscription_object_save', [ $this, 'update_notifications' ], 10, 2 );
+
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $this, 'set_time_offset_from_option' ], 5, 3 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $this, 'set_time_offset_from_option' ], 5, 2 );
+	}
+
+	/**
 	 * Check if the subscription period is too short to send a renewal notification.
 	 *
 	 * @param $subscription
@@ -58,18 +79,23 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * Generally, there is one offset for all subscriptions, but there's a filter.
 	 *
 	 * @param WC_Subscription $subscription
+	 * @param string $notification_type
 	 *
 	 * @return mixed|null
 	 */
-	public function get_time_offset( $subscription ) {
+	public function get_time_offset( $subscription, $notification_type ) {
 		/**
 		 * Offset between a subscription event and related notification.
 		 *
 		 * @since x.x.x
 		 *
-		 * @param int $time_offset
+		 * @param int $time_offset In seconds
+		 * @param WC_Subscription $subscription
+		 * @param string $notification_type Can be 'trial_end', 'next_payment' or 'end'.
+		 *
+		 * @return int
 		 */
-		return apply_filters( 'woocommerce_subscriptions_customer_notification_time_offset', $this->time_offset, $subscription );
+		return apply_filters( 'woocommerce_subscription_customer_notification_time_offset', $this->time_offset, $subscription, $notification_type );
 	}
 
 	/**
@@ -95,30 +121,12 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$this->time_offset = self::convert_offset_to_seconds( $new_option_value );
 	}
 
-	public function __construct() {
-		parent::__construct();
-
-		$setting_option = get_option(
-			WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string,
-			[
-				'number' => 3,
-				'unit'   => 'days',
-			]
-		);
-		$this->set_time_offset( self::convert_offset_to_seconds( $setting_option ) );
-
-		add_action( 'woocommerce_before_subscription_object_save', [ $this, 'update_notifications' ], 10, 2 );
-
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $this, 'set_time_offset_from_option' ], 5, 3 );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$offset_setting_string, [ $this, 'set_time_offset_from_option' ], 5, 2 );
-	}
-
 	/**
 	 * Calculate time offset in seconds from the settings array.
 	 *
 	 * @param array $offset Format: [ 'number' => 3, 'unit' => 'days' ]
 	 *
-	 * @return float|int
+	 * @return int
 	 */
 	protected static function convert_offset_to_seconds( $offset ) {
 		$default_offset = 3 * DAY_IN_SECONDS;
@@ -141,6 +149,15 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		}
 	}
 
+	/**
+	 * Maybe schedule a notification.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @param string $action
+	 * @param int $timestamp
+	 *
+	 * @return void
+	 */
 	protected function maybe_schedule_notification( $subscription, $action, $timestamp ) {
 		if ( ! WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
 			return;
@@ -172,18 +189,19 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		as_schedule_single_action( $timestamp, $action, $action_args, self::$notifications_as_group );
 	}
 
-	/*
+	/**
 	 * Subtract time offset from given datetime based on the settings and subscription properties and return resulting timestamp.
 	 *
 	 * @param string $datetime
 	 * @param WC_Subscription $subscription
+	 * @param string $notification_type Can be 'trial_end', 'next_payment' or 'end'.
 	 *
 	 * @return int
 	 */
-	protected function subtract_time_offset( $datetime, $subscription ) {
+	protected function subtract_time_offset( $datetime, $subscription, $notification_type ) {
 		$dt = new DateTime( $datetime, new DateTimeZone( 'UTC' ) );
 
-		return $dt->getTimestamp() - $this->get_time_offset( $subscription );
+		return $dt->getTimestamp() - $this->get_time_offset( $subscription, $notification_type );
 	}
 
 	/**
@@ -226,7 +244,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * As this gets called on Subscription save, the modification timestamp should be updated, too, and thus
 	 * the currently updated subscription no longer needs to be processed by the batch process.
 	 *
-	 * @param $subscription
+	 * @param WC_Subscription $subscription
 	 * @param $subscription_data_store
 	 *
 	 * @return void
@@ -258,8 +276,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * Date/time is determined automatically based on notification type, dates stored on the subscription,
 	 * and offset WCS_Action_Scheduler_Customer_Notifications::$time_offset.
 	 *
-	 * @param $subscription
-	 * @param $notification_type
+	 * @param WC_Subscription $subscription
+	 * @param string $notification_type
 	 *
 	 * @return void
 	 */
@@ -267,7 +285,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		$action_name = self::get_action_from_date_type( $notification_type );
 
 		$event_date = $subscription->get_date( $notification_type );
-		$timestamp  = $this->subtract_time_offset( $event_date, $subscription );
+		$timestamp  = $this->subtract_time_offset( $event_date, $subscription, $notification_type );
 
 		$this->maybe_schedule_notification(
 			$subscription,
@@ -281,7 +299,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * Which notifications are needed for the subscription is determined by \WCS_Action_Scheduler_Customer_Notifications::get_valid_notifications.
 	 *
-	 * @param $subscription
+	 * @param WC_Subscription $subscription
 	 *
 	 * @return void
 	 */
@@ -332,7 +350,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Schedule notifications if the date has been deleted.
 	 *
-	 * @param object $subscription An instance of a WC_Subscription object
+	 * @param WC_Subscription $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
 	public function delete_date( $subscription, $date_type ) {
@@ -340,6 +358,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		if ( $action ) {
 			$this->unschedule_actions( $action, self::get_action_args( $subscription ) );
 		}
+
+		$this->schedule_all_notifications( $subscription );
 	}
 
 	/**
@@ -371,7 +391,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case 'active':
-				// Schedule new notifications.
+				// Schedule new notifications (will also unschedule unneeded ones).
 				$this->schedule_all_notifications( $subscription );
 				break;
 			case 'pending-cancel':
