@@ -184,7 +184,7 @@ class WC_Subscriptions_Email_Notifications {
 	 *
 	 * @return bool
 	 */
-	public static function should_send_notification( $subscription ) {
+	public static function should_send_notification() {
 		$notification_enabled = true;
 
 		if ( WCS_Staging::is_duplicate_site() ) {
@@ -203,19 +203,7 @@ class WC_Subscriptions_Email_Notifications {
 			$notification_enabled = false;
 		}
 
-		/**
-		 * Enables/disables all customer subscription notifications.
-		 *
-		 * Values 'yes' or 'no' expected, since it works with WC_Settings_API.
-		 *
-		 * @since x.x.x
-		 *
-		 * @param bool $notification_enabled
-		 * @param WC_Subscription $subscription
-		 *
-		 * @return bool
-		 */
-		return apply_filters( 'woocommerce_subscription_customer_email_notifications_enabled', $notification_enabled, $subscription );
+		return $notification_enabled;
 	}
 
 	/**
