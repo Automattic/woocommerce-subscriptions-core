@@ -226,7 +226,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * As this gets called on Subscription save, the modification timestamp should be updated, too, and thus
 	 * the currently updated subscription no longer needs to be processed by the batch process.
 	 *
-	 * @param $subscription
+	 * @param WC_Subscription $subscription
 	 * @param $subscription_data_store
 	 *
 	 * @return void
@@ -258,8 +258,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 * Date/time is determined automatically based on notification type, dates stored on the subscription,
 	 * and offset WCS_Action_Scheduler_Customer_Notifications::$time_offset.
 	 *
-	 * @param $subscription
-	 * @param $notification_type
+	 * @param WC_Subscription $subscription
+	 * @param string $notification_type
 	 *
 	 * @return void
 	 */
@@ -281,7 +281,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * Which notifications are needed for the subscription is determined by \WCS_Action_Scheduler_Customer_Notifications::get_valid_notifications.
 	 *
-	 * @param $subscription
+	 * @param WC_Subscription $subscription
 	 *
 	 * @return void
 	 */

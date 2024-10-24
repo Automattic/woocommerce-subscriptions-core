@@ -6,13 +6,15 @@ class WCS_Subscription_Notifications_Emails_Test extends WP_UnitTestCase {
 	 * Test should send notification.
 	 */
 	public function test_should_send_notification() {
+		$subscription = WCS_Helper_Subscription::create_subscription();
+
 		add_filter( 'woocommerce_subscriptions_is_duplicate_site', '__return_false' );
-		$should = WC_Subscriptions_Email_Notifications::should_send_notification();
+		$should = WC_Subscriptions_Email_Notifications::should_send_notification( $subscription );
 		$this->assertTrue( $should );
 
 		$this->disable_notifications_globally();
 
-		$should = WC_Subscriptions_Email_Notifications::should_send_notification();
+		$should = WC_Subscriptions_Email_Notifications::should_send_notification( $subscription );
 		$this->assertFalse( $should );
 		remove_filter( 'woocommerce_subscriptions_is_duplicate_site', '__return_false' );
 	}

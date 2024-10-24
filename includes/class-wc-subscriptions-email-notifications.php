@@ -184,7 +184,7 @@ class WC_Subscriptions_Email_Notifications {
 	 *
 	 * @return bool
 	 */
-	public static function should_send_notification() {
+	public static function should_send_notification( $subscription ) {
 		$notification_enabled = true;
 
 		if ( WCS_Staging::is_duplicate_site() ) {
@@ -212,7 +212,7 @@ class WC_Subscriptions_Email_Notifications {
 		 *
 		 * @param string $notification_enabled
 		 */
-		return apply_filters( 'wcs_customer_email_notifications_enabled', $notification_enabled );
+		return apply_filters( 'wcs_customer_email_notifications_enabled', $notification_enabled, $subscription );
 	}
 
 	/**
