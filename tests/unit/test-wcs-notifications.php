@@ -2186,7 +2186,6 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	protected static function update_dates( $subscription, $dates_to_update ) {
 		if ( ! empty( $dates_to_update ) ) {
 			$subscription->update_dates( $dates_to_update );
-			$subscription->save();
 		}
 
 		return $subscription;
