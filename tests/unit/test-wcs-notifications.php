@@ -47,6 +47,34 @@ class WCS_Subscription_Notification_Test extends WP_UnitTestCase {
 	 *
 	 * Objects are compared just by their values, not if they are the same instance.
 	 *
+	 * Return value has the following format:
+	 * [
+	 *  subscription_ID_1 =>
+	 *      [
+	 *          'scheduled_action_hook_1' =>
+	 *              [
+	 *                  'change' => 'updated',
+	 *                  'from'   => ActionScheduler_Action in the state before the change
+	 *                  'to'     => ActionScheduler_Action in the state after the change
+	 *                  'action' => ActionScheduler_Action in the final state
+	 *              ],
+	 *          'scheduled_action_hook_2' =>
+	 *               [
+	 *                   'change' => 'deleted',
+	 *                   'action' => deleted ActionScheduler_Action
+	 *               ],
+	 *           'scheduled_action_hook_3' =>
+	 *                [
+	 *                    'change' => 'added',
+	 *                    'action' => added ActionScheduler_Action
+	 *                ],
+	 *      ],
+	 *  subscription_ID_2 =>
+	 *      [
+	 *          ...
+	 *      ],
+	 * ]
+	 *
 	 * #BlameGPT o1-preview if this has bugs.
 	 *
 	 * @param $array_1
