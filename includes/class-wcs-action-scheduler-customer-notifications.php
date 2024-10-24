@@ -332,7 +332,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Schedule notifications if the date has been deleted.
 	 *
-	 * @param object $subscription An instance of a WC_Subscription object
+	 * @param WC_Subscription $subscription An instance of a WC_Subscription object
 	 * @param string $date_type Can be 'trial_end', 'next_payment', 'end', 'end_of_prepaid_term' or a custom date type
 	 */
 	public function delete_date( $subscription, $date_type ) {
@@ -340,6 +340,8 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		if ( $action ) {
 			$this->unschedule_actions( $action, self::get_action_args( $subscription ) );
 		}
+
+		$this->schedule_all_notifications( $subscription );
 	}
 
 	/**
@@ -371,7 +373,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 
 		switch ( $new_status ) {
 			case 'active':
-				// Schedule new notifications.
+				// Schedule new notifications (will also unschedule unneeded ones).
 				$this->schedule_all_notifications( $subscription );
 				break;
 			case 'pending-cancel':
