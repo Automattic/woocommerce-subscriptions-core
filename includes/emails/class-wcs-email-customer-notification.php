@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Customer notification email
+ *
+ * Customer notification email sent to customer when a there's an upcoming payment/expity/free trial expiry.
+ *
+ * @class WCS_Email_Customer_Notification
+ * @version x.x.x
+ * @package WooCommerce/Classes/Emails
+ */
 class WCS_Email_Customer_Notification extends WC_Email {
 
 	public function __construct() {
@@ -107,7 +116,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
-	 * get_content_html function.
+	 * Get content for the HTML-version of the email.
 	 *
 	 * @return string
 	 */
@@ -153,7 +162,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
-	 * get_content_plain function.
+	 * Get content for the plain (text, non-HTML) version of the email.
 	 *
 	 * @return string
 	 */
@@ -198,6 +207,17 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		);
 	}
 
+	/**
+	 * Returns number of days until date_type for subscription.
+	 *
+	 * This method is needed when sending out the emails as the email queue might be delayed, in which case the email
+	 * should state the correct number of days until the date_type.
+	 *
+	 * @param WC_Subscription $subscription Subscription to check.
+	 * @param string $date_type Date type to count days to.
+	 *
+	 * @return false|int|string Number of days from now until the date type event's time. Empty string if subscription doesn't have the date_type defined. False if DateTime can't process the data.
+	 */
 	public function get_time_until_date( $subscription, $date_type ) {
 		$next_event = $subscription->get_date( $date_type );
 		if ( ! $next_event ) {
@@ -212,6 +232,14 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		return $interval->days;
 	}
 
+	/**
+	 * Return subscription's date of date type in localized format.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @param string $date_type
+	 *
+	 * @return string
+	 */
 	public function get_formatted_date( $subscription, $date_type ) {
 		return date_i18n( wc_date_format(), $subscription->get_time( $date_type, 'site' ) );
 	}
