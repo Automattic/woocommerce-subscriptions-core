@@ -75,6 +75,31 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
+	 * Update message parameter for the redirect URL when redirecting after
+	 * an unsuccessful order (subscription) action to send a notification.
+	 *
+	 * @param string $redirect_to
+	 * @param int $subscription_id
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return mixed|string
+	 */
+	public function filter_order_redirect( $redirect_to, $subscription_id, $subscription ) {
+
+		if ( ! wcs_is_subscription( $subscription ) ) {
+			return $redirect_to;
+		}
+
+		// Replace 'message=1' with 'message=11' to display correct info to the user.
+		if ( strpos( $redirect_to, 'message=1' ) !== false ) {
+			$redirect_to = remove_query_arg( 'message', $redirect_to );
+			$redirect_to = add_query_arg( 'message', '11', $redirect_to );
+		}
+
+		return $redirect_to;
+	}
+
+	/**
 	 * Trigger function.
 	 *
 	 * @return void
@@ -89,7 +114,10 @@ class WCS_Email_Customer_Notification extends WC_Email {
 			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
 			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
 		) {
-			// TODO: add admin notice here if in admin
+			// Update message code to display correct message.
+			if ( is_admin() ) {
+				add_filter( 'woocommerce_redirect_order_location', [ $this, 'filter_order_redirect' ], 10, 3 );
+			}
 			return;
 		}
 

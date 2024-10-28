@@ -25,9 +25,9 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static function init() {
 
-		add_action( 'woocommerce_email_classes', __CLASS__ . '::add_emails', 10, 1 );
+		add_action( 'woocommerce_email_classes', [ __CLASS__, 'add_emails' ], 10, 1 );
 
-		add_action( 'woocommerce_init', __CLASS__ . '::hook_notification_emails' );
+		add_action( 'woocommerce_init', [ __CLASS__, 'hook_notification_emails' ] );
 
 		// Add notification actions to the admin edit subscriptions page.
 		add_filter( 'woocommerce_order_actions', [ __CLASS__, 'add_notification_actions' ], 10, 1 );
