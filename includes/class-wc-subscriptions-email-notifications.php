@@ -43,10 +43,11 @@ class WC_Subscriptions_Email_Notifications {
 		// Add admin notice.
 		add_action( 'admin_notices', [ __CLASS__, 'maybe_add_admin_notice' ] );
 
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
+		// Bump settings update time whenever related options change.
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 3 );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 3 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 2 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 2 );
 	}
 
 	/**
