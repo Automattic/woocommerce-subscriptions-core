@@ -1,8 +1,11 @@
 <?php
 /**
- * Subscription Product Query Controller
+ * Subscription Query Controller
  *
- * This class is used by wcs_get_subscriptions() to determine if the query should be filtered by product ID or variation ID after the query has been run.
+ * This class is used to assist the wcs_get_subscriptions() query for something.
+ * It currently supports 1 feature to determine if the query should be filtered by product ID or variation ID after the query has been run.
+ *
+ * QUERYING SUBSCRIPTIONS BY PRODUCT
  *
  * Querying subscriptions by product or variation ID is an expensive database operation. This class provides methods to determine if a wcs_get_subscriptions()
  * set of args would be better served by filtering the query results by product ID or variation ID after the query has been run, rather than querying for
@@ -19,9 +22,9 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WC_Subscription_Product_Query class.
+ * WC_Subscription_Query_Controller class.
  */
-class WC_Subscription_Product_Query_Controller {
+class WC_Subscription_Query_Controller {
 
 	/**
 	 * The wcs_get_subscriptions() query variables.
