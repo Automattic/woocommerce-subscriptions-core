@@ -97,7 +97,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 				$order_note_msg = sprintf( __( '%1$s was successfully sent to %2$s.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
 			} else {
 				/* translators: 1: Notification type, 2: customer's email. */
-				$order_note_msg = sprintf( __( 'Attempt to send %1$s to %2$s failed successfully.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
+				$order_note_msg = sprintf( __( 'Attempt to send %1$s to %2$s failed.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
 			}
 
 			$subscription->add_order_note( $order_note_msg );
