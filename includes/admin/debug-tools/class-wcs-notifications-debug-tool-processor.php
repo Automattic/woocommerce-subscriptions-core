@@ -231,6 +231,10 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 		foreach ( $batch as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
 
+			if ( ! $subscription ) {
+				continue;
+			}
+
 			if ( WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
 				$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
 			} else {
