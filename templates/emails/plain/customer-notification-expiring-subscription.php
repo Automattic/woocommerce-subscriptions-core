@@ -25,8 +25,13 @@ echo "\n\n";
 
 echo esc_html(
 	sprintf(
-	// translators: %1$s: number of days until expiry, %2$s: date in local format.
-		__( 'Your subscription expires in %1$s days — that’s %2$s.', 'woocommerce-subscriptions' ),
+		// translators: %1$s: number of days until expiry, %2$s: date in local format.
+		_n(
+			'Your subscription expires in %1$s day — that’s %2$s.',
+			'Your subscription expires in %1$s days — that’s %2$s.',
+			(int) $subscription_days_til_event,
+			'woocommerce-subscriptions'
+		),
 		(int) $subscription_days_til_event,
 		$subscription_event_date
 	)

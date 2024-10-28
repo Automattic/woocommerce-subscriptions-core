@@ -34,7 +34,12 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		echo wp_kses(
 			sprintf(
 				// translators: %1$s: number of days until expiry, %2$s: date in local format.
-				__( 'Your subscription will <strong>automatically renew</strong> in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
+				_n(
+					'Your subscription will <strong>automatically renew</strong> in %1$s day — that’s <strong>%2$s</strong>.',
+					'Your subscription will <strong>automatically renew</strong> in %1$s days — that’s <strong>%2$s</strong>.',
+					(int) $subscription_days_til_event,
+					'woocommerce-subscriptions'
+				),
 				(int) $subscription_days_til_event,
 				$subscription_event_date
 			),
