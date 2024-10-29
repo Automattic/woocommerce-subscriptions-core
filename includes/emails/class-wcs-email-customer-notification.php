@@ -256,8 +256,12 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$next_event_dt = new DateTime( $next_event, new DateTimeZone( 'UTC' ) );
 		$now           = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
 
+		// Both dates to midnight so we only compare days, not hours.
+		$next_event_dt->setTime( 0, 0 );
+		$now->setTime( 0, 0 );
+
 		// Add some buffer, otherwise it will claim that only 2 full days are left when in reality it's 2 days, 23 hours and 59 minutes.
-		$now->modify( '+1 hour' );
+		$now->modify( '-1 hour' );
 		return human_time_diff( $now->getTimestamp(), $next_event_dt->getTimestamp() );
 	}
 
