@@ -311,6 +311,11 @@ class WC_Subscriptions_Email_Notifications {
 			return;
 		}
 
+		// Prevent showing the notice on the Subscriptions settings page.
+		if ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-settings' === $_GET['page'] && 'subscriptions' === $_GET['tab'] ) {
+			return;
+		}
+
 		$option_name = 'wcs_hide_customer_notifications_notice';
 		$nonce       = '_wcsnonce';
 		$action      = 'wcs_hide_customer_notifications_notice_action';
@@ -327,22 +332,22 @@ class WC_Subscriptions_Email_Notifications {
 			return;
 		}
 
-		$admin_notice = new WCS_Admin_Notice( 'notice' );
-		$admin_notice->set_simple_content(
-			esc_html__(
-				'New customer email reminders for renewals, expirations, and free trials are now available! Enable and configure these features in WooCommerce > Settings > Subscriptions to control when your customers receive important updates.',
-				'woocommerce-subscriptions'
-			)
-		);
+		$admin_notice   = new WCS_Admin_Notice( 'notice', array(), wp_nonce_url( add_query_arg( $action, 'dismiss' ), $action, $nonce ) );
+		$notice_title   = __( 'WooCommerce Subscriptions: Introducing customer email notifications!', 'woocommerce-subscriptions' );
+		$notice_content = __( 'You can now send email notifications for subscription renewals, expirations, and free trials. Go to the settings page to configure when your customers receive these important updates.', 'woocommerce-subscriptions' );
+		$html_content   = sprintf( '<p class="main"><strong>%1$s</strong></p><p>%2$s</p>', $notice_title, $notice_content );
+		$admin_notice->set_html_content( $html_content );
 		$admin_notice->set_actions(
 			array(
 				array(
-					'name' => 'Manage Settings',
-					'url'  => admin_url( 'admin.php?page=wc-settings&tab=subscriptions' ),
+					'name'  => __( 'Manage settings', 'woocommerce-subscriptions' ),
+					'url'   => admin_url( 'admin.php?page=wc-settings&tab=subscriptions' ),
+					'class' => 'button button-primary',
 				),
 				array(
-					'name' => 'Dismiss',
-					'url'  => wp_nonce_url( add_query_arg( $action, 'dismiss' ), $action, $nonce ),
+					'name'  => __( 'Learn more', 'woocommerce-subscriptions' ),
+					'url'   => 'https://woocommerce.com/document/subscriptions/subscriptions-notifications/',
+					'class' => 'button',
 				),
 			)
 		);
