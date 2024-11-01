@@ -259,6 +259,7 @@ class WC_Subscriptions_Email_Notifications {
 	 * @return array Subscriptions settings.
 	 */
 	public static function add_settings( $settings ) {
+
 		$notification_settings = [
 			[
 				'name' => __( 'Customer Notifications', 'woocommerce-subscriptions' ),
@@ -334,7 +335,7 @@ class WC_Subscriptions_Email_Notifications {
 
 		$admin_notice   = new WCS_Admin_Notice( 'notice', array(), wp_nonce_url( add_query_arg( $action, 'dismiss' ), $action, $nonce ) );
 		$notice_title   = __( 'WooCommerce Subscriptions: Introducing customer email notifications!', 'woocommerce-subscriptions' );
-		$notice_content = __( 'You can now send email notifications for subscription renewals, expirations, and free trials. Go to the settings page to configure when your customers receive these important updates.', 'woocommerce-subscriptions' );
+		$notice_content = __( 'You can now send email notifications for subscription renewals, expirations, and free trials. Go to the "Customer Notifications" settings section to configure when your customers receive these important updates.', 'woocommerce-subscriptions' );
 		$html_content   = sprintf( '<p class="main"><strong>%1$s</strong></p><p>%2$s</p>', $notice_title, $notice_content );
 		$admin_notice->set_html_content( $html_content );
 		$admin_notice->set_actions(
