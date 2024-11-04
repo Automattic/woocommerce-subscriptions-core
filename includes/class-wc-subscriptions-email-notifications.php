@@ -268,11 +268,11 @@ class WC_Subscriptions_Email_Notifications {
 				'type' => 'title',
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
 				/* translators: Link to WC Settings > Email. */
-				'desc' => sprintf( __( 'To enable and disable individual notifications, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
+				'desc' => sprintf( __( 'To enable/disable individual notifications and customize templates, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
 			],
 			[
-				'name'     => __( 'Enable Renewal Reminders', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Enable customer renewal reminder notification emails.', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Enable Reminders', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Send notification emails to customers for subscription renewals and expirations.', 'woocommerce-subscriptions' ),
 				'tip'      => '',
 				'id'       => WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string,
 				'desc_tip' => false,
@@ -281,7 +281,7 @@ class WC_Subscriptions_Email_Notifications {
 				'autoload' => false,
 			],
 			[
-				'name'        => __( 'Renewal Reminder Timing', 'woocommerce-subscriptions' ),
+				'name'        => __( 'Renewal Timing', 'woocommerce-subscriptions' ),
 				'desc'        => __( 'How long before the event should the notification be sent.', 'woocommerce-subscriptions' ),
 				'tip'         => '',
 				'id'          => WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string,
