@@ -52,10 +52,10 @@ class WC_Subscriptions_Cart_Validator {
 				wc_add_notice( $message, 'notice' );
 			}
 		} elseif ( wcs_cart_contains_renewal() ) {
-			if (  $is_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
+			if ( $is_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
 				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
 				wc_add_notice( __( 'A subscription renewal has been removed from your cart. Multiple subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
-	 		} else ( ! $is_subscription ) {
+			} elseif ( ! $is_subscription ) {
 				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
 				wc_add_notice( __( 'A subscription renewal has been removed from your cart. Products and subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
 			}
