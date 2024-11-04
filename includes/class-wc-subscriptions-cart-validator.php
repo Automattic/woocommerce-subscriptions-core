@@ -51,12 +51,14 @@ class WC_Subscriptions_Cart_Validator {
 				WC()->cart->empty_cart();
 				wc_add_notice( $message, 'notice' );
 			}
-		} elseif ( $is_subscription && wcs_cart_contains_renewal() && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
-
-			WC_Subscriptions_Cart::remove_subscriptions_from_cart();
-
-			wc_add_notice( __( 'A subscription renewal has been removed from your cart. Multiple subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
-
+		} elseif ( wcs_cart_contains_renewal() ) {
+			if (  $is_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
+				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
+				wc_add_notice( __( 'A subscription renewal has been removed from your cart. Multiple subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
+	 		} else ( ! $is_subscription ) {
+				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
+				wc_add_notice( __( 'A subscription renewal has been removed from your cart. Products and subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
+			}
 		} elseif ( $is_subscription && $cart_contains_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled && ! WC_Subscriptions_Cart::cart_contains_product( $canonical_product_id ) ) {
 
 			WC_Subscriptions_Cart::remove_subscriptions_from_cart();
