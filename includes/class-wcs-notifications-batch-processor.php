@@ -73,7 +73,7 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 	 * Get the total number of pending items that require processing.
 	 * Once an item is successfully processed by 'process_batch' it shouldn't be included in this count.
 	 *
-	 * Note that the once the processor is enqueued the batch processor controller will keep
+	 * Note that once the processor is enqueued the batch processor controller will keep
 	 * invoking `get_next_batch_to_process` and `process_batch` repeatedly until this method returns zero.
 	 *
 	 * Since this batch processor updates only subscriptions older than the settings update,

@@ -158,7 +158,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *  - the subscription's billing cycle is less than 3 days,
 	 *  - there is already the same action scheduled for the same subscription and time.
 	 *
-	 * If only the time differs, the previous scheduled action will be unscheduled and a new one will repale it.
+	 * If only the time differs, the previous scheduled action will be unscheduled and a new one will replace it.
 	 *
 	 * @param WC_Subscription $subscription Subscription to schedule the action for.
 	 * @param string $action Action ID to schedule.

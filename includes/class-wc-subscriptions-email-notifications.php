@@ -227,14 +227,7 @@ class WC_Subscriptions_Email_Notifications {
 			return $actions;
 		}
 
-		if ( ! $theorder->has_status(
-			[
-				'active',
-				'on-hold',
-				'pending-cancel',
-			]
-		)
-		) {
+		if ( ! $theorder->has_status( [ 'active', 'on-hold', 'pending-cancel' ] ) ) {
 			return $actions;
 		}
 
