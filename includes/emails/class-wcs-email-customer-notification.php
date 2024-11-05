@@ -16,7 +16,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$this->placeholders = array_merge(
 			[
 				'{customers_first_name}' => '',
-				'{days_until_renewal}'   => '',
+				'{time_until_renewal}'   => '',
 			],
 			$this->placeholders
 		);
@@ -125,7 +125,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 
 		try {
 			$this->placeholders['{customers_first_name}'] = $subscription->get_billing_first_name();
-			$this->placeholders['{days_until_renewal}']   = $this->get_time_until_date( $subscription, 'next_payment' );
+			$this->placeholders['{time_until_renewal}']   = $this->get_time_until_date( $subscription, 'next_payment' );
 
 			$result = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 
@@ -169,7 +169,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 				'subscription'                => $subscription,
 				'order'                       => $subscription->get_parent(),
 				'email_heading'               => $this->get_heading(),
-				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_time_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
 				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
 				'url_for_renewal'             => $url_for_renewal,
 				'can_renew_early'             => $can_renew_early,
@@ -215,7 +215,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 				'subscription'                => $subscription,
 				'order'                       => $subscription->get_parent(),
 				'email_heading'               => $this->get_heading(),
-				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_time_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
 				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
 				'url_for_renewal'             => $url_for_renewal,
 				'can_renew_early'             => $can_renew_early,
@@ -248,16 +248,21 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 */
 	public function get_time_until_date( $subscription, $date_type ) {
 		$next_event = $subscription->get_date( $date_type );
+
 		if ( ! $next_event ) {
 			return '';
 		}
 
 		$next_event_dt = new DateTime( $next_event, new DateTimeZone( 'UTC' ) );
 		$now           = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+
+		// Both dates to midnight so we only compare days, not hours.
+		$next_event_dt->setTime( 0, 0 );
+		$now->setTime( 0, 0 );
+
 		// Add some buffer, otherwise it will claim that only 2 full days are left when in reality it's 2 days, 23 hours and 59 minutes.
-		$now->modify( '+1 hour' );
-		$interval = $next_event_dt->diff( $now );
-		return $interval->days;
+		$now->modify( '-1 hour' );
+		return human_time_diff( $now->getTimestamp(), $next_event_dt->getTimestamp() );
 	}
 
 	/**
