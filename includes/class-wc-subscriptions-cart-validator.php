@@ -51,14 +51,12 @@ class WC_Subscriptions_Cart_Validator {
 				WC()->cart->empty_cart();
 				wc_add_notice( $message, 'notice' );
 			}
-		} elseif ( wcs_cart_contains_renewal() ) {
-			if ( $is_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
-				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
-				wc_add_notice( __( 'A subscription renewal has been removed from your cart. Multiple subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
-			} elseif ( ! $is_subscription ) {
-				WC_Subscriptions_Cart::remove_subscriptions_from_cart();
-				wc_add_notice( __( 'A subscription renewal has been removed from your cart. Products and subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
-			}
+		} elseif ( $is_subscription && wcs_cart_contains_renewal() && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
+
+			WC_Subscriptions_Cart::remove_subscriptions_from_cart();
+
+			wc_add_notice( __( 'A subscription renewal has been removed from your cart. Multiple subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
+
 		} elseif ( $is_subscription && $cart_contains_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled && ! WC_Subscriptions_Cart::cart_contains_product( $canonical_product_id ) ) {
 
 			WC_Subscriptions_Cart::remove_subscriptions_from_cart();
@@ -126,10 +124,14 @@ class WC_Subscriptions_Cart_Validator {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
 	 */
 	public static function can_add_subscription_product_to_cart( $can_add, $product_id, $quantity, $variation_id = '', $variations = array(), $item_data = array() ) {
+		if ( $can_add && ! isset( $item_data['subscription_renewal'] ) && wcs_cart_contains_renewal() ) {
+			if ( WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+				wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
+			} else {
+				// Additional products cannot be purchased when a renewal is added to the cart, so there’s no need to add it.
+				wc_add_notice( __( 'That product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
+			}
 
-		if ( $can_add && ! isset( $item_data['subscription_renewal'] ) && wcs_cart_contains_renewal() && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
-
-			wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
 			$can_add = false;
 		}
 
