@@ -75,31 +75,6 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
-	 * Update message parameter for the redirect URL when redirecting after
-	 * an unsuccessful order (subscription) action to send a notification.
-	 *
-	 * @param string $redirect_to
-	 * @param int $subscription_id
-	 * @param WC_Subscription $subscription
-	 *
-	 * @return mixed|string
-	 */
-	public function filter_order_redirect( $redirect_to, $subscription_id, $subscription ) {
-
-		if ( ! wcs_is_subscription( $subscription ) ) {
-			return $redirect_to;
-		}
-
-		// Replace 'message=1' with 'message=11' to display correct info to the user.
-		if ( strpos( $redirect_to, 'message=1' ) !== false ) {
-			$redirect_to = remove_query_arg( 'message', $redirect_to );
-			$redirect_to = add_query_arg( 'message', '11', $redirect_to );
-		}
-
-		return $redirect_to;
-	}
-
-	/**
 	 * Trigger function.
 	 *
 	 * @return void
@@ -114,10 +89,34 @@ class WCS_Email_Customer_Notification extends WC_Email {
 			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
 			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
 		) {
-			// Update message code to display correct message.
+			// Add order/subscription note.
 			if ( is_admin() ) {
-				add_filter( 'woocommerce_redirect_order_location', [ $this, 'filter_order_redirect' ], 10, 3 );
+				// translators: %1$s: email title.
+				$order_note_msg = sprintf( __( 'Skipped sending %1$s: ', 'woocommerce-subscriptions' ), $this->title );
+
+				// Theoretically, this shouldn't happen, because no notification-related actions are included in the list if the
+				// global switch is off, but included it here for completeness.
+				if ( ! $this->is_enabled() ) {
+					$order_note_msg .= "\n";
+					$order_note_msg .= __( 'Global notification switch is off.', 'woocommerce-subscriptions' );
+				}
+
+				if ( ! $this->get_recipient() ) {
+					$order_note_msg .= "\n";
+					$order_note_msg .= __( 'Unknown recipient.', 'woocommerce-subscriptions' );
+				}
+
+				if ( ! WC_Subscriptions_Email_Notifications::should_send_notification() && $this->is_enabled() ) {
+					$order_note_msg .= "\n";
+					$order_note_msg .= __( 'Not a production site.', 'woocommerce-subscriptions' );
+				}
+
+				if ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
+					$order_note_msg .= "\n";
+					$order_note_msg .= __( 'Subscription billing cycle is too short to send notifications.', 'woocommerce-subscriptions' );
+				}
 			}
+			$subscription->add_order_note( $order_note_msg );
 			return;
 		}
 

@@ -1122,7 +1122,6 @@ class WCS_Admin_Post_Types {
 			// translators: php date string
 			9  => sprintf( __( 'Subscription scheduled for: %1$s.', 'woocommerce-subscriptions' ), '<strong>' . date_i18n( _x( 'M j, Y @ G:i', 'used in "Subscription scheduled for <date>"', 'woocommerce-subscriptions' ), strtotime( $theorder->get_date_created() ?? $post->post_date ) ) . '</strong>' ),
 			10 => __( 'Subscription draft updated.', 'woocommerce-subscriptions' ),
-			11 => __( 'Subscription notification not sent. Please see the docs for details.', 'woocommerce-subscriptions' ),
 		);
 
 		return $messages;
