@@ -274,7 +274,7 @@ class WC_Subscriptions_Email_Notifications {
 				'autoload' => false,
 			],
 			[
-				'name'        => __( 'Renewal Timing', 'woocommerce-subscriptions' ),
+				'name'        => __( 'Reminder Timing', 'woocommerce-subscriptions' ),
 				'desc'        => __( 'How long before the event should the notification be sent.', 'woocommerce-subscriptions' ),
 				'tip'         => '',
 				'id'          => WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string,
