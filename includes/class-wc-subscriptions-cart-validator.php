@@ -128,7 +128,7 @@ class WC_Subscriptions_Cart_Validator {
 			if ( WC_Subscriptions_Product::is_subscription( $product_id ) ) {
 				wc_add_notice( __( 'That subscription product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
 			} else {
-				// Additional products cannot be purchased when a renewal is added to the cart, so there’s no need to add it.
+				// Additional products cannot be purchased if a renewal is in the cart, so there’s no need to add them.
 				wc_add_notice( __( 'That product can not be added to your cart as it already contains a subscription renewal.', 'woocommerce-subscriptions' ), 'error' );
 			}
 
