@@ -90,21 +90,18 @@ class WCS_Email_Customer_Notification extends WC_Email {
 			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
 		) {
 			// Add order/subscription note.
-			if ( is_admin() ) {
-				if ( ! $this->get_recipient() ) {
-					$error = __( 'Recipient not found.', 'woocommerce-subscriptions' );
-				} elseif ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
-					$error = __( 'Not a production site.', 'woocommerce-subscriptions' );
-				} elseif ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
-					$error = __( 'Subscription billing cycle too short.', 'woocommerce-subscriptions' );
-				} else {
-					$error = __( 'Reminder emails disabled.', 'woocommerce-subscriptions' );
-				}
-
-				// translators: %1$s: email title, %2$s: error message.
-				$subscription->add_order_note( sprintf( __( 'Skipped sending %1$s. %2$s', 'woocommerce-subscriptions' ), $this->title, $error ) );
+			if ( ! $this->get_recipient() ) {
+				$error = __( 'Recipient not found.', 'woocommerce-subscriptions' );
+			} elseif ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
+				$error = __( 'Not a production site.', 'woocommerce-subscriptions' );
+			} elseif ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
+				$error = __( 'Subscription billing cycle too short.', 'woocommerce-subscriptions' );
+			} else {
+				$error = __( 'Reminder emails disabled.', 'woocommerce-subscriptions' );
 			}
 
+			// translators: %1$s: email title, %2$s: error message.
+			$subscription->add_order_note( sprintf( __( 'Skipped sending %1$s. %2$s', 'woocommerce-subscriptions' ), $this->title, $error ) );
 			return;
 		}
 
