@@ -91,32 +91,20 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		) {
 			// Add order/subscription note.
 			if ( is_admin() ) {
-				// translators: %1$s: email title.
-				$order_note_msg = sprintf( __( 'Skipped sending %1$s: ', 'woocommerce-subscriptions' ), $this->title );
-
-				// Theoretically, this shouldn't happen, because no notification-related actions are included in the list if the
-				// global switch is off, but included it here for completeness.
-				if ( ! $this->is_enabled() ) {
-					$order_note_msg .= "\n";
-					$order_note_msg .= __( 'Global notification switch is off.', 'woocommerce-subscriptions' );
-				}
-
 				if ( ! $this->get_recipient() ) {
-					$order_note_msg .= "\n";
-					$order_note_msg .= __( 'Unknown recipient.', 'woocommerce-subscriptions' );
+					$error = __( 'Recipient not found.', 'woocommerce-subscriptions' );
+				} elseif ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
+					$error = __( 'Not a production site.', 'woocommerce-subscriptions' );
+				} elseif ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
+					$error = __( 'Subscription billing cycle too short.', 'woocommerce-subscriptions' );
+				} else {
+					$error = __( 'Reminder emails disabled.', 'woocommerce-subscriptions' );
 				}
 
-				if ( ! WC_Subscriptions_Email_Notifications::should_send_notification() && $this->is_enabled() ) {
-					$order_note_msg .= "\n";
-					$order_note_msg .= __( 'Not a production site.', 'woocommerce-subscriptions' );
-				}
-
-				if ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
-					$order_note_msg .= "\n";
-					$order_note_msg .= __( 'Subscription billing cycle is too short to send notifications.', 'woocommerce-subscriptions' );
-				}
+				// translators: %1$s: email title, %2$s: error message.
+				$subscription->add_order_note( sprintf( __( 'Skipped sending %1$s. %2$s', 'woocommerce-subscriptions' ), $this->title, $error ) );
 			}
-			$subscription->add_order_note( $order_note_msg );
+
 			return;
 		}
 
