@@ -906,7 +906,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->subscriptions['active']->delete_date( 'end' );
 		$this->assertEquals( 0, $this->subscriptions['active']->get_date( 'end' ) );
-		$this->assertEmpty( get_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), true ) );
+		$this->assertEmpty( $this->subscriptions['active']->get_meta( wcs_get_date_meta_key( 'end' ), true ) );
 
 		update_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
 	}
@@ -919,7 +919,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_delete_date_other() {
 		$this->subscriptions['pending']->delete_date( 'wcs_rubbish' );
 		$this->assertEquals( 0, $this->subscriptions['pending']->get_date( 'wcs_rubbish' ) );
-		$this->assertEmpty( get_post_meta( $this->subscriptions['pending']->get_id(), wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
+		$this->assertEmpty( $this->subscriptions['pending']->get_meta( wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
 	}
 
 	/**
@@ -1225,14 +1225,14 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->assertNotEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+			$this->assertNotEquals( $expected_suspensions, $subscription->get_meta( '_suspension_count', true ) );
 		}
 
 		$subscription->set_suspension_count( $expected_suspensions );
 		$subscription->save();
 		$this->assertEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->assertEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+			$this->assertEquals( $expected_suspensions, $subscription->get_meta( '_suspension_count', true ) );
 		}
 	}
 
@@ -2513,7 +2513,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$this->assertEquals( 3, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
-			$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+			$this->assertEquals( 3, $subscription->get_meta( '_suspension_count', true ) );
 		}
 
 		$subscription->payment_complete();
@@ -2523,7 +2523,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'active', $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
-			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
+			$this->assertEquals( 0, $subscription->get_meta( '_suspension_count', true ) );
 		}
 		$this->assertThat(
 			$order->get_status(),

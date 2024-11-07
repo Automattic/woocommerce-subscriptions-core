@@ -114,10 +114,10 @@ function wcs_get_objects_property( $object, $property, $single = 'single', $defa
 				} elseif ( strtolower( $property ) !== 'id' && metadata_exists( 'post', wcs_get_objects_property( $object, 'id' ), $prefixed_key ) ) {
 					// If we couldn't find a property or function, fallback to using post meta as that's what many __get() methods in WC < 3.0 did.
 					if ( 'single' === $single ) {
-						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key, true );
+						$value = $object->get_meta( $prefixed_key, true );
 					} else {
 						// Get all the meta values.
-						$value = get_post_meta( wcs_get_objects_property( $object, 'id' ), $prefixed_key, false );
+						$value = $object->get_meta( $prefixed_key, false );
 					}
 				}
 			}

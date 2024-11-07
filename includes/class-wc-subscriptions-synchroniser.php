@@ -263,7 +263,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::is_syncing_enabled() ) {
 
 			// Set month as the default billing period
-			if ( ! $subscription_period = get_post_meta( $post->ID, '_subscription_period', true ) ) {
+			if ( ! $subscription_period = $post->get_meta( '_subscription_period' ) ) {
 				$subscription_period = 'month';
 			}
 
@@ -1495,10 +1495,12 @@ class WC_Subscriptions_Synchroniser {
 		_deprecated_function( __METHOD__, '2.0', __CLASS__ . '::subscription_contains_synced_product()' );
 
 		if ( is_object( $order_id ) ) {
-			$order_id = wcs_get_objects_property( $order_id, 'id' );
+			$order = $order_id;
+		} else {
+			$order = wc_get_order( $order_id );
 		}
 
-		return 'true' == get_post_meta( $order_id, '_order_contains_synced_subscription', true );
+		return 'true' == $order->get_meta( '_order_contains_synced_subscription' );
 	}
 
 	/**

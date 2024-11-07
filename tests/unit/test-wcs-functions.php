@@ -541,13 +541,13 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			// Verify that non-HPOS storage continues to use legacy meta_keys / values until intentionally deprecated.
-			$this->assertEquals( $expects['currency'], get_post_meta( $subscription_id, '_order_currency', true ) );
-			$this->assertEquals( $expects['period'], get_post_meta( $subscription_id, '_billing_period', true ) );
-			$this->assertEquals( $expects['interval'], get_post_meta( $subscription_id, '_billing_interval', true ) );
-			$this->assertEquals( $expects['customer'], get_post_meta( $subscription_id, '_customer_user', true ) );
-			$this->assertEquals( $expects['version'], get_post_meta( $subscription_id, '_order_version', true ) );
-			$this->assertEquals( $expects['include_tax'], get_post_meta( $subscription_id, '_prices_include_tax', true ) );
-			$this->assertEquals( $expects['created_via'], get_post_meta( $subscription_id, '_created_via', true ) );
+			$this->assertEquals( $expects['currency'], $subscription->get_meta( '_order_currency', true ) );
+			$this->assertEquals( $expects['period'], $subscription->get_meta( '_billing_period', true ) );
+			$this->assertEquals( $expects['interval'], $subscription->get_meta( '_billing_interval', true ) );
+			$this->assertEquals( $expects['customer'], $subscription->get_meta( '_customer_user', true ) );
+			$this->assertEquals( $expects['version'], $subscription->get_meta( '_order_version', true ) );
+			$this->assertEquals( $expects['include_tax'], $subscription->get_meta( '_prices_include_tax', true ) );
+			$this->assertEquals( $expects['created_via'], $subscription->get_meta( '_created_via', true ) );
 		}
 
 		update_option( 'woocommerce_prices_include_tax', $default_include_tax );
@@ -1805,14 +1805,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$this->assertContains( 'post_meta_1_value', array_column( $subscription->get_meta( 'post_meta_1', false ), 'value' ) );
 		if ( ! $hpos_enabled ) {
-			$this->assertContains( 'post_meta_1_value', get_post_meta( $subscription->get_id(), 'post_meta_1' ) );
+			$this->assertContains( 'post_meta_1_value', $subscription->get_meta( 'post_meta_1' ) );
 		}
 
 		wcs_set_payment_meta( $subscription, array( 'postmeta' => array( 'post_meta_2' => array( 'value' => 'post_meta_2_value' ) ) ) );
 		$subscription->save();
 		$this->assertContains( 'post_meta_2_value', array_column( $subscription->get_meta( 'post_meta_2', false ), 'value' ) );
 		if ( ! $hpos_enabled ) {
-			$this->assertContains( 'post_meta_2_value', get_post_meta( $subscription->get_id(), 'post_meta_2' ) );
+			$this->assertContains( 'post_meta_2_value', $subscription->get_meta( 'post_meta_2' ) );
 		}
 
 		// options
