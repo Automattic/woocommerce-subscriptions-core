@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.6.1 - xxxx-xx-xx =
+* Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
+
 = 7.6.0 - 2024-10-14 =
 * Fix - Correctly updates a subscription status to `cancelled` during a payment failure call when the current status is `pending-cancel`.
 * Fix - Clear the `cancelled_email_sent` meta when a subscription is reactivated to allow the customer to receive future cancellation emails.
