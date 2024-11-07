@@ -155,7 +155,7 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		$meta_values = $order->get_meta( $this->get_meta_key( $relation_type ), false );
 		$this->assertEquals( 1, count( $meta_values ) );
 		if ( ! $hpos_enabled ) {
-			$meta_values = $order->get_meta( $this->get_meta_key( $relation_type ) );
+			$meta_values = $order->get_meta( $this->get_meta_key( $relation_type ), false );
 			$this->assertEquals( 1, count( $meta_values ) );
 		}
 	}
