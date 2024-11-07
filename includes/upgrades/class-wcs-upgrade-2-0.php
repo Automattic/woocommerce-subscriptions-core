@@ -876,7 +876,7 @@ class WCS_Upgrade_2_0 {
 		global $wpdb;
 
 		// If the order doesn't contain a switch, we don't need to do anything
-		if ( '' == $switch_order->get_meta( '_switched_subscription_key', true ) ) {
+		if ( '' === $switch_order->get_meta( '_switched_subscription_key', true ) ) {
 			return;
 		}
 
