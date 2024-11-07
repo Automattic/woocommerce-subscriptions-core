@@ -1805,14 +1805,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$this->assertContains( 'post_meta_1_value', array_column( $subscription->get_meta( 'post_meta_1', false ), 'value' ) );
 		if ( ! $hpos_enabled ) {
-			$this->assertContains( 'post_meta_1_value', $subscription->get_meta( 'post_meta_1' ) );
+			$this->assertContains( 'post_meta_1_value', $subscription->get_meta( 'post_meta_1', false ) );
 		}
 
 		wcs_set_payment_meta( $subscription, array( 'postmeta' => array( 'post_meta_2' => array( 'value' => 'post_meta_2_value' ) ) ) );
 		$subscription->save();
 		$this->assertContains( 'post_meta_2_value', array_column( $subscription->get_meta( 'post_meta_2', false ), 'value' ) );
 		if ( ! $hpos_enabled ) {
-			$this->assertContains( 'post_meta_2_value', $subscription->get_meta( 'post_meta_2' ) );
+			$this->assertContains( 'post_meta_2_value', $subscription->get_meta( 'post_meta_2', false ) );
 		}
 
 		// options
