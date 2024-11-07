@@ -171,7 +171,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
 			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
-				$meta_value = $subscription->get_meta( $meta_key );
+				$meta_value = $subscription->get_meta( $meta_key, true );
 
 				// Dates are set via update_dates() to make sure relationships between dates are validated
 				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
@@ -200,7 +200,7 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		 * @see https://github.com/Prospress/woocommerce-subscriptions/issues/3036
 		 */
 		if ( '3.5.0' === WC()->version ) {
-			$props_to_set['customer_id'] = $subscription->get_meta( '_customer_user' );
+			$props_to_set['customer_id'] = $subscription->get_meta( '_customer_user', true );
 		}
 
 		$subscription->update_dates( $dates_to_set );

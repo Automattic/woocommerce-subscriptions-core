@@ -27,6 +27,6 @@ class WCS_Post_Meta_Cache_Manager_Many_To_One extends WCS_Post_Meta_Cache_Manage
 	 */
 	public function meta_updated( $meta_id, $post_id, $meta_key, $meta_value ) {
 		$post = get_post( $post_id );
-		$this->meta_updated_with_previous( null, $post_id, $meta_key, $meta_value, $post->get_meta( $meta_key ) );
+		$this->meta_updated_with_previous( null, $post_id, $meta_key, $meta_value, $post->get_meta( $meta_key, true ) );
 	}
 }

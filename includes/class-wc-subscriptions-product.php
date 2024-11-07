@@ -144,7 +144,7 @@ class WC_Subscriptions_Product {
 
 				$child_prices[] = $child_price;
 			} else {
-				$child_prices[] = $child_product->get_meta( '_price' );
+				$child_prices[] = $child_product->get_meta( '_price', true );
 			}
 		}
 
@@ -929,7 +929,7 @@ class WC_Subscriptions_Product {
 
 			foreach ( $variation_ids as $variation_id ) {
 				$variation          = wc_get_product( $variation_id );
-				$subscription_price = $variation->get_meta( '_subscription_price' );
+				$subscription_price = $variation->get_meta( '_subscription_price', true );
 
 				if ( '%' === substr( $value, -1 ) ) {
 					$percent = wc_format_decimal( substr( $value, 0, -1 ) );

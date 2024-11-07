@@ -263,7 +263,7 @@ class WC_Subscriptions_Synchroniser {
 		if ( self::is_syncing_enabled() ) {
 
 			// Set month as the default billing period
-			if ( ! $subscription_period = $post->get_meta( '_subscription_period' ) ) {
+			if ( ! $subscription_period = $post->get_meta( '_subscription_period', true ) ) {
 				$subscription_period = 'month';
 			}
 
@@ -1500,7 +1500,7 @@ class WC_Subscriptions_Synchroniser {
 			$order = wc_get_order( $order_id );
 		}
 
-		return 'true' == $order->get_meta( '_order_contains_synced_subscription' );
+		return 'true' == $order->get_meta( '_order_contains_synced_subscription', true );
 	}
 
 	/**

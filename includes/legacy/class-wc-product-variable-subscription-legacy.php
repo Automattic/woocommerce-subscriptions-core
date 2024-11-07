@@ -96,7 +96,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 	 * @return string
 	 */
 	public function get_variation_price( $min_or_max = 'min', $display = false ) {
-		$variation_id = $this->get_meta( '_' . $min_or_max . '_price_variation_id' );
+		$variation_id = $this->get_meta( '_' . $min_or_max . '_price_variation_id', true );
 
 		if ( $display ) {
 			if ( $variation = wc_get_product( $variation_id ) ) {
@@ -109,7 +109,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 				$price = '';
 			}
 		} else {
-			$price = $this->get_meta( '_price' );
+			$price = $this->get_meta( '_price', true );
 		}
 
 		return apply_filters( 'woocommerce_get_variation_price', $price, $this, $min_or_max, $display );

@@ -393,7 +393,7 @@ class WCS_Repair_2_0 {
 		global $wpdb;
 
 		$order      = wc_get_order( $subscription['order_id'] );
-		$start_date = $order->get_meta( '_paid_date' );
+		$start_date = $order->get_meta( '_paid_date', true );
 
 		WCS_Upgrade_Logger::add( sprintf( 'Repairing start_date for order %d: Trying to use the _paid date for start date.', $subscription['order_id'] ) );
 

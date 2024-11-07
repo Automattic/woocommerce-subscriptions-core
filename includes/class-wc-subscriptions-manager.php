@@ -2029,7 +2029,7 @@ class WC_Subscriptions_Manager {
 	 */
 	public static function maybe_process_failed_renewal_for_repair( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
-		if ( 'true' == $subscription->get_meta( '_wcs_repaired_2_0_2_needs_failed_payment' ) ) {
+		if ( 'true' == $subscription->get_meta( '_wcs_repaired_2_0_2_needs_failed_payment', true ) ) {
 			// Always put the subscription on hold in case something goes wrong while trying to process renewal
 			$subscription->update_status( 'on-hold', _x( 'Subscription renewal payment due:', 'used in order note as reason for why subscription status changed', 'woocommerce-subscriptions' ) );
 

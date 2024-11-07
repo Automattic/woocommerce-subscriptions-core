@@ -144,7 +144,7 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		self::$store->add_relation( $order, $subscription, $relation_type );
 
 		$order->read_meta_data( true );
-		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ) ) );
+		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ), true ) );
 		if ( ! $hpos_enabled ) {
 			$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ) ) );
 		}
