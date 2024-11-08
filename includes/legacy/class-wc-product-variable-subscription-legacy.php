@@ -299,7 +299,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 					$price .= wcs_get_price_html_from_text( $this );
 				}
 
-				$variation_id     = $this->get_meta( '_min_price_variation_id' );
+				$variation_id     = $this->get_meta( '_min_price_variation_id', true );
 				$variation        = wc_get_product( $variation_id );
 				$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
 

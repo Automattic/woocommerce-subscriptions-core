@@ -1218,6 +1218,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::set_suspension_count function
 	 *
+	 * @group test_set_suspension_count
 	 */
 	public function test_set_suspension_count() {
 		$subscription         = WCS_Helper_Subscription::create_subscription();
@@ -1225,14 +1226,16 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->assertNotEquals( $expected_suspensions, $subscription->get_meta( '_suspension_count', true ) );
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
+			$this->assertNotEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 
 		$subscription->set_suspension_count( $expected_suspensions );
 		$subscription->save();
 		$this->assertEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->assertEquals( $expected_suspensions, $subscription->get_meta( '_suspension_count', true ) );
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
+			$this->assertEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 	}
 
