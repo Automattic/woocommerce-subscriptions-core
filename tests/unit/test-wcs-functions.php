@@ -541,13 +541,20 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
 			// Verify that non-HPOS storage continues to use legacy meta_keys / values until intentionally deprecated.
-			$this->assertEquals( $expects['currency'], $subscription->get_meta( '_order_currency', true ) );
-			$this->assertEquals( $expects['period'], $subscription->get_meta( '_billing_period', true ) );
-			$this->assertEquals( $expects['interval'], $subscription->get_meta( '_billing_interval', true ) );
-			$this->assertEquals( $expects['customer'], $subscription->get_meta( '_customer_user', true ) );
-			$this->assertEquals( $expects['version'], $subscription->get_meta( '_order_version', true ) );
-			$this->assertEquals( $expects['include_tax'], $subscription->get_meta( '_prices_include_tax', true ) );
-			$this->assertEquals( $expects['created_via'], $subscription->get_meta( '_created_via', true ) );
+			$subscription_metas = array_map(
+				function ( $item ) {
+					return $item[0];
+				},
+				get_post_meta( $subscription_id )
+			);
+			$this->assertEquals( $expects['currency'], $subscription_metas['_order_currency'] );
+			$this->assertEquals( $expects['period'], $subscription_metas['_billing_period'] );
+			$this->assertEquals( $expects['interval'], $subscription_metas['_billing_interval'] );
+			$this->assertEquals( $expects['customer'], $subscription_metas['_customer_user'] );
+			$this->assertEquals( $expects['version'], $subscription_metas['_order_version'] );
+			$this->assertEquals( $expects['include_tax'], $subscription_metas['_prices_include_tax'] );
+			// `_created_via` can only be returned this way when not using the specific getter (`get_created_via`)
+			$this->assertEquals( $expects['created_via'], get_post_meta( $subscription_id, '_created_via', true ) );
 		}
 
 		update_option( 'woocommerce_prices_include_tax', $default_include_tax );
