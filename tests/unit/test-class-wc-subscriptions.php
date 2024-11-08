@@ -707,7 +707,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_not_gmt() {
-
 		$start_date = '2014-01-01 01:01:01';
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -722,12 +721,11 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests for WC_Subscription::get_gate( $date, 'gmt' )
+	 * Tests for WC_Subscription::get_date( $date, 'gmt' )
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_gmt() {
-
 		$expected_result = '2014-01-01 01:01:01';
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -2516,7 +2514,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$this->assertEquals( 3, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
-			$this->assertEquals( 3, $subscription->get_meta( '_suspension_count', true ) );
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
+			$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 
 		$subscription->payment_complete();
@@ -2526,7 +2525,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'active', $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
-			$this->assertEquals( 0, $subscription->get_meta( '_suspension_count', true ) );
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
+			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 		$this->assertThat(
 			$order->get_status(),
