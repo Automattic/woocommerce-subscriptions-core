@@ -171,7 +171,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 
 		foreach ( $this->subscription_meta_keys_to_props as $meta_key => $prop_key ) {
 			if ( 0 === strpos( $prop_key, 'schedule' ) || in_array( $meta_key, $this->subscription_internal_meta_keys ) ) {
-				$meta_value = $subscription->get_meta( $meta_key, true );
+				// Keeping this occurrence of `get_post_meta()` as get_post here does not work well.
+				$meta_value = get_post_meta( $subscription->get_id(), $meta_key, true );
 
 				// Dates are set via update_dates() to make sure relationships between dates are validated
 				if ( 0 === strpos( $prop_key, 'schedule' ) ) {
