@@ -84,24 +84,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$this->object    = $subscription;
 		$this->recipient = $subscription->get_billing_email();
 
-		if ( ! $this->is_enabled()
-			|| ! $this->get_recipient()
-			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
-			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
-		) {
-			// Add order/subscription note.
-			if ( ! $this->get_recipient() ) {
-				$error = __( 'Recipient not found.', 'woocommerce-subscriptions' );
-			} elseif ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
-				$error = __( 'Not a production site.', 'woocommerce-subscriptions' );
-			} elseif ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
-				$error = __( 'Subscription billing cycle too short.', 'woocommerce-subscriptions' );
-			} else {
-				$error = __( 'Reminder emails disabled.', 'woocommerce-subscriptions' );
-			}
-
-			// translators: %1$s: email title, %2$s: error message.
-			$subscription->add_order_note( sprintf( __( 'Skipped sending %1$s. %2$s', 'woocommerce-subscriptions' ), $this->title, $error ) );
+		if ( ! $this->should_send_reminder_email( $subscription ) ) {
 			return;
 		}
 
@@ -268,5 +251,46 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 */
 	public function get_default_additional_content() {
 		return __( 'Thank you for choosing {site_title}!', 'woocommerce-subscriptions' );
+	}
+
+	/**
+	 * Determine whether the customer reminder email should be sent and add an order note if it shouldn't.
+	 *
+	 * Reminder emails are not sent if:
+	 * - The Customer Notification feature is disabled.
+	 * - The store is a staging or development site.
+	 * - The recipient email address is missing.
+	 * - The subscription's billing cycle is too short.
+	 *
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return bool
+	 */
+	public function should_send_reminder_email( $subscription ) {
+		$should_skip = [];
+
+		if ( ! $this->is_enabled() ) {
+			$should_skip[] = __( 'Reminder emails disabled.', 'woocommerce-subscriptions' );
+		} else {
+			if ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
+				$should_skip[] = __( 'Not a production site', 'woocommerce-subscriptions' );
+			}
+
+			if ( ! $this->get_recipient() ) {
+				$should_skip[] = __( 'Recipient not found', 'woocommerce-subscriptions' );
+			}
+
+			if ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
+				$should_skip[] = __( 'Subscription billing cycle too short', 'woocommerce-subscriptions' );
+			}
+		}
+
+		if ( ! empty( $should_skip ) ) {
+			// translators: %1$s: email title, %2$s: list of reasons why email was skipped.
+			$subscription->add_order_note( sprintf( __( 'Skipped sending "%1$s": %2$s', 'woocommerce-subscriptions' ), $this->title, '<br>- ' . implode( '<br>- ', $should_skip ) ) );
+			return false;
+		}
+
+		return true;
 	}
 }
