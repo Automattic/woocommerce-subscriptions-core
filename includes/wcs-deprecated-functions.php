@@ -147,13 +147,15 @@ function wcs_get_subscription_id_from_key( $subscription_key ) {
 
 	} elseif ( ! empty( $order_and_product_id[0] ) ) {
 
-		$subscription_ids = get_posts( array(
-			'posts_per_page' => 1,
-			'post_parent'    => $order_and_product_id[0],
-			'post_status'    => 'any',
-			'post_type'      => 'shop_subscription',
-			'fields'         => 'ids',
-		) );
+		$subscription_ids = wc_get_orders(
+			array(
+				'limit'  => 1,
+				'parent' => $order_and_product_id[0],
+				'status' => 'any',
+				'type'   => 'shop_subscription',
+				'return' => 'ids',
+			)
+		);
 
 	}
 

@@ -73,14 +73,16 @@ class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 	 * @return array A list of subscription ids which need to be updated.
 	 */
 	protected function get_items_to_update() {
-		return get_posts( array(
-			'post_type'      => 'shop_subscription',
-			'posts_per_page' => 20,
-			'author'         => '1',
-			'post_status'    => 'any',
-			'post__not_in'   => $this->get_subscriptions_to_ignore(),
-			'fields'         => 'ids',
-		) );
+		return wc_get_orders(
+			array(
+				'type'    => 'shop_subscription',
+				'limit'   => 20,
+				'author'  => '1',
+				'status'  => 'any',
+				'exclude' => $this->get_subscriptions_to_ignore(),
+				'return'  => 'ids',
+			)
+		);
 	}
 
 	/**

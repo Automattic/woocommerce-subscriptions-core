@@ -89,26 +89,26 @@ class WCS_Upgrade_2_2_9 {
 	 * @return array A list of subscription ids which may need to be repaired.
 	 */
 	public static function get_subscriptions_to_repair( $repaired_subscriptions ) {
-		$subscriptions_to_repair = get_posts( array(
-			'post_type'      => 'shop_subscription',
-			'posts_per_page' => self::$batch_size,
-			'post_status'    => 'any',
-			'fields'         => 'ids',
-			'post__not_in'   => $repaired_subscriptions,
-			'meta_query'     => array(
-				array(
-					'key'     => '_contains_synced_subscription',
-					'compare' => 'NOT EXISTS',
+		return wc_get_orders(
+			array(
+				'type'       => 'shop_subscription',
+				'limit'      => self::$batch_size,
+				'status'     => 'any',
+				'return'     => 'ids',
+				'exclude'    => $repaired_subscriptions,
+				'meta_query' => array(
+					array(
+						'key'     => '_contains_synced_subscription',
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => '_order_version', // Try to narrow the focus to subscriptions created after 3.0.0 as they are the only ones affected and needing repair (tough all subscriptions instantiated after 3.0 will also have their _order_version updated)
+						'value'   => '3.0.0',
+						'compare' => '>=',
+					),
 				),
-				array(
-					'key'     => '_order_version', // Try to narrow the focus to subscriptions created after 3.0.0 as they are the only ones affected and needing repair (tough all subscriptions instantiated after 3.0 will also have their _order_version updated)
-					'value'   => '3.0.0',
-					'compare' => '>=',
-				),
-			),
-		) );
-
-		return $subscriptions_to_repair;
+			)
+		);
 	}
 
 	/**
