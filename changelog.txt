@@ -1,7 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.6.1 - xxxx-xx-xx =
+= 7.7.0 - xxxx-xx-xx =
 * Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
+* Dev - Introduce the filter `woocommerce_subscriptions_synced_first_renewal_payment_timestamp` to enable plugins to modify the first renewal date of synced subscriptions.
 
 = 7.6.0 - 2024-10-14 =
 * Fix - Correctly updates a subscription status to `cancelled` during a payment failure call when the current status is `pending-cancel`.

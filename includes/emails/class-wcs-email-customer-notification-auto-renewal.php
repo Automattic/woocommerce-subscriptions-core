@@ -29,8 +29,8 @@ class WCS_Email_Customer_Notification_Auto_Renewal extends WCS_Email_Customer_No
 
 		$this->subject = sprintf(
 			// translators: %1$s: number of days until renewal, %2$s: customer's first name.
-			_x( 'Your subscription automatically renews in %1$s days, %2$s ♻️', 'default email subject for subscription\'s automatic renewal notice', 'woocommerce-subscriptions' ),
-			'{days_until_renewal}',
+			_x( 'Your subscription automatically renews in %1$s, %2$s ♻️', 'default email subject for subscription\'s automatic renewal notice', 'woocommerce-subscriptions' ),
+			'{time_until_renewal}',
 			'{customers_first_name}'
 		);
 
