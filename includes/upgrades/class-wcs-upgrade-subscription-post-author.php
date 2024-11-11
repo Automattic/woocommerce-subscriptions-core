@@ -48,8 +48,7 @@ class WCS_Upgrade_Subscription_Post_Author extends WCS_Background_Upgrader {
 			);
 
 			if ( 0 === $wpdb->rows_affected ) {
-				$subscription = wcs_get_subscription( $subscription_id );
-				if ( '1' === $subscription->get_meta( '_customer_user', true ) && is_a( WCS_Customer_Store::instance(), 'WCS_Customer_Store_Cached_CPT' ) ) {
+				if ( '1' === get_post_meta( $subscription_id, '_customer_user', true ) && is_a( WCS_Customer_Store::instance(), 'WCS_Customer_Store_Cached_CPT' ) ) {
 					// Admin's subscription cache seems to be corrupt, force a refresh.
 					WCS_Customer_Store::instance()->delete_cache_for_user( 1 );
 				}
