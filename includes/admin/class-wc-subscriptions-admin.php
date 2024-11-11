@@ -290,8 +290,8 @@ class WC_Subscriptions_Admin {
 	public static function subscription_pricing_fields() {
 		global $post;
 
-		$chosen_price        = $post->get_meta( '_subscription_price', true );
-		$chosen_interval     = $post->get_meta( '_subscription_period_interval', true );
+		$chosen_price        = get_post_meta( $post->ID, '_subscription_price', true );
+		$chosen_interval     = get_post_meta( $post->ID, '_subscription_period_interval', true );
 		$chosen_trial_length = WC_Subscriptions_Product::get_trial_length( $post->ID );
 		$chosen_trial_period = WC_Subscriptions_Product::get_trial_period( $post->ID );
 
@@ -300,7 +300,7 @@ class WC_Subscriptions_Admin {
 		$trial_tooltip = sprintf( _x( 'An optional period of time to wait before charging the first recurring payment. Any sign up fee will still be charged at the outset of the subscription. %s', 'Trial period field tooltip on Edit Product administration screen', 'woocommerce-subscriptions' ), self::get_trial_period_validation_message() );
 
 		// Set month as the default billing period
-		$chosen_period = $post->get_meta( '_subscription_period', true );
+		$chosen_period = get_post_meta( $post->ID, '_subscription_period', true );
 		if ( ! $chosen_period ) {
 			$chosen_period = 'month';
 		}
