@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Customer notification email
+ *
+ * Customer notification email sent to customer when a there's an upcoming payment/expity/free trial expiry.
+ *
+ * @class WCS_Email_Customer_Notification
+ * @version x.x.x
+ * @package WooCommerce/Classes/Emails
+ */
 class WCS_Email_Customer_Notification extends WC_Email {
 
 	public function __construct() {
@@ -7,7 +16,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$this->placeholders = array_merge(
 			[
 				'{customers_first_name}' => '',
-				'{days_until_renewal}'   => '',
+				'{time_until_renewal}'   => '',
 			],
 			$this->placeholders
 		);
@@ -75,12 +84,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$this->object    = $subscription;
 		$this->recipient = $subscription->get_billing_email();
 
-		if ( ! $this->is_enabled()
-			|| ! $this->get_recipient()
-			|| ! WC_Subscriptions_Email_Notifications::should_send_notification()
-			|| WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription )
-		) {
-			// TODO: add admin notice here if in admin
+		if ( ! $this->should_send_reminder_email( $subscription ) ) {
 			return;
 		}
 
@@ -88,7 +92,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 
 		try {
 			$this->placeholders['{customers_first_name}'] = $subscription->get_billing_first_name();
-			$this->placeholders['{days_until_renewal}']   = $this->get_time_until_date( $subscription, 'next_payment' );
+			$this->placeholders['{time_until_renewal}']   = $this->get_time_until_date( $subscription, 'next_payment' );
 
 			$result = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 
@@ -97,7 +101,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 				$order_note_msg = sprintf( __( '%1$s was successfully sent to %2$s.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
 			} else {
 				/* translators: 1: Notification type, 2: customer's email. */
-				$order_note_msg = sprintf( __( 'Attempt to send %1$s to %2$s failed successfully.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
+				$order_note_msg = sprintf( __( 'Attempt to send %1$s to %2$s failed.', 'woocommerce-subscriptions' ), $this->title, $this->recipient );
 			}
 
 			$subscription->add_order_note( $order_note_msg );
@@ -107,7 +111,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
-	 * get_content_html function.
+	 * Get content for the HTML-version of the email.
 	 *
 	 * @return string
 	 */
@@ -132,7 +136,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 				'subscription'                => $subscription,
 				'order'                       => $subscription->get_parent(),
 				'email_heading'               => $this->get_heading(),
-				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_time_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
 				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
 				'url_for_renewal'             => $url_for_renewal,
 				'can_renew_early'             => $can_renew_early,
@@ -153,7 +157,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
-	 * get_content_plain function.
+	 * Get content for the plain (text, non-HTML) version of the email.
 	 *
 	 * @return string
 	 */
@@ -178,7 +182,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 				'subscription'                => $subscription,
 				'order'                       => $subscription->get_parent(),
 				'email_heading'               => $this->get_heading(),
-				'subscription_days_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
+				'subscription_time_til_event' => $this->get_time_until_date( $subscription, $this->get_relevant_date_type() ),
 				'subscription_event_date'     => $this->get_formatted_date( $subscription, $this->get_relevant_date_type() ),
 				'url_for_renewal'             => $url_for_renewal,
 				'can_renew_early'             => $can_renew_early,
@@ -198,20 +202,44 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		);
 	}
 
+	/**
+	 * Returns number of days until date_type for subscription.
+	 *
+	 * This method is needed when sending out the emails as the email queue might be delayed, in which case the email
+	 * should state the correct number of days until the date_type.
+	 *
+	 * @param WC_Subscription $subscription Subscription to check.
+	 * @param string $date_type Date type to count days to.
+	 *
+	 * @return false|int|string Number of days from now until the date type event's time. Empty string if subscription doesn't have the date_type defined. False if DateTime can't process the data.
+	 */
 	public function get_time_until_date( $subscription, $date_type ) {
 		$next_event = $subscription->get_date( $date_type );
+
 		if ( ! $next_event ) {
 			return '';
 		}
 
 		$next_event_dt = new DateTime( $next_event, new DateTimeZone( 'UTC' ) );
 		$now           = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+
+		// Both dates to midnight so we only compare days, not hours.
+		$next_event_dt->setTime( 0, 0 );
+		$now->setTime( 0, 0 );
+
 		// Add some buffer, otherwise it will claim that only 2 full days are left when in reality it's 2 days, 23 hours and 59 minutes.
-		$now->modify( '+1 hour' );
-		$interval = $next_event_dt->diff( $now );
-		return $interval->days;
+		$now->modify( '-1 hour' );
+		return human_time_diff( $now->getTimestamp(), $next_event_dt->getTimestamp() );
 	}
 
+	/**
+	 * Return subscription's date of date type in localized format.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @param string $date_type
+	 *
+	 * @return string
+	 */
 	public function get_formatted_date( $subscription, $date_type ) {
 		return date_i18n( wc_date_format(), $subscription->get_time( $date_type, 'site' ) );
 	}
@@ -223,5 +251,46 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 */
 	public function get_default_additional_content() {
 		return __( 'Thank you for choosing {site_title}!', 'woocommerce-subscriptions' );
+	}
+
+	/**
+	 * Determine whether the customer reminder email should be sent and add an order note if it shouldn't.
+	 *
+	 * Reminder emails are not sent if:
+	 * - The Customer Notification feature is disabled.
+	 * - The store is a staging or development site.
+	 * - The recipient email address is missing.
+	 * - The subscription's billing cycle is too short.
+	 *
+	 * @param WC_Subscription $subscription
+	 *
+	 * @return bool
+	 */
+	public function should_send_reminder_email( $subscription ) {
+		$should_skip = [];
+
+		if ( ! $this->is_enabled() ) {
+			$should_skip[] = __( 'Reminder emails disabled.', 'woocommerce-subscriptions' );
+		} else {
+			if ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
+				$should_skip[] = __( 'Not a production site', 'woocommerce-subscriptions' );
+			}
+
+			if ( ! $this->get_recipient() ) {
+				$should_skip[] = __( 'Recipient not found', 'woocommerce-subscriptions' );
+			}
+
+			if ( WCS_Action_Scheduler_Customer_Notifications::is_subscription_period_too_short( $subscription ) ) {
+				$should_skip[] = __( 'Subscription billing cycle too short', 'woocommerce-subscriptions' );
+			}
+		}
+
+		if ( ! empty( $should_skip ) ) {
+			// translators: %1$s: email title, %2$s: list of reasons why email was skipped.
+			$subscription->add_order_note( sprintf( __( 'Skipped sending "%1$s": %2$s', 'woocommerce-subscriptions' ), $this->title, '<br>- ' . implode( '<br>- ', $should_skip ) ) );
+			return false;
+		}
+
+		return true;
 	}
 }

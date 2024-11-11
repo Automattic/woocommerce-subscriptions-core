@@ -3,6 +3,18 @@
 /**
  * WooCommerce Subscriptions Notifications Batch Processor.
  *
+ * This batch processor is used to process subscriptions whenever global settings get updated
+ * (global on/off for notifications or time offset).
+ *
+ * It will only process subscriptions whose update time is before the time when the settings got updated.
+ * To ensure all subscription end up having correct notifications, the hook
+ * WCS_Action_Scheduler_Customer_Notifications::update_notifications will update any notifications
+ * whose update time is before the settings got updated. The rest of subscriptions should be updated by this
+ * batch processor.
+ *
+ * In addition to this batch processor which runs ad-hoc, there's also a debug tool to regenerate notifications for
+ * all subscriptions: WCS_Notifications_Debug_Tool_Processor.
+ *
  * @package  WooCommerce Subscriptions
  * @category Class
  * @since    x.x.x
@@ -61,8 +73,11 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 	 * Get the total number of pending items that require processing.
 	 * Once an item is successfully processed by 'process_batch' it shouldn't be included in this count.
 	 *
-	 * Note that the once the processor is enqueued the batch processor controller will keep
+	 * Note that once the processor is enqueued the batch processor controller will keep
 	 * invoking `get_next_batch_to_process` and `process_batch` repeatedly until this method returns zero.
+	 *
+	 * Since this batch processor updates only subscriptions older than the settings update,
+	 * it only selects subscriptions updated before the settings update time.
 	 *
 	 * @return int Number of items pending processing.
 	 */
@@ -179,7 +194,7 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 	}
 
 	/**
-	 * Process data for the supplied batch.
+	 * Process data for the supplied batch: update all notifications for given batch of subscriptions.
 	 *
 	 * This method should be prepared to receive items that don't actually need processing
 	 * (because they have been processed before) and ignore them, but if at least
@@ -199,6 +214,11 @@ class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 
 		foreach ( $batch as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
+
+			if ( ! $subscription ) {
+				continue;
+			}
+
 			if ( WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
 				$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
 			} else {

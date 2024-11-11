@@ -80,6 +80,17 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 		return array_map( 'wcs_sanitize_subscription_status_key', $allowed_statuses );
 	}
 
+	/**
+	 * Get the total number of pending items that require processing.
+	 * Once an item is successfully processed by 'process_batch' it shouldn't be included in this count.
+	 *
+	 * Note that the once the processor is enqueued the batch processor controller will keep
+	 * invoking `get_next_batch_to_process` and `process_batch` repeatedly until this method returns zero.
+	 *
+	 * In this case, this means total number of subscriptions in allowed statuses - number of processed subscriptions.
+	 *
+	 * @return int Number of items pending processing.
+	 */
 	public function get_total_pending_count(): int {
 		global $wpdb;
 
@@ -219,6 +230,10 @@ class WCS_Notifications_Debug_Tool_Processor implements WCS_Batch_Processor {
 
 		foreach ( $batch as $subscription_id ) {
 			$subscription = wcs_get_subscription( $subscription_id );
+
+			if ( ! $subscription ) {
+				continue;
+			}
 
 			if ( WC_Subscriptions_Email_Notifications::notifications_globally_enabled() ) {
 				$subscriptions_notifications->update_status( $subscription, $subscription->get_status(), null );
