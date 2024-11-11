@@ -1,7 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.7.0 - xxxx-xx-xx =
-* Dev: Replaces calls to get_posts with wc_get_orders to improve performance.
 * Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
 * Dev - Introduce the filter `woocommerce_subscriptions_synced_first_renewal_payment_timestamp` to enable plugins to modify the first renewal date of synced subscriptions.
 
