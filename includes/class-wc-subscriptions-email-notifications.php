@@ -25,9 +25,9 @@ class WC_Subscriptions_Email_Notifications {
 	 */
 	public static function init() {
 
-		add_action( 'woocommerce_email_classes', __CLASS__ . '::add_emails', 10, 1 );
+		add_action( 'woocommerce_email_classes', [ __CLASS__, 'add_emails' ], 10, 1 );
 
-		add_action( 'woocommerce_init', __CLASS__ . '::hook_notification_emails' );
+		add_action( 'woocommerce_init', [ __CLASS__, 'hook_notification_emails' ] );
 
 		// Add notification actions to the admin edit subscriptions page.
 		add_filter( 'woocommerce_order_actions', [ __CLASS__, 'add_notification_actions' ], 10, 1 );
@@ -43,10 +43,11 @@ class WC_Subscriptions_Email_Notifications {
 		// Add admin notice.
 		add_action( 'admin_notices', [ __CLASS__, 'maybe_add_admin_notice' ] );
 
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
-		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 3 );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
-		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ 'WC_Subscriptions_Email_Notifications', 'set_notification_settings_update_time' ], 10, 2 );
+		// Bump settings update time whenever related options change.
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 3 );
+		add_action( 'update_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 3 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 2 );
+		add_action( 'add_option_' . WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string, [ __CLASS__, 'set_notification_settings_update_time' ], 10, 2 );
 	}
 
 	/**
@@ -222,31 +223,26 @@ class WC_Subscriptions_Email_Notifications {
 			return $actions;
 		}
 
-		if ( wcs_is_subscription( $theorder ) ) {
-			$subscription     = $theorder;
-			$allowed_statuses = [
-				'active',
-				'on-hold',
-				'pending-cancel',
-			];
+		if ( ! wcs_is_subscription( $theorder ) ) {
+			return $actions;
+		}
 
-			if ( ! $subscription->has_status( $allowed_statuses ) ) {
-				return $actions;
-			}
+		if ( ! $theorder->has_status( [ 'active', 'on-hold', 'pending-cancel' ] ) ) {
+			return $actions;
+		}
 
-			$valid_notifications = WCS_Action_Scheduler_Customer_Notifications::get_valid_notifications( $subscription );
+		$valid_notifications = WCS_Action_Scheduler_Customer_Notifications::get_valid_notifications( $theorder );
 
-			if ( in_array( 'trial_end', $valid_notifications, true ) ) {
-				$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send trial is ending notification', 'woocommerce-subscriptions' );
-			}
+		if ( in_array( 'trial_end', $valid_notifications, true ) ) {
+			$actions['wcs_customer_notification_free_trial_expiration'] = esc_html__( 'Send trial is ending notification', 'woocommerce-subscriptions' );
+		}
 
-			if ( in_array( 'end', $valid_notifications, true ) ) {
-				$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send upcoming subscription expiration notification', 'woocommerce-subscriptions' );
-			}
+		if ( in_array( 'end', $valid_notifications, true ) ) {
+			$actions['wcs_customer_notification_subscription_expiration'] = esc_html__( 'Send upcoming subscription expiration notification', 'woocommerce-subscriptions' );
+		}
 
-			if ( in_array( 'next_payment', $valid_notifications, true ) ) {
-				$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send upcoming renewal notification', 'woocommerce-subscriptions' );
-			}
+		if ( in_array( 'next_payment', $valid_notifications, true ) ) {
+			$actions['wcs_customer_notification_renewal'] = esc_html__( 'Send upcoming renewal notification', 'woocommerce-subscriptions' );
 		}
 
 		return $actions;
@@ -266,11 +262,11 @@ class WC_Subscriptions_Email_Notifications {
 				'type' => 'title',
 				'id'   => WC_Subscriptions_Admin::$option_prefix . '_customer_notifications',
 				/* translators: Link to WC Settings > Email. */
-				'desc' => sprintf( __( 'To enable and disable individual notifications, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
+				'desc' => sprintf( __( 'To enable/disable individual notifications and customize templates, visit the <a href="%s">Email settings</a>.', 'woocommerce-subscriptions' ), admin_url( 'admin.php?page=wc-settings&tab=email' ) ),
 			],
 			[
-				'name'     => __( 'Enable Renewal Reminders', 'woocommerce-subscriptions' ),
-				'desc'     => __( 'Enable customer renewal reminder notification emails.', 'woocommerce-subscriptions' ),
+				'name'     => __( 'Enable Reminders', 'woocommerce-subscriptions' ),
+				'desc'     => __( 'Send notification emails to customers for subscription renewals and expirations.', 'woocommerce-subscriptions' ),
 				'tip'      => '',
 				'id'       => WC_Subscriptions_Admin::$option_prefix . self::$switch_setting_string,
 				'desc_tip' => false,
@@ -279,7 +275,7 @@ class WC_Subscriptions_Email_Notifications {
 				'autoload' => false,
 			],
 			[
-				'name'        => __( 'Renewal Reminder Timing', 'woocommerce-subscriptions' ),
+				'name'        => __( 'Reminder Timing', 'woocommerce-subscriptions' ),
 				'desc'        => __( 'How long before the event should the notification be sent.', 'woocommerce-subscriptions' ),
 				'tip'         => '',
 				'id'          => WC_Subscriptions_Admin::$option_prefix . self::$offset_setting_string,

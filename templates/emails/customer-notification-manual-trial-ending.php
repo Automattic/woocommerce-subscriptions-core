@@ -33,10 +33,13 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		<?php
 			echo wp_kses(
 				sprintf(
-					// translators: %1$s: number of days until expiry, %2$s: date in local format.
-					__( 'Your free trial expires in %1$s days — that’s <strong>%2$s</strong>.', 'woocommerce-subscriptions' ),
-					(int) $subscription_days_til_event,
-					$subscription_event_date,
+					// translators: %1$s: human readable time difference (eg 3 days, 1 day), %2$s: date in local format.
+					__(
+						'Your free trial expires in %1$s — that’s <strong>%2$s</strong>.',
+						'woocommerce-subscriptions'
+					),
+					$subscription_time_til_event,
+					$subscription_event_date
 				),
 				[ 'strong' => [] ]
 			);

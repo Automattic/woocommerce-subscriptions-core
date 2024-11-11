@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Scheduler for subscription events that uses the Action Scheduler
+ * Scheduler for subscription notifications that uses the Action Scheduler
  *
- * @class     WCS_Action_Scheduler
- * @version   1.0.0 - Migrated from WooCommerce Subscriptions v2.0.0
+ * @class     WCS_Action_Scheduler_Customer_Notifications
+ * @version   x.x.x
  * @package   WooCommerce Subscriptions/Classes
  * @category  Class
  */
@@ -112,7 +112,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	/**
 	 * Set the offset based on new value set in the option.
 	 *
-	 * @param $_
+	 * @param $_ Unused parameter.
 	 * @param $new_option_value
 	 *
 	 * @return void
@@ -150,11 +150,19 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	}
 
 	/**
-	 * Maybe schedule a notification.
+	 * Maybe schedule a notification action for given subscription and timestamp.
 	 *
-	 * @param WC_Subscription $subscription
-	 * @param string $action
-	 * @param int $timestamp
+	 * Will *not* schedule notification if:
+	 *  - the notifications are globally disabled,
+	 *  - the subscription isn't active/pending-cancel,
+	 *  - the subscription's billing cycle is less than 3 days,
+	 *  - there is already the same action scheduled for the same subscription and time.
+	 *
+	 * If only the time differs, the previous scheduled action will be unscheduled and a new one will replace it.
+	 *
+	 * @param WC_Subscription $subscription Subscription to schedule the action for.
+	 * @param string $action Action ID to schedule.
+	 * @param int $timestamp Time to schedule the notification for.
 	 *
 	 * @return void
 	 */
@@ -435,7 +443,15 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		as_unschedule_all_actions( $action_hook, $action_args, self::$notifications_as_group );
 	}
 
-	protected static function date_in_the_future_or_now( $subscription, $date_type ) {
+	/**
+	 * Returns true if given date for subscription is now or in the future.
+	 *
+	 * @param WC_Subscription $subscription Subscription whose date is examined.
+	 * @param string $date_type Date type to evaluate.
+	 *
+	 * @return bool
+	 */
+	protected static function is_date_in_the_future_or_now( $subscription, $date_type ) {
 		$dt        = new DateTime( $subscription->get_date( $date_type ), new DateTimeZone( 'UTC' ) );
 		$timestamp = $dt->getTimestamp();
 
@@ -449,7 +465,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	 *
 	 * Possible values in the array: 'end', 'trial_end', 'next_payment'.
 	 *
-	 * @param $subscription
+	 * @param WC_Subscription $subscription
 	 *
 	 * @return array
 	 * @throws Exception
@@ -457,11 +473,11 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 	public static function get_valid_notifications( $subscription ) {
 		$notifications = [];
 
-		if ( $subscription->get_date( 'end' ) && self::date_in_the_future_or_now( $subscription, 'end' ) ) {
+		if ( $subscription->get_date( 'end' ) && self::is_date_in_the_future_or_now( $subscription, 'end' ) ) {
 			$notifications[] = 'end';
 		}
 
-		if ( $subscription->get_date( 'trial_end' ) && self::date_in_the_future_or_now( $subscription, 'trial_end' ) ) {
+		if ( $subscription->get_date( 'trial_end' ) && self::is_date_in_the_future_or_now( $subscription, 'trial_end' ) ) {
 			$notifications[] = 'trial_end';
 		}
 
@@ -473,10 +489,10 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 				$trial_end_dt        = new DateTime( $trial_end, new DateTimeZone( 'UTC' ) );
 				$trial_end_timestamp = $trial_end_dt->getTimestamp();
 
-				if ( $trial_end_timestamp < time() && self::date_in_the_future_or_now( $subscription, 'next_payment' ) ) {
+				if ( $trial_end_timestamp < time() && self::is_date_in_the_future_or_now( $subscription, 'next_payment' ) ) {
 					$notifications[] = 'next_payment';
 				}
-			} elseif ( self::date_in_the_future_or_now( $subscription, 'next_payment' ) ) {
+			} elseif ( self::is_date_in_the_future_or_now( $subscription, 'next_payment' ) ) {
 				$notifications[] = 'next_payment';
 			}
 		}
