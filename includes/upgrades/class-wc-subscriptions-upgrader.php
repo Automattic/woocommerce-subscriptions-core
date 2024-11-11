@@ -63,6 +63,7 @@ class WC_Subscriptions_Upgrader {
 
 				// Check if we've exceeded the 2 minute upgrade window we use for blocking upgrades (we could seemingly use transients here to get the check for free if transients were guaranteed to exist: http://journal.rmccue.io/296/youre-using-transients-wrong/)
 				if ( $is_upgrading && $upgrade_ts < gmdate( 'U' ) ) {
+					$is_upgrading = false;
 					delete_option( 'wc_subscriptions_is_upgrading' );
 				}
 
