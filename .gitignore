@@ -37,3 +37,6 @@ phpunit.xml
 
 # Release Packages
 *.zip
+
+# PHPUnit
+.phpunit.result.cache

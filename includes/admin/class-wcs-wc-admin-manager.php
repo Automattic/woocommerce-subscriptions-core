@@ -16,6 +16,9 @@ class WCS_WC_Admin_Manager {
 
 	/**
 	 * Initialise the class and attach hook callbacks.
+	 *
+	 * WooCommerce 9.3 removed the new Navigation feature making this class obsolete.
+	 * This class will only be inited on stores running WooCommerce 9.2 or older.
 	 */
 	public static function init() {
 		if ( ! defined( 'WC_ADMIN_PLUGIN_FILE' ) ) {
@@ -37,6 +40,16 @@ class WCS_WC_Admin_Manager {
 				'screen_id' => 'edit-shop_subscription',
 				'title'     => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 				'path'      => add_query_arg( 'post_type', 'shop_subscription', 'edit.php' ),
+			)
+		);
+
+		// WooCommerce > Subscriptions (HPOS)
+		wc_admin_connect_page(
+			array(
+				'id'        => 'woocommerce-custom-orders-subscriptions',
+				'screen_id' => wcs_get_page_screen_id( 'shop_subscription' ),
+				'title'     => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+				'path'      => 'admin.php?page=wc-orders--shop_subscription',
 			)
 		);
 

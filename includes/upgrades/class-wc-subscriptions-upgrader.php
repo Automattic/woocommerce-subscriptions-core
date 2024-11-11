@@ -54,7 +54,6 @@ class WC_Subscriptions_Upgrader {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function init() {
-
 		self::$active_version = get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' );
 
 		self::$is_wc_version_2 = version_compare( get_option( 'woocommerce_db_version' ), '2.0', '>=' );
@@ -74,56 +73,45 @@ class WC_Subscriptions_Upgrader {
 			return;
 		}
 
-		// Set the cron lock on every request with an out of date version, regardless of authentication level, as we can only lock cron for up to 10 minutes at a time, but we need to keep it locked until the upgrade is complete, regardless of who is browing the site
-
-		if ( isset( $_POST['action'] ) && 'wcs_upgrade' == $_POST['action'] ) { // We're checking for CSRF in ajax_upgrade
-
+		if ( isset( $_POST['action'] ) && 'wcs_upgrade' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended We're checking for CSRF in ajax_upgrade
 			// Deprecated in x.x.x
-			add_action( 'wp_ajax_wcs_upgrade', __CLASS__ . '::ajax_upgrade', 10 );
-
-		} elseif ( @current_user_can( 'activate_plugins' ) ) {
-
-			if ( isset( $_GET['wcs_upgrade_step'] ) || $version_out_of_date ) {
-
-				$is_upgrading = get_option( 'wc_subscriptions_is_upgrading', false );
+			add_action( 'wp_ajax_wcs_upgrade', [ __CLASS__, 'ajax_upgrade' ], 10 );
+		} elseif ( @current_user_can( 'activate_plugins' ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors
+			if ( isset( $_GET['wcs_upgrade_step'] ) || $version_out_of_date ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$upgrade_ts   = get_option( 'wc_subscriptions_is_upgrading', false );
+				$is_upgrading = false !== $upgrade_ts;
 
 				// Check if we've exceeded the 2 minute upgrade window we use for blocking upgrades (we could seemingly use transients here to get the check for free if transients were guaranteed to exist: http://journal.rmccue.io/296/youre-using-transients-wrong/)
-				if ( false !== $is_upgrading && $is_upgrading < gmdate( 'U' ) ) {
+				if ( $is_upgrading && $upgrade_ts < gmdate( 'U' ) ) {
 					$is_upgrading = false;
 					delete_option( 'wc_subscriptions_is_upgrading' );
 				}
 
-				if ( false !== $is_upgrading ) {
-
-					add_action( 'init', __CLASS__ . '::upgrade_in_progress_notice', 11 );
-
+				if ( $is_upgrading ) {
+					add_action( 'init', [ __CLASS__, 'upgrade_in_progress_notice' ], 11 );
 				} else {
-
 					// Run upgrades as soon as admin hits site
-					add_action( 'wp_loaded', __CLASS__ . '::upgrade', 11 );
-
+					add_action( 'wp_loaded', [ __CLASS__, 'upgrade' ], 11 );
 				}
-			} elseif ( is_admin() && isset( $_GET['page'] ) && 'wcs-about' == $_GET['page'] ) {
-
-				add_action( 'admin_menu', __CLASS__ . '::updated_welcome_page' );
-
+			} elseif ( is_admin() && isset( $_GET['page'] ) && 'wcs-about' === $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				add_action( 'admin_menu', [ __CLASS__, 'updated_welcome_page' ] );
 			}
 		}
 
 		// While the upgrade is in progress, we need to block PayPal IPN messages to avoid renewals failing to process
-		add_action( 'woocommerce_api_wc_gateway_paypal', __CLASS__ . '::maybe_block_paypal_ipn', 0 );
+		add_action( 'woocommerce_api_wc_gateway_paypal', [ __CLASS__, 'maybe_block_paypal_ipn' ], 0 );
 
 		// Sometimes redirect to the Welcome/About page after an upgrade
-		add_action( 'woocommerce_subscriptions_upgraded', __CLASS__ . '::maybe_redirect_after_upgrade_complete', 100, 2 );
+		add_action( 'woocommerce_subscriptions_upgraded', [ __CLASS__, 'maybe_redirect_after_upgrade_complete' ], 100, 2 );
 
-		add_action( 'wcs_repair_end_of_prepaid_term_actions', __CLASS__ . '::repair_end_of_prepaid_term_actions' );
+		add_action( 'wcs_repair_end_of_prepaid_term_actions', [ __CLASS__, 'repair_end_of_prepaid_term_actions' ] );
 
-		add_action( 'wcs_repair_subscriptions_containing_synced_variations', __CLASS__ . '::repair_subscription_contains_sync_meta' );
+		add_action( 'wcs_repair_subscriptions_containing_synced_variations', [ __CLASS__, 'repair_subscription_contains_sync_meta' ] );
 
 		// When WC is updated from a version prior to 3.0 to a version after 3.0, add subscription address indexes. Must be hooked on before WC runs its updates, which occur on priority 5.
-		add_action( 'init', array( __CLASS__, 'maybe_add_subscription_address_indexes' ), 2 );
+		add_action( 'init', [ __CLASS__, 'maybe_add_subscription_address_indexes' ], 2 );
 
-		add_action( 'init', array( __CLASS__, 'initialise_background_updaters' ), 0 );
+		add_action( 'init', [ __CLASS__, 'initialise_background_updaters' ], 0 );
 	}
 
 	/**
@@ -179,7 +167,6 @@ class WC_Subscriptions_Upgrader {
 		do_action( 'woocommerce_subscriptions_before_upgrade', WC_Subscriptions_Core_Plugin::instance()->get_library_version(), self::$active_version );
 
 		if ( '0' === self::$active_version ) {
-
 			// Update the hold stock notification to be one week (if it's still at the default 60 minutes) to prevent cancelling subscriptions using manual renewals and payment methods that can take more than 1 hour (i.e. PayPal eCheck)
 			$hold_stock_duration = get_option( 'woocommerce_hold_stock_minutes' );
 
@@ -194,7 +181,6 @@ class WC_Subscriptions_Upgrader {
 			WCS_Staging::set_duplicate_site_url_lock();
 
 			// Upon installing for the first time, enable or disable PayPal Standard for Subscriptions.
-
 			WCS_PayPal::set_enabled_for_subscriptions_default();
 		}
 
@@ -215,6 +201,11 @@ class WC_Subscriptions_Upgrader {
 			}
 
 			WCS_Upgrade_3_1_0::migrate_subscription_webhooks_using_api_version_3();
+		}
+
+		if ( version_compare( self::$active_version, '6.8.0', '<' ) ) {
+			// Upon upgrading to 6.8.0 delete the 'wcs_cleanup_big_logs' WP Cron job that is no longer used.
+			wp_unschedule_hook( 'wcs_cleanup_big_logs' );
 		}
 
 		self::upgrade_complete();
@@ -852,7 +843,6 @@ class WC_Subscriptions_Upgrader {
 	}
 
 	private static function show_unsupported_upgrade_path_notice() {
-
 		echo '<div class="notice notice-error"><p>' .
 			esc_html(
 				__(
@@ -861,7 +851,6 @@ class WC_Subscriptions_Upgrader {
 				)
 			) .
 		'</p></div>';
-
 	}
 
 	/* Deprecated Functions */
@@ -925,7 +914,7 @@ class WC_Subscriptions_Upgrader {
 				'<code>' . WC_Subscriptions_Core_Plugin::instance()->get_library_version() . '</code>',
 				'<a href="https://woocommerce.com/my-account/marketplace-ticket-form/" target="_blank">',
 				'</a>',
-				'<a href="https://docs.woocommerce.com/document/subscriptions/upgrade-instructions/#section-12" target="_blank">',
+				'<a href="https://woocommerce.com/document/subscriptions/upgrade-instructions/#section-12" target="_blank">',
 				'</a>'
 			)
 		);

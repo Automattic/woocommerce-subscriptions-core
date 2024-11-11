@@ -20,8 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This method simply creates an order with the same post meta, order items and order item meta as the subscription
  * passed to it.
  *
- * @param  int | WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
- * @return WC_Order | WP_Error
+ * @param  int|WC_Subscription $subscription Post ID of a 'shop_subscription' post, or instance of a WC_Subscription object
+ * @return WC_Order|WP_Error
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_create_renewal_order( $subscription ) {
@@ -41,7 +41,8 @@ function wcs_create_renewal_order( $subscription ) {
 /**
  * Check if a given order is a subscription renewal order.
  *
- * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @param  WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @return bool Whether the order contains renewal.
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_order_contains_renewal( $order ) {
@@ -62,10 +63,21 @@ function wcs_order_contains_renewal( $order ) {
 }
 
 /**
+ * Determines if a given order is the subscription's latest renewal order.
+ *
+ * @param $order WC_Order The order object.
+ * @param $subscription WC_Subscription The subscription object.
+ * @return bool Whether the order is the latest renewal order of the provided subscription.
+ */
+function wcs_is_order_last_renewal_of_subscription( $order, $subscription ) {
+	$last_renewal_order = wcs_get_last_renewal_order( $subscription );
+	return $last_renewal_order && $last_renewal_order->get_id() === $order->get_id();
+}
+
+/**
  * Checks the cart to see if it contains a subscription product renewal.
  *
- * @param  bool | Array The cart item containing the renewal, else false.
- * @return string
+ * @return bool|array The cart item containing the renewal, else false.
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_cart_contains_renewal() {
@@ -111,6 +123,7 @@ function wcs_cart_contains_failed_renewal_order_payment() {
  * Get the subscription/s to which a resubscribe order relates.
  *
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ * @return WC_Subscription[] Subscription details in post_id => WC_Subscription form.
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscriptions_for_renewal_order( $order ) {
@@ -127,10 +140,7 @@ function wcs_get_subscriptions_for_renewal_order( $order ) {
  */
 function wcs_get_last_non_early_renewal_order( $subscription ) {
 	$last_non_early_renewal = false;
-	$renewal_orders         = $subscription->get_related_orders( 'all', 'renewal' );
-
-	// We need the orders sorted by the date they were created, with the newest first.
-	wcs_sort_objects( $renewal_orders, 'date_created', 'descending' );
+	$renewal_orders         = wcs_get_renewal_orders_sorted_by( $subscription, 'date_created' );
 
 	foreach ( $renewal_orders as $renewal_order ) {
 		if ( ! wcs_order_contains_early_renewal( $renewal_order ) ) {
@@ -143,10 +153,38 @@ function wcs_get_last_non_early_renewal_order( $subscription ) {
 }
 
 /**
+ * Get the last renewal order (early renewals included).
+ *
+ * @param WC_Subscription $subscription The subscription object.
+ * @return WC_Order|bool The last non-early renewal order, otherwise false.
+ */
+function wcs_get_last_renewal_order( $subscription ) {
+	$renewal_orders = wcs_get_renewal_orders_sorted_by( $subscription, 'date_created' );
+	return $renewal_orders ? reset( $renewal_orders ) : false;
+}
+
+/**
+ * Gets the renewal orders for a subscription, sorted by the specified property.
+ *
+ * @param WC_Subscription $subscription The subscription object.
+ * @param string          $sort_by      The subscription property to sort by.
+ * @param string          $order        Optional. The sort order to sort by. Default is 'descending'.
+ *
+ * @return WC_Order[] The subscriptions renewal orders sorted.
+ */
+function wcs_get_renewal_orders_sorted_by( $subscription, $sort_by, $order = 'descending' ) {
+	$renewal_orders = $subscription->get_related_orders( 'all', 'renewal' );
+
+	wcs_sort_objects( $renewal_orders, $sort_by, $order );
+
+	return $renewal_orders;
+}
+
+/**
  * Checks if manual renewals are required - automatic renewals are disabled.
  *
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
- * @return bool Weather manual renewal are required.
+ * @return bool Whether manual renewal is required.
  */
 function wcs_is_manual_renewal_required() {
 	return class_exists( 'WCS_Manual_Renewal_Manager' ) ? WCS_Manual_Renewal_Manager::is_manual_renewal_required() : false;
@@ -156,7 +194,7 @@ function wcs_is_manual_renewal_required() {
  * Checks if manual renewals are enabled.
  *
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v4.0.0
- * @return bool Weather manual renewal are enabled.
+ * @return bool Whether manual renewal is enabled.
  */
 function wcs_is_manual_renewal_enabled() {
 	return class_exists( 'WCS_Manual_Renewal_Manager' ) ? WCS_Manual_Renewal_Manager::is_manual_renewal_enabled() : false;

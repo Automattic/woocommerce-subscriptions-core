@@ -708,16 +708,21 @@ jQuery( function ( $ ) {
 				);
 
 				if ( 0 < $( this ).val() ) {
-					$syncDayOfMonthInput
-						.val( 1 )
-						.attr( {
-							step: '1',
-							min: '1',
-							max: $.daysInMonth( $( this ).val() ),
-						} )
-						.prop( 'disabled', false );
+					// Clear existing options.
+					$syncDayOfMonthInput.empty();
+
+					// Add options for each day in the month.
+					for ( var day = 1; day <= $.daysInMonth( $( this ).val() ); day++ ) {
+						$syncDayOfMonthInput.append( $( '<option>', {
+							value: day,
+							text: day
+						} ) );
+					}
+
+					$syncDayOfMonthInput.prop( 'disabled', false );
 				} else {
 					$syncDayOfMonthInput.val( 0 ).trigger( 'change' );
+					$syncDayOfMonthInput.prop( 'disabled', true );
 				}
 			}
 		);
@@ -927,6 +932,9 @@ jQuery( function ( $ ) {
 		),
 		$syncRenewals = $(
 			document.getElementById( 'woocommerce_subscriptions_sync_payments' )
+		),
+		$customerNotifications = $(
+			document.getElementById( 'woocommerce_subscriptions_customer_notifications_enabled' )
 		);
 
 	// We're on the Subscriptions settings page
@@ -949,6 +957,9 @@ jQuery( function ( $ ) {
 			).parents( 'tr' ),
 			$suspensionExtensionRow = $(
 				'#woocommerce_subscriptions_recoup_suspension'
+			).parents( 'tr' ),
+			$customerNotificationOffsetRow = $(
+				'#woocommerce_subscriptions_customer_notifications_offset'
 			).parents( 'tr' );
 
 		// No animation for initial hiding when switching is disabled.
@@ -1002,6 +1013,19 @@ jQuery( function ( $ ) {
 				$daysNoFeeRow.fadeIn();
 			} else {
 				$daysNoFeeRow.fadeOut();
+			}
+		} );
+
+		// No animation when initially hiding customer notification offset row.
+		if ( ! $customerNotifications.is( ':checked' ) ) {
+			$customerNotificationOffsetRow.hide();
+		}
+		// Watch the enable/disable customer notifications checkbox for changes.
+		$customerNotifications.on( 'change', function () {
+			if ( $( this ).is( ':checked' ) ) {
+				$customerNotificationOffsetRow.fadeIn();
+			} else {
+				$customerNotificationOffsetRow.fadeOut();
 			}
 		} );
 	}

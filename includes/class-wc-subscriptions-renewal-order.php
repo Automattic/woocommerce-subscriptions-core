@@ -127,10 +127,11 @@ class WC_Subscriptions_Renewal_Order {
 			if ( $order_completed && ! $subscription->has_status( wcs_get_subscription_ended_statuses() ) && ! $subscription->has_status( 'active' ) ) {
 
 				// Included here because calling payment_complete sets the retry status to 'cancelled'
-				$is_failed_renewal_order = 'failed' === $orders_old_status;
+				$is_failed_renewal_order = 'failed' === $orders_old_status || wc_string_to_bool( $order->get_meta( WC_Subscription::RENEWAL_FAILED_META_KEY, true ) );
 				$is_failed_renewal_order = apply_filters( 'woocommerce_subscriptions_is_failed_renewal_order', $is_failed_renewal_order, $order_id, $orders_old_status );
 
-				if ( $order_needed_payment ) {
+				// Subscription will be activated only if this is the last renewal order of the subscription.
+				if ( $order_needed_payment && wcs_is_order_last_renewal_of_subscription( $order, $subscription ) ) {
 					$subscription->payment_complete();
 					$was_activated = true;
 				}
@@ -437,7 +438,7 @@ class WC_Subscriptions_Renewal_Order {
 	 * @param string $product_id The ID of the subscription product in the order which needs to be added to the new order.
 	 * @param array $args (optional) An array of name => value flags:
 	 *         'new_order_role' string A flag to indicate whether the new order should become the master order for the subscription. Accepts either 'parent' or 'child'. Defaults to 'parent' - replace the existing order.
-	 *         'checkout_renewal' bool Indicates if invoked from an interactive cart/checkout session and certain order items are not set, like taxes, shipping as they need to be set in teh calling function, like @see WC_Subscriptions_Checkout::filter_woocommerce_create_order(). Default false.
+	 *         'checkout_renewal' bool Indicates if invoked from an interactive cart/checkout session and certain order items are not set, like taxes, shipping as they need to be set in the calling function, like @see WC_Subscriptions_Checkout::filter_woocommerce_create_order(). Default false.
 	 *         'failed_order_id' int For checkout_renewal true, indicates order id being replaced
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 * @deprecated 1.0.0 - Migrated from WooCommerce Subscriptions v2.0

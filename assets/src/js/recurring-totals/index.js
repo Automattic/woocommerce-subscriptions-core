@@ -10,7 +10,7 @@ import {
 	TotalsWrapper,
 } from '@woocommerce/blocks-checkout';
 import { getCurrencyFromPriceResponse } from '@woocommerce/price-format';
-import { getSetting } from '@woocommerce/settings';
+import { isWcVersion, getSetting } from '@woocommerce/settings';
 /**
  * Internal dependencies
  */
@@ -91,9 +91,16 @@ const ShippingTotal = ( {
 		? parseInt( values.total_shipping, 10 ) +
 		  parseInt( values.total_shipping_tax, 10 )
 		: parseInt( values.total_shipping, 10 );
+
+	const valueToShow =
+		0 === shippingTotals && isWcVersion( '9.0', '>=' ) ? (
+			<strong>{ __( 'Free', 'woocommerce-subscriptions' ) }</strong>
+		) : (
+			shippingTotals
+		);
 	return (
 		<TotalsItem
-			value={ shippingTotals }
+			value={ valueToShow }
 			label={ __( 'Shipping', 'woocommerce-subscriptions' ) }
 			currency={ currency }
 			description={
@@ -203,7 +210,7 @@ const TabHeading = ( {
 
 /**
  * Component responsible for rendering a single recurring total panel.
- * We render several onces depending on how many recurring carts we have.
+ * We render several ones depending on how many recurring carts we have.
  *
  * @param {Object} props                     Props passed to component.
  * @param {Object} props.subscription        Recurring cart data that we registered
@@ -257,7 +264,7 @@ const RecurringSubscription = ( {
 					<Subtotal currency={ currency } values={ totals } />
 					<DiscountTotals currency={ currency } values={ totals } />
 				</TotalsWrapper>
-				<TotalsWrapper>
+				<TotalsWrapper className="wc-block-components-totals-shipping">
 					<ShippingTotal
 						currency={ currency }
 						needsShipping={ needsShipping }

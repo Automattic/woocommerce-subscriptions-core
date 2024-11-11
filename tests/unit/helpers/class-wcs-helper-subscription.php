@@ -91,9 +91,9 @@ class WCS_Helper_Subscription {
 	}
 
 	/**
-	 * Create mock WC_Subcription for testing.
+	 * Create mock WC_Subscription for testing.
 	 *
-	 * @param array $post_meta         Custom susbcription post meta (i.e. billing period, interval)
+	 * @param array $post_meta         Custom subscription post meta (i.e. billing period, interval)
 	 * @param array $subscription_meta Custom subscription meta (i.e payment method/title, requires manual renewal)
 	 *
 	 * @return WC_Subscription|void
@@ -132,7 +132,7 @@ class WCS_Helper_Subscription {
 		$subscription->set_meta_data( $subscription_meta_data );
 		$subscription->save();
 
-		return $subscription;
+		return wcs_get_subscription( $subscription );
 	}
 
 	/**

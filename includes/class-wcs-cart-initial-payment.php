@@ -27,7 +27,7 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 		// Apply initial discounts when there is a pending initial order
 		add_action( 'woocommerce_setup_cart_for_subscription_initial_payment', array( $this, 'setup_discounts' ) );
 
-		// Initialise the stock mananger.
+		// Initialise the stock manager.
 		WCS_Initial_Cart_Stock_Manager::attach_callbacks();
 	}
 
@@ -49,6 +49,26 @@ class WCS_Cart_Initial_Payment extends WCS_Cart_Renewal {
 		$order     = wc_get_order( $order_id );
 
 		if ( wcs_get_objects_property( $order, 'order_key' ) !== $order_key || ! $order->has_status( array( 'pending', 'failed' ) ) || ! wcs_order_contains_subscription( $order, 'parent' ) || wcs_order_contains_subscription( $order, 'resubscribe' ) ) {
+			return;
+		}
+
+		/**
+		 * Filter whether to set up the cart during the pay-for-order payment flow.
+		 *
+		 * Allows developers to bypass cart setup for the pay-for-order payment flow.
+		 * This is intended for situations in which re-creating the cart will result in
+		 * the loss of order data.
+		 *
+		 * @since 6.2.0
+		 *
+		 * @param bool     $recreate_cart Whether to recreate the initial payment order. Default true.
+		 * @param WC_Order $order         The order object.
+		 * @param string   $order_key     The order key.
+		 * @param int      $order_id      The order ID.
+		 */
+		$recreate_cart = apply_filters( "wcs_setup_cart_for_{$this->cart_item_key}", true, $order, $order_key, $order_id );
+
+		if ( ! $recreate_cart ) {
 			return;
 		}
 

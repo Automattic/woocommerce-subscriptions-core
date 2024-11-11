@@ -16,7 +16,7 @@ class WC_Subscriptions_Core_Plugin {
 	 * The version of subscriptions-core library.
 	 * @var string
 	 */
-	protected $library_version = '6.4.0'; // WRCS: DEFINED_VERSION.
+	protected $library_version = '7.6.0'; // WRCS: DEFINED_VERSION.
 
 	/**
 	 * The subscription scheduler instance.
@@ -24,6 +24,13 @@ class WC_Subscriptions_Core_Plugin {
 	 * @var WCS_Action_Scheduler
 	 */
 	protected $scheduler = null;
+
+	/**
+	 * Notification scheduler instance.
+	 *
+	 * @var WCS_Action_Scheduler_Customer_Notifications
+	 */
+	public $notifications_scheduler = null;
 
 	/**
 	 * The plugin's autoloader instance.
@@ -45,6 +52,16 @@ class WC_Subscriptions_Core_Plugin {
 	 * @var WC_Subscriptions_Core_Plugin
 	 */
 	protected static $instance = null;
+
+	/**
+	 * An array of cart handler objects.
+	 *
+	 * Use @see WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( '{class}' ) to fetch a cart handler instance.
+	 * eg WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( 'WCS_Cart_Renewal' ).
+	 *
+	 * @var WCS_Cart_Renewal[]
+	 */
+	protected $cart_handlers = [];
 
 	/**
 	 * Initialise class and attach callbacks.
@@ -84,7 +101,7 @@ class WC_Subscriptions_Core_Plugin {
 	}
 
 	/**
-	 * Defines WC Subscriptions contants.
+	 * Defines WC Subscriptions constants.
 	 */
 	protected function define_constants() {
 		define( 'WCS_INIT_TIMESTAMP', gmdate( 'U' ) );
@@ -115,15 +132,16 @@ class WC_Subscriptions_Core_Plugin {
 		WC_Subscriptions_Renewal_Order::init();
 		WC_Subscriptions_Checkout::init();
 		WC_Subscriptions_Email::init();
+		WC_Subscriptions_Email_Notifications::init();
 		WC_Subscriptions_Addresses::init();
 		WC_Subscriptions_Change_Payment_Gateway::init();
 		$payment_gateways_handler::init();
 		WCS_PayPal_Standard_Change_Payment_Method::init();
 		WC_Subscriptions_Tracker::init();
 		WCS_Upgrade_Logger::init();
-		new WCS_Cart_Renewal();
-		new WCS_Cart_Resubscribe();
-		new WCS_Cart_Initial_Payment();
+		$this->add_cart_handler( new WCS_Cart_Renewal() );
+		$this->add_cart_handler( new WCS_Cart_Resubscribe() );
+		$this->add_cart_handler( new WCS_Cart_Initial_Payment() );
 		WCS_Download_Handler::init();
 		WCS_Limiter::init();
 		WCS_Admin_System_Status::init();
@@ -138,7 +156,6 @@ class WC_Subscriptions_Core_Plugin {
 		add_action( 'init', array( 'WC_Subscriptions_Synchroniser', 'init' ) );
 		add_action( 'after_setup_theme', array( 'WC_Subscriptions_Upgrader', 'init' ), 11 );
 		add_action( 'init', array( 'WC_PayPal_Standard_Subscriptions', 'init' ), 11 );
-		add_action( 'init', array( 'WCS_WC_Admin_Manager', 'init' ), 11 );
 
 		// Attach the callback to load version dependant classes.
 		add_action( 'plugins_loaded', array( $this, 'init_version_dependant_classes' ) );
@@ -147,9 +164,15 @@ class WC_Subscriptions_Core_Plugin {
 		add_action( 'plugins_loaded', 'WCS_Related_Order_Store::instance' );
 		add_action( 'plugins_loaded', 'WCS_Customer_Store::instance' );
 
+		// Initialise the batch processing controller.
+		add_action( 'init', 'WCS_Batch_Processing_Controller::instance' );
+
 		// Initialise the scheduler.
 		$scheduler_class = apply_filters( 'woocommerce_subscriptions_scheduler', 'WCS_Action_Scheduler' );
 		$this->scheduler = new $scheduler_class();
+
+		// Customer notifications scheduler.
+		$this->notifications_scheduler = new WCS_Action_Scheduler_Customer_Notifications();
 
 		// Initialise the cache.
 		$this->cache = WCS_Cache_Manager::get_instance();
@@ -202,6 +225,11 @@ class WC_Subscriptions_Core_Plugin {
 		if ( class_exists( 'WC_Abstract_Privacy' ) ) {
 			new WCS_Privacy();
 		}
+
+		// Loads Subscriptions support for the WooCommerce Navigation feature. This feature was removed in WC 9.3.
+		if ( wcs_is_woocommerce_pre( '9.3' ) ) {
+			add_action( 'init', array( 'WCS_WC_Admin_Manager', 'init' ), 11 );
+		}
 	}
 
 	/**
@@ -230,6 +258,8 @@ class WC_Subscriptions_Core_Plugin {
 		add_action( 'init', array( $this, 'activate_plugin' ) );
 
 		add_filter( 'action_scheduler_queue_runner_batch_size', array( $this, 'reduce_multisite_action_scheduler_batch_size' ) );
+
+		add_action( 'init', array( $this, 'init_notification_batch_processor' ) );
 	}
 
 	/**
@@ -317,6 +347,32 @@ class WC_Subscriptions_Core_Plugin {
 	 */
 	public function get_gateways_handler_class() {
 		return 'WC_Subscriptions_Core_Payment_Gateways';
+	}
+
+	/**
+	 * Gets the cart handler instance.
+	 *
+	 * @param string $class The class name of the cart handler. eg 'WCS_Cart_Renewal'.
+	 * @return WCS_Cart_Renewal|null The cart handler instance or null if not found.
+	 */
+	public function get_cart_handler( $class ) {
+		if ( ! isset( $this->cart_handlers[ $class ] ) ) {
+			return null;
+		}
+
+		return $this->cart_handlers[ $class ];
+	}
+
+	/**
+	 * Adds a cart handler instance.
+	 *
+	 * This is used to add cart handlers for different cart types. For example, renewal, resubscribe, initial, switch etc.
+	 * To access a cart handler instance, use WC_Subscriptions_Core_Plugin::instance()->get_cart_handler( $class ).
+	 *
+	 * @param WCS_Cart_Renewal $cart_handler An instance of a cart handler.
+	 */
+	protected function add_cart_handler( $cart_handler ) {
+		$this->cart_handlers[ get_class( $cart_handler ) ] = $cart_handler;
 	}
 
 	/**
@@ -477,6 +533,11 @@ class WC_Subscriptions_Core_Plugin {
 				update_option( WC_Subscriptions_admin::$option_prefix . '_paypal_debugging_default_set', 'true' );
 			}
 
+			// Enable customer notifications by default for new stores.
+			if ( '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_previous_version', '0' ) && 'no' === get_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'no' ) ) {
+				update_option( WC_Subscriptions_Admin::$option_prefix . WC_Subscriptions_Email_Notifications::$switch_setting_string, 'yes' );
+			}
+
 			update_option( WC_Subscriptions_Admin::$option_prefix . '_is_active', true );
 
 			set_transient( $this->get_activation_transient(), true, 60 * 60 );
@@ -495,7 +556,7 @@ class WC_Subscriptions_Core_Plugin {
 	public function load_plugin_textdomain() {
 		$plugin_rel_path = apply_filters( 'woocommerce_subscriptions_translation_file_rel_path', $this->get_subscriptions_core_directory() . '/languages' );
 
-		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overriden by any file already loaded)
+		// Then check for a language file in /wp-content/plugins/woocommerce-subscriptions/languages/ (this will be overridden by any file already loaded)
 		load_plugin_textdomain( 'woocommerce-subscriptions', false, $plugin_rel_path );
 	}
 
@@ -533,8 +594,8 @@ class WC_Subscriptions_Core_Plugin {
 		}
 
 		$update_notice = '<div class="wc_plugin_upgrade_notice">';
-		// translators: placeholders are opening and closing tags. Leads to docs on version 2
-		$update_notice .= sprintf( __( 'Warning! Version 2.0 is a major update to the WooCommerce Subscriptions extension. Before updating, please create a backup, update all WooCommerce extensions and test all plugins, custom code and payment gateways with version 2.0 on a staging site. %1$sLearn more about the changes in version 2.0 &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/version-2/">', '</a>' );
+		// translators: placeholders are opening and closing tags. Leads to docs on upgrading WooCommerce Subscriptions
+		$update_notice .= sprintf( __( 'Warning! Version 2.0 is a major update to the WooCommerce Subscriptions extension. Before updating, please create a backup, update all WooCommerce extensions and test all plugins, custom code and payment gateways with version 2.0 on a staging site. %1$sLearn more about updating older versions of WooCommerce Subscriptions &raquo;%2$s', 'woocommerce-subscriptions' ), '<a href="https://woocommerce.com/document/upgrade-instructions/">', '</a>' );
 		$update_notice .= '</div> ';
 
 		echo wp_kses_post( $update_notice );
@@ -584,5 +645,16 @@ class WC_Subscriptions_Core_Plugin {
 		}
 
 		return $batch_size;
+	}
+
+	/**
+	 * Initialize batch processing for subscription notifications.
+	 *
+	 * @return void
+	 */
+	public function init_notification_batch_processor() {
+		// Background processing for notifications
+		$notifications_batch_processor      = new WCS_Notifications_Batch_Processor();
+		$notifications_debug_tool_processor = new WCS_Notifications_Debug_Tool_Processor();
 	}
 }

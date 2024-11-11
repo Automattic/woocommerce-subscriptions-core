@@ -185,7 +185,7 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 							echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . wp_kses_post( make_clickable( esc_html( $field_value ) ) ) . '</p>';
 						}
 
-						echo '<p' . ( ( '' != $subscription->get_payment_method() ) ? ' class="' . esc_attr( $subscription->get_payment_method() ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment Method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) ); // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
+						echo '<p' . ( ( '' != $subscription->get_payment_method() ) ? ' class="' . esc_attr( $subscription->get_payment_method() ) . '"' : '' ) . '><strong>' . esc_html__( 'Payment method', 'woocommerce-subscriptions' ) . ':</strong>' . wp_kses_post( nl2br( $subscription->get_payment_method_to_display() ) ); // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
 
 						// Display help tip
 						if ( '' != $subscription->get_payment_method() && ! $subscription->is_manual() ) { // phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison
@@ -406,6 +406,11 @@ class WCS_Meta_Box_Subscription_Data extends WC_Meta_Box_Order_Data {
 			} else {
 				$subscription->update_meta_data( $field['id'], $value );
 			}
+		}
+
+		// Customer note.
+		if ( isset( $_POST['excerpt'] ) ) {
+			$props['customer_note'] = sanitize_textarea_field( wp_unslash( $_POST['excerpt'] ) );
 		}
 
 		$subscription->set_props( $props );

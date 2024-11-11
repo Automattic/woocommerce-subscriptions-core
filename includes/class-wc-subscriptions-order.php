@@ -75,6 +75,8 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', array( __CLASS__, 'add_subscription_order_query_args' ), 10, 2 );
 
 		add_filter( 'woocommerce_order_query_args', array( __CLASS__, 'map_order_query_args_for_subscriptions' ) );
+
+		add_filter( 'woocommerce_orders_table_query_clauses', [ __CLASS__, 'filter_orders_query_by_parent_orders' ], 10, 2 );
 	}
 
 	/*
@@ -481,6 +483,23 @@ class WC_Subscriptions_Order {
 		$unpaid_statuses = apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order );
 		$order_completed = in_array( $new_order_status, $paid_statuses, true ) && in_array( $old_order_status, $unpaid_statuses, true );
 
+		/**
+		 * Filter whether the subscription order is considered completed.
+		 *
+		 * Allow third party extensions to modify whether the order is considered
+		 * completed and the subscription should activate. This allows for different
+		 * treatment of orders and subscriptions during the completion flow.
+		 *
+		 * @since 6.9.0
+		 *
+		 * @param bool              $order_completed  Whether the order is considered completed.
+		 * @param string            $new_order_status The new order status.
+		 * @param string            $old_order_status The old order status.
+		 * @param WC_Subscription[] $subscriptions    The subscriptions in the order.
+		 * @param WC_Order          $order            The order object.
+		 */
+		$order_completed = apply_filters( 'wcs_is_subscription_order_completed', $order_completed, $new_order_status, $old_order_status, $subscriptions, $order );
+
 		foreach ( $subscriptions as $subscription ) {
 			// A special case where payment completes after user cancels subscription
 			if ( $order_completed && $subscription->has_status( 'cancelled' ) ) {
@@ -589,7 +608,7 @@ class WC_Subscriptions_Order {
 	/* Edit Order Page Content */
 
 	/**
-	 * Returns all parent subscription orders for a user, specificed with $user_id
+	 * Returns all parent subscription orders for a user, specified with $user_id
 	 *
 	 * @return array An array of order IDs.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.4
@@ -664,29 +683,54 @@ class WC_Subscriptions_Order {
 		}
 
 		// Skip checks if order total is greater than zero, or
-		// recurring total is zero, or
 		// order status isn't valid for payment.
-		if ( $order->get_total() > 0 || self::get_recurring_total( $order ) <= 0 || ! $order->has_status( $valid_order_statuses ) ) {
+		if ( $order->get_total() > 0 || ! $order->has_status( $valid_order_statuses ) ) {
 			return $needs_payment;
 		}
 
-		// Check that there is at least 1 subscription with a next payment that would require a payment method.
-		$has_next_payment = false;
+		// Skip checks if manual renewal is required.
+		if ( wcs_is_manual_renewal_required() ) {
+			return $needs_payment;
+		}
 
-		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+		// Check if there's a subscription attached to this order that will require a payment method.
+		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] ) as $subscription ) {
+			$has_next_payment                 = false;
+			$contains_expiring_limited_coupon = false;
+			$contains_free_trial              = false;
+			$contains_synced                  = false;
+
+			// Check if there's a subscription with a recurring total that would require a payment method.
+			$recurring_total = (float) $subscription->get_total();
+
+			// Check that there is at least 1 subscription with a next payment that would require a payment method.
 			if ( $subscription->get_time( 'next_payment' ) ) {
 				$has_next_payment = true;
-				break;
 			}
-		}
 
-		if ( ! $has_next_payment ) {
-			return $needs_payment;
-		}
+			// Check if there's a subscription with a limited recurring coupon that is expiring that would require a payment method after the coupon expires.
+			if ( class_exists( 'WCS_Limited_Recurring_Coupon_Manager' ) && WCS_Limited_Recurring_Coupon_Manager::order_has_limited_recurring_coupon( $subscription ) ) {
+				$contains_expiring_limited_coupon = true;
+			}
 
-		// If manual renewals are not required.
-		if ( ! wcs_is_manual_renewal_required() ) {
-			$needs_payment = true;
+			// Check if there's a subscription with a free trial that would require a payment method after the trial ends.
+			if ( $subscription->get_time( 'trial_end' ) ) {
+				$contains_free_trial = true;
+			}
+
+			// Check if there's a subscription with a synced product that would require a payment method.
+			if ( WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
+				$contains_synced = true;
+			}
+
+			/**
+			 * We need to collect a payment method if there's a subscription with a recurring total or a limited recurring coupon that is expiring and
+			 * there's a next payment date or a free trial or a synced product.
+			 */
+			if ( ( $contains_expiring_limited_coupon || $recurring_total > 0 ) && ( $has_next_payment || $contains_free_trial || $contains_synced ) ) {
+				$needs_payment = true;
+				break; // We've found a subscription that requires a payment method.
+			}
 		}
 
 		return $needs_payment;
@@ -697,7 +741,7 @@ class WC_Subscriptions_Order {
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
 	 */
-	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false ) {
+	public static function add_sub_info_email( $order, $is_admin_email, $plaintext = false, $skip_my_account_link = false ) {
 
 		$subscriptions = wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'any' ) );
 
@@ -709,9 +753,10 @@ class WC_Subscriptions_Order {
 			wc_get_template(
 				$template,
 				array(
-					'order'          => $order,
-					'subscriptions'  => $subscriptions,
-					'is_admin_email' => $is_admin_email,
+					'order'                => $order,
+					'subscriptions'        => $subscriptions,
+					'is_admin_email'       => $is_admin_email,
+					'skip_my_account_link' => $skip_my_account_link,
 				),
 				'',
 				$template_base
@@ -768,7 +813,7 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Filters the arguments to be pased to `wc_get_orders()` under the Woocommerce -> Orders screen.
+	 * Filters the arguments to be passed to `wc_get_orders()` under the Woocommerce -> Orders screen.
 	 *
 	 * @since 6.3.0
 	 *
@@ -800,9 +845,11 @@ class WC_Subscriptions_Order {
 			);
 
 		} elseif ( 'parent' === $selected_shop_order_subtype ) {
-
-			$order_query_args['post__in'] = wcs_get_subscription_orders();
-
+			if ( wcs_is_custom_order_tables_usage_enabled() ) {
+				$order_query_args['subscription_parent'] = true;
+			} else {
+				$order_query_args['post__in'] = wcs_get_subscription_orders();
+			}
 		} else {
 
 			switch ( $selected_shop_order_subtype ) {
@@ -832,7 +879,11 @@ class WC_Subscriptions_Order {
 
 		// Also exclude parent orders from non-subscription query
 		if ( 'regular' === $selected_shop_order_subtype ) {
-			$order_query_args['post__not_in'] = wcs_get_subscription_orders();
+			if ( wcs_is_custom_order_tables_usage_enabled() ) {
+				$order_query_args['subscription_parent'] = false;
+			} else {
+				$order_query_args['post__not_in'] = wcs_get_subscription_orders();
+			}
 		}
 
 		return $order_query_args;
@@ -922,7 +973,7 @@ class WC_Subscriptions_Order {
 	 * against the line item on the original order for that subscription.
 	 *
 	 * In v2.0, this data was moved to a distinct subscription object which had its own line items for those amounts.
-	 * This function bridges the two data structures to support deprecated functions used to retreive a subscription's
+	 * This function bridges the two data structures to support deprecated functions used to retrieve a subscription's
 	 * meta data from the original order rather than the subscription itself.
 	 *
 	 * @param WC_Order $order A WC_Order object
@@ -960,7 +1011,7 @@ class WC_Subscriptions_Order {
 	 * against the line item on the original order for that subscription.
 	 *
 	 * In v2.0, this data was moved to a distinct subscription object which had its own line items for those amounts.
-	 * This function bridges the two data structures to support deprecated functions used to retreive a subscription's
+	 * This function bridges the two data structures to support deprecated functions used to retrieve a subscription's
 	 * meta data from the original order rather than the subscription itself.
 	 *
 	 * @param WC_Order $order A WC_Order object
@@ -1306,6 +1357,35 @@ class WC_Subscriptions_Order {
 		return $query_vars;
 	}
 
+	/**
+	 * Modifies the query clauses of a wc_get_orders() query to include/exclude parent orders based on the 'subscription_parent' argument.
+	 *
+	 * @param array            $query_clauses The query clauses.
+	 * @param OrdersTableQuery $order_query   The order query object.
+	 *
+	 * @return $query_clauses The modified query clauses to include/exclude parent orders.
+	 */
+	public static function filter_orders_query_by_parent_orders( $query_clauses, $order_query ) {
+		$include_parent_orders = $order_query->get( 'subscription_parent' );
+
+		// Bail if there's no argument to include/exclude parent orders.
+		if ( is_null( $include_parent_orders ) ) {
+			return $query_clauses;
+		}
+
+		if ( true === $include_parent_orders ) {
+			// Limit query to parent orders.
+			$query_clauses['join']  = ( empty( $query_clauses['join'] ) ? '' : $query_clauses['join'] . ' ' );
+			$query_clauses['join'] .= "INNER JOIN {$order_query->get_table_name( 'orders' )} as subscriptions ON subscriptions.parent_order_id = {$order_query->get_table_name( 'orders' )}.id AND subscriptions.type = 'shop_subscription'";
+		} elseif ( false === $include_parent_orders ) {
+			// Exclude parent orders.
+			$query_clauses['where']  = ( empty( $query_clauses['where'] ) ? '1=1 ' : $query_clauses['where'] . ' ' );
+			$query_clauses['where'] .= "AND {$order_query->get_table_name( 'orders' )}.id NOT IN (SELECT parent_order_id FROM {$order_query->get_table_name( 'orders' )} WHERE type = 'shop_subscription')";
+		}
+
+		return $query_clauses;
+	}
+
 	/* Deprecated Functions */
 
 	/**
@@ -1334,7 +1414,7 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Checks if an order contains an in active subscription and if it does, denies download acces
+	 * Checks if an order contains an in active subscription and if it does, denies download access
 	 * to files purchased on the order.
 	 *
 	 * @return bool False if the order contains a subscription that has expired or is cancelled/on-hold, otherwise, the original value of $download_permitted
@@ -2103,7 +2183,7 @@ class WC_Subscriptions_Order {
 	/**
 	 * Returns the amount outstanding on a subscription product.
 	 *
-	 * Deprecated because the subscription oustanding balance on a subscription is no longer added and an order can contain more
+	 * Deprecated because the subscription outstanding balance on a subscription is no longer added and an order can contain more
 	 * than one subscription.
 	 *
 	 * @param WC_Order $order The WC_Order object of the order for which you want to determine the number of failed payments.
@@ -2116,9 +2196,9 @@ class WC_Subscriptions_Order {
 
 		$failed_payment_count = self::get_failed_payment_count( $order, $product_id );
 
-		$oustanding_balance = $failed_payment_count * self::get_recurring_total( $order, $product_id );
+		$outstanding_balance = $failed_payment_count * self::get_recurring_total( $order, $product_id );
 
-		return $oustanding_balance;
+		return $outstanding_balance;
 	}
 
 	/**

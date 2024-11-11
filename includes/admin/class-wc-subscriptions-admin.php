@@ -119,6 +119,9 @@ class WC_Subscriptions_Admin {
 		add_filter( 'posts_where', array( __CLASS__, 'filter_orders_and_subscriptions_from_list' ) );
 		add_filter( 'posts_where', array( __CLASS__, 'filter_paid_subscription_orders_for_user' ) );
 
+		// Filter Order and Subscriptions used by Subscription Reports.
+		add_filter( 'woocommerce_orders_table_query_clauses', array( __CLASS__, 'filter_orders_and_subscriptions_from_order_table' ) );
+
 		add_action( 'admin_notices', __CLASS__ . '::display_renewal_filter_notice' );
 
 		add_shortcode( 'subscriptions', __CLASS__ . '::do_subscriptions_shortcode' );
@@ -128,9 +131,6 @@ class WC_Subscriptions_Admin {
 		add_filter( 'woocommerce_payment_gateways_setting_columns', array( __CLASS__, 'payment_gateways_renewal_column' ) );
 
 		add_action( 'woocommerce_payment_gateways_setting_column_renewals', array( __CLASS__, 'payment_gateways_renewal_support' ) );
-
-		// Do not display formatted order total on the Edit Order administration screen
-		add_filter( 'woocommerce_get_formatted_order_total', __CLASS__ . '::maybe_remove_formatted_order_total_filter', 0, 2 );
 
 		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10, 1 );
 
@@ -338,10 +338,10 @@ class WC_Subscriptions_Admin {
 			array(
 				'id'          => '_subscription_length',
 				'class'       => 'wc_input_subscription_length select short wc-enhanced-select',
-				'label'       => __( 'Expire after', 'woocommerce-subscriptions' ),
+				'label'       => __( 'Stop renewing after', 'woocommerce-subscriptions' ),
 				'options'     => wcs_get_subscription_ranges( $chosen_period ),
 				'desc_tip'    => true,
-				'description' => __( 'Automatically expire the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
+				'description' => __( 'Automatically stop renewing the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'woocommerce-subscriptions' ),
 			)
 		);
 
@@ -479,7 +479,7 @@ class WC_Subscriptions_Admin {
 				<option value="variable_subscription_sign_up_fee"><?php esc_html_e( 'Subscription sign-up fee', 'woocommerce-subscriptions' ); ?></option>
 				<option value="variable_subscription_period_interval"><?php esc_html_e( 'Subscription billing interval', 'woocommerce-subscriptions' ); ?></option>
 				<option value="variable_subscription_period"><?php esc_html_e( 'Subscription period', 'woocommerce-subscriptions' ); ?></option>
-				<option value="variable_subscription_length"><?php esc_html_e( 'Expire after', 'woocommerce-subscriptions' ); ?></option>
+				<option value="variable_subscription_length"><?php esc_html_e( 'Stop renewing after', 'woocommerce-subscriptions' ); ?></option>
 				<option value="variable_subscription_trial_length"><?php esc_html_e( 'Free trial length', 'woocommerce-subscriptions' ); ?></option>
 				<option value="variable_subscription_trial_period"><?php esc_html_e( 'Free trial period', 'woocommerce-subscriptions' ); ?></option>
 			</optgroup>
@@ -509,20 +509,17 @@ class WC_Subscriptions_Admin {
 		update_post_meta( $post_id, '_regular_price', $subscription_price );
 		update_post_meta( $post_id, '_sale_price', $sale_price );
 
-		$site_offset = get_option( 'gmt_offset' ) * 3600;
+		$site_offset = wc_timezone_offset();
 
-		// Save the timestamps in UTC time, the way WC does it.
-		$date_from = ( ! empty( $_POST['_sale_price_dates_from'] ) ) ? wcs_date_to_time( $_POST['_sale_price_dates_from'] ) - $site_offset : '';
-		$date_to   = ( ! empty( $_POST['_sale_price_dates_to'] ) ) ? wcs_date_to_time( $_POST['_sale_price_dates_to'] ) - $site_offset : '';
+		// Fetch the timestamps in UTC time to check if the product is currently on sale.
+		$date_from = ! empty( $_POST['_sale_price_dates_from'] ) ? wcs_date_to_time( gmdate( 'Y-m-d 00:00:00', wcs_strtotime_dark_knight( wc_clean( wp_unslash( $_POST['_sale_price_dates_from'] ) ) ) ) ) - $site_offset : '';
+		$date_to   = ! empty( $_POST['_sale_price_dates_to'] ) ? wcs_date_to_time( gmdate( 'Y-m-d 23:59:59', wcs_strtotime_dark_knight( wc_clean( wp_unslash( $_POST['_sale_price_dates_to'] ) ) ) ) ) - $site_offset : '';
 
 		$now = gmdate( 'U' );
 
 		if ( ! empty( $date_to ) && empty( $date_from ) ) {
 			$date_from = $now;
 		}
-
-		update_post_meta( $post_id, '_sale_price_dates_from', $date_from );
-		update_post_meta( $post_id, '_sale_price_dates_to', $date_to );
 
 		// Update price if on sale
 		if ( '' !== $sale_price && ( ( empty( $date_to ) && empty( $date_from ) ) || ( $date_from < $now && ( empty( $date_to ) || $date_to > $now ) ) ) ) {
@@ -536,9 +533,9 @@ class WC_Subscriptions_Admin {
 		// Make sure trial period is within allowable range
 		$subscription_ranges = wcs_get_subscription_ranges();
 
-		$max_trial_length = count( $subscription_ranges[ $_POST['_subscription_trial_period'] ] ) - 1;
+		$max_trial_length = ! empty( $_POST['_subscription_trial_period'] ) ? count( $subscription_ranges[ $_POST['_subscription_trial_period'] ] ) - 1 : 0;
 
-		$_POST['_subscription_trial_length'] = absint( $_POST['_subscription_trial_length'] );
+		$_POST['_subscription_trial_length'] = ! empty( $_POST['_subscription_trial_length'] ) ? absint( $_POST['_subscription_trial_length'] ) : 0;
 
 		if ( $_POST['_subscription_trial_length'] > $max_trial_length ) {
 			$_POST['_subscription_trial_length'] = $max_trial_length;
@@ -754,9 +751,9 @@ class WC_Subscriptions_Admin {
 
 		// Make sure trial period is within allowable range
 		$subscription_ranges = wcs_get_subscription_ranges();
-		$max_trial_length    = count( $subscription_ranges[ $_POST['variable_subscription_trial_period'][ $index ] ] ) - 1;
+		$max_trial_length    = ! empty( $_POST['variable_subscription_trial_period'][ $index ] ) ? count( $subscription_ranges[ $_POST['variable_subscription_trial_period'][ $index ] ] ) - 1 : 0;
 
-		$_POST['variable_subscription_trial_length'][ $index ] = absint( $_POST['variable_subscription_trial_length'][ $index ] );
+		$_POST['variable_subscription_trial_length'][ $index ] = ! empty( $_POST['variable_subscription_trial_length'][ $index ] ) ? absint( $_POST['variable_subscription_trial_length'][ $index ] ) : 0;
 
 		if ( $_POST['variable_subscription_trial_length'][ $index ] > $max_trial_length ) {
 			$_POST['variable_subscription_trial_length'][ $index ] = $max_trial_length;
@@ -1388,6 +1385,86 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
+	 * Filters the Admin orders and subscriptions table results in HPOS based on a list of IDs returned by a report query.
+	 *
+	 * @since 7.1.0
+	 *
+	 * @param array $clauses The query clause.
+	 *
+	 * @return array $clauses The query clause with additional `where` clause .
+	 */
+	public static function filter_orders_and_subscriptions_from_order_table( $clauses ) {
+		global $wpdb;
+
+		$query_vars = [
+			'page'                    => '',
+			'_report'                 => '',
+			'_orders_list_key'        => '',
+			'_subscriptions_list_key' => '',
+			'_data_key'               => '',
+		];
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// Map and sanitize $_GET vars to $query_vars.
+		foreach ( array_keys( $query_vars ) as $var ) {
+			if ( isset( $_GET[ $var ] ) ) {
+				$query_vars[ $var ] = sanitize_text_field( wp_unslash( $_GET[ $var ] ) );
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! ( ! empty( $query_vars['page'] ) && in_array( $query_vars['page'], [ 'wc-orders', 'wc-orders--shop_subscription' ], true ) ) || empty( $query_vars['_report'] ) ) {
+			return $clauses;
+		}
+
+		// Map the order or subscription type to their respective keys and type key.
+		$object_type      = ! empty( $query_vars['_orders_list_key'] ) ? 'order' : ( ! empty( $query_vars['_subscriptions_list_key'] ) ? 'subscription' : '' );
+		$cache_report_key = ! empty( $query_vars[ "_{$object_type}s_list_key" ] ) ? $query_vars[ "_{$object_type}s_list_key" ] : '';
+
+		// If the report key or report arg is empty exit early.
+		if ( empty( $cache_report_key ) || empty( $query_vars['_report'] ) ) {
+			$clauses['where'] .= " AND {$wpdb->posts}.ID = 0";
+			return $clauses;
+		}
+
+		$cache = get_transient( $query_vars['_report'] );
+
+		// Display an admin notice if we cannot find the report data requested.
+		if ( ! isset( $cache[ $cache_report_key ] ) ) {
+			$admin_notice = new WCS_Admin_Notice( 'error' );
+			$admin_notice->set_simple_content(
+				sprintf(
+				/* translators: Placeholders are opening and closing link tags. */
+					__( 'We weren\'t able to locate the set of report results you requested. Please regenerate the link from the %1$sSubscription Reports screen%2$s.', 'woocommerce-subscriptions' ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=wc-reports&tab=subscriptions&report=subscription_events_by_date' ) ) . '">',
+					'</a>'
+				)
+			);
+			$admin_notice->display();
+
+			$clauses['where'] .= " AND {$wpdb->posts}.ID = 0";
+			wc_get_logger()->warning( 'returning 2 $clauses-- ' . wp_json_encode( $clauses ) );
+
+			return $clauses;
+		}
+
+		$results = $cache[ $cache_report_key ];
+
+		// The current subscriptions count report will include the specific result (the subscriptions active on the last day) that should be used to generate the subscription list.
+		if ( ! empty( $query_vars['_data_key'] ) && isset( $results[ (int) $query_vars['_data_key'] ] ) ) {
+			$results = array( $results[ (int) $query_vars['_data_key'] ] );
+		}
+
+		$ids    = explode( ',', implode( ',', wp_list_pluck( $results, "{$object_type}_ids", true ) ) );
+		$format = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$clauses['where'] .= $wpdb->prepare( " AND {$wpdb->prefix}wc_orders.ID IN ($format)", $ids );
+
+		return $clauses;
+	}
+
+	/**
 	 * Filters the Admin orders and subscriptions table results based on a list of IDs returned by a report query.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.2
@@ -1550,12 +1627,26 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Callback for the [subscriptions] shortcode that displays subscription names for a particular user.
+	 * Displays the content for the [subscriptions] shortcode.
 	 *
-	 * @param array $attributes Shortcode attributes.
-	 * @return string
+	 * The subscriptions shortcode can be used to display customer subscriptions similar to the my account list page.
+	 * Shortcode args enable filtering by status and user ID.
+	 *
+	 * @param array $attributes shortcode attributes.
+	 * @return string The shortcode content.
 	 */
 	public static function do_subscriptions_shortcode( $attributes ) {
+
+		// Display a notice if the user isn't logged in.
+		if ( ! is_user_logged_in() ) {
+			// We cannot show notices on admin requests - eg page previews.
+			if ( is_admin() ) {
+				return;
+			}
+
+			return wc_print_notice( esc_html__( 'Please log in to your account to view your subscriptions.', 'woocommerce-subscriptions' ), 'error', [], true );
+		}
+
 		$attributes = shortcode_atts(
 			array(
 				'user_id' => 0,
@@ -1565,15 +1656,34 @@ class WC_Subscriptions_Admin {
 			'subscriptions'
 		);
 
-		$subscriptions = wcs_get_users_subscriptions( $attributes['user_id'] );
+		$subscriptions       = wcs_get_users_subscriptions( $attributes['user_id'] );
+		$apply_status_filter = 'all' !== $attributes['status'] && 'any' !== $attributes['status'];
 
-		// Limit subscriptions to the appropriate status if it's not "any" or "all".
-		if ( 'all' !== $attributes['status'] && 'any' !== $attributes['status'] ) {
-			/** @var WC_Subscription $subscription */
-			foreach ( $subscriptions as $index => $subscription ) {
-				if ( ! $subscription->has_status( $attributes['status'] ) ) {
-					unset( $subscriptions[ $index ] );
-				}
+		// Determine if the current user has permission to view the subscriptions.
+		// By default, only the user themselves can view their subscriptions.
+		$display_permissions_notice = ! empty( $attributes['user_id'] ) && get_current_user_id() !== absint( $attributes['user_id'] );
+
+		foreach ( $subscriptions as $index => $subscription ) {
+			if ( $apply_status_filter && ! $subscription->has_status( $attributes['status'] ) ) {
+				unset( $subscriptions[ $index ] );
+			}
+
+			// Remove any subscriptions the current user cannot view. WooCommerce admins can view all subscriptions.
+			if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'view_order', $subscription->get_id() ) ) {
+				unset( $subscriptions[ $index ] );
+				$display_permissions_notice = true;
+			}
+		}
+
+		// If all the subscriptions were removed and the current user doesn't have permissions, display a notice. Note: We cannot show notices on admin requests - eg page previews.
+		if ( empty( $subscriptions ) && $display_permissions_notice ) {
+			// We cannot show notices on admin requests - eg page previews.
+			if ( is_admin() ) {
+				return;
+			} elseif ( current_user_can( 'manage_woocommerce' ) ) {
+				return wc_print_notice( esc_html__( 'No subscriptions found for that customer.', 'woocommerce-subscriptions' ), 'notice', [], true );
+			} else {
+				return wc_print_notice( esc_html__( 'You do not have permission to view those subscriptions.', 'woocommerce-subscriptions' ), 'error', [], true );
 			}
 		}
 
@@ -1584,6 +1694,9 @@ class WC_Subscriptions_Admin {
 			array(
 				'subscriptions' => $subscriptions,
 				'user_id'       => $attributes['user_id'],
+				'current_page'  => 1,
+				'max_num_pages' => 1,
+				'paginate'      => false,
 			),
 			'',
 			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
@@ -1713,18 +1826,10 @@ class WC_Subscriptions_Admin {
 	 * Do not display formatted order total on the Edit Order administration screen
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5.17
+	 * @deprecated 7.5.0
 	 */
 	public static function maybe_remove_formatted_order_total_filter( $formatted_total, $order ) {
-
-		// Check if we're on the Edit Order screen - get_current_screen() only exists on admin pages so order of operations matters here
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_order' == $screen->id ) {
-				remove_filter( 'woocommerce_get_formatted_order_total', 'WC_Subscriptions_Order::get_formatted_order_total', 10 );
-			}
-		}
+		wcs_deprecated_function( __METHOD__, '7.5.0' );
 
 		return $formatted_total;
 	}
@@ -1736,12 +1841,8 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function maybe_attach_gettext_callback() {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_subscription' === $screen->id ) {
-				add_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10, 3 );
-			}
+		if ( self::is_edit_subscription_page() ) {
+			add_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10, 3 );
 		}
 	}
 
@@ -1752,15 +1853,10 @@ class WC_Subscriptions_Admin {
 	 */
 	public static function maybe_unattach_gettext_callback() {
 
-		if ( is_admin() && function_exists( 'get_current_screen' ) ) {
-			$screen = get_current_screen();
-
-			if ( is_object( $screen ) && 'shop_subscription' === $screen->id ) {
-				remove_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10 );
-			}
+		if ( self::is_edit_subscription_page() ) {
+			remove_filter( 'gettext', array( __CLASS__, 'change_order_item_editable_text' ), 10 );
 		}
 	}
-
 
 	/**
 	* When subscription items not editable (such as due to the payment gateway not supporting modifications),
@@ -1776,6 +1872,7 @@ class WC_Subscriptions_Admin {
 				break;
 
 			case 'To edit this order change the status back to "Pending"':
+			case 'To edit this order change the status back to "Pending payment"':
 				$translated_text = __( 'This subscription is no longer editable because the payment gateway does not allow modification of recurring amounts.', 'woocommerce-subscriptions' );
 				break;
 		}
@@ -1810,7 +1907,7 @@ class WC_Subscriptions_Admin {
 
 				array(
 					// translators: placeholders are opening and closing link tags
-					'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %1$smanual subscription renewal payments%2$s.', 'woocommerce-subscriptions' ), '<a href="http://docs.woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
+					'desc' => sprintf( __( 'Payment gateways which don\'t support automatic recurring payments can be used to process %1$smanual subscription renewal payments%2$s.', 'woocommerce-subscriptions' ), '<a href="https://woocommerce.com/document/subscriptions/renewal-process/">', '</a>' ),
 					'id'   => self::$option_prefix . '_payment_gateways_additional',
 					'type' => 'informational',
 				),
@@ -1874,7 +1971,7 @@ class WC_Subscriptions_Admin {
 	 * @param string $insert_after_setting_id The setting id to insert the new setting after.
 	 * @param array  $new_setting             The new setting to insert. Can be a single setting or an array of settings.
 	 * @param string $insert_type             The type of insert to perform. Can be 'single_setting' or 'multiple_settings'. Optional. Defaults to a single setting insert.
-	 * @param string $insert_after            The setting type to insert the new settings after. Optional. Default is 'first' - the setting will be inserted after the first occuring setting with the matching ID (no specific type). Pass a setting type (like 'sectionend') to insert after a setting type.
+	 * @param string $insert_after            The setting type to insert the new settings after. Optional. Default is 'first' - the setting will be inserted after the first occurring setting with the matching ID (no specific type). Pass a setting type (like 'sectionend') to insert after a setting type.
 	 */
 	public static function insert_setting_after( &$settings, $insert_after_setting_id, $new_setting, $insert_type = 'single_setting', $insert_after = 'first' ) {
 		if ( ! is_array( $settings ) ) {
@@ -2041,7 +2138,7 @@ class WC_Subscriptions_Admin {
 	}
 
 	/**
-	 * Set a translation safe screen ID for Subcsription
+	 * Set a translation safe screen ID for Subscriptions
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.3.3
 	 */
@@ -2124,7 +2221,7 @@ class WC_Subscriptions_Admin {
 	 * @return string    $from              Origin type.
 	 * @param string     $to                New type.
 	 *
-	 * @return bool Whehter the variations should be deleted.
+	 * @return bool Whether the variations should be deleted.
 	 */
 	public static function maybe_keep_variations( $delete_variations, $product, $from, $to ) {
 
@@ -2133,5 +2230,25 @@ class WC_Subscriptions_Admin {
 		}
 
 		return $delete_variations;
+	}
+
+	/**
+	 * Check if the current page is the Edit Subscription page
+	 *
+	 * @return bool True if the current page is the Edit Subscription page
+	 *
+	 * @since 7.5.0
+	 */
+	private static function is_edit_subscription_page() {
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+		if ( ! is_object( $screen ) ) {
+			return false;
+		}
+
+		return wcs_get_page_screen_id( 'shop_subscription' ) === $screen->id;
 	}
 }

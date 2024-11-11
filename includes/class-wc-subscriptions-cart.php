@@ -48,6 +48,16 @@ class WC_Subscriptions_Cart {
 	private static $cached_recurring_cart = null;
 
 	/**
+	 * A stack of recurring cart keys being calculated.
+	 *
+	 * Before calculating a cart's totals, we set the recurring cart key and calculation type to match that cart's key and type. @see self::set_recurring_cart_key_before_calculate_totals()
+	 * After a cart's totals have been calculated, we restore the recurring cart key and calculation type. @see self::update_recurring_cart_key_after_calculate_totals()
+	 *
+	 * @var array
+	 */
+	private static $recurring_totals_calculation_stack = [];
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
@@ -113,6 +123,10 @@ class WC_Subscriptions_Cart {
 
 		// Redirect the user immediately to the checkout page after clicking "Sign Up Now" buttons to encourage immediate checkout
 		add_filter( 'woocommerce_add_to_cart_redirect', array( __CLASS__, 'add_to_cart_redirect' ) );
+
+		// Set the recurring cart being calculated.
+		add_action( 'woocommerce_before_calculate_totals', [ __CLASS__, 'set_recurring_cart_key_before_calculate_totals' ], 1 );
+		add_action( 'woocommerce_after_calculate_totals', [ __CLASS__, 'update_recurring_cart_key_after_calculate_totals' ], 1 );
 	}
 
 	/**
@@ -227,6 +241,37 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
+	 * Sets the recurring cart key and calculation type before calculating a carts totals.
+	 *
+	 * @param WC_Cart $cart The cart object being calculated.
+	 */
+	public static function set_recurring_cart_key_before_calculate_totals( $cart ) {
+		$recurring_cart_key = ! empty( $cart->recurring_cart_key ) ? $cart->recurring_cart_key : 'none';
+
+		// Store the recurring cart key in the stack.
+		array_unshift( self::$recurring_totals_calculation_stack, $recurring_cart_key );
+
+		// Set the current recurring cart key and calculation type.
+		self::set_recurring_cart_key( $recurring_cart_key );
+		self::set_calculation_type( 'none' === $recurring_cart_key ? 'none' : 'recurring_total' );
+	}
+
+	/**
+	 * Updates the recurring cart key and calculation type after calculating a carts totals.
+	 *
+	 * @param WC_Cart $cart The cart object that finished calculating it's totals.
+	 */
+	public static function update_recurring_cart_key_after_calculate_totals( $cart ) {
+		// Remove the recurring cart key from the stack. It has finished calculating.
+		array_shift( self::$recurring_totals_calculation_stack );
+
+		$recurring_cart_key = empty( self::$recurring_totals_calculation_stack ) ? 'none' : reset( self::$recurring_totals_calculation_stack );
+
+		self::set_recurring_cart_key( $recurring_cart_key );
+		self::set_calculation_type( 'none' === $recurring_cart_key ? 'none' : 'recurring_total' );
+	}
+
+	/**
 	 * Calculate the initial and recurring totals for all subscription products in the cart.
 	 *
 	 * We need to group subscriptions by billing schedule to make the display and creation of recurring totals sane,
@@ -243,9 +288,21 @@ class WC_Subscriptions_Cart {
 	 * @version 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function calculate_subscription_totals( $total, $cart ) {
-		if ( ! self::cart_contains_subscription() && ! wcs_cart_contains_resubscribe() ) { // cart doesn't contain subscription
+		// If the cart doesn't contain a subscription, skip calculating recurring totals.
+		if ( ! self::cart_contains_subscription() && ! wcs_cart_contains_resubscribe() ) {
 			return $total;
-		} elseif ( 'none' != self::$calculation_type ) { // We're in the middle of a recalculation, let it run
+		}
+
+		// We're in the middle of a recalculation, let it run.
+		if ( 'none' !== self::$calculation_type ) {
+			return $total;
+		}
+
+		/**
+		 * If we're in the middle of calculating recurring totals, skip this calculation to avoid infinite loops.
+		 * We use whether there's a recurring cart key in the calculation stack (ie has started but hasn't finished) to determine if we're in the middle calculating recurring totals.
+		 */
+		if ( ! empty( array_diff( self::$recurring_totals_calculation_stack, [ 'none' ] ) ) ) {
 			return $total;
 		}
 
@@ -1022,59 +1079,12 @@ class WC_Subscriptions_Cart {
 	 * Subscriptions groups products by billing schedule when calculating cart totals, so that shipping and other "per order" amounts
 	 * can be calculated for each group of items for each renewal. This method constructs a cart key based on the billing schedule
 	 * to allow products on the same billing schedule to be grouped together - free trials and synchronisation is accounted for by
-	 * using the first renewal date (if any) for the susbcription.
+	 * using the first renewal date (if any) for the subscription.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_recurring_cart_key( $cart_item, $renewal_time = '' ) {
-
-		$cart_key = '';
-
-		$product      = $cart_item['data'];
-		$renewal_time = ! empty( $renewal_time ) ? $renewal_time : WC_Subscriptions_Product::get_first_renewal_payment_time( $product );
-		$interval     = WC_Subscriptions_Product::get_interval( $product );
-		$period       = WC_Subscriptions_Product::get_period( $product );
-		$length       = WC_Subscriptions_Product::get_length( $product );
-		$trial_period = WC_Subscriptions_Product::get_trial_period( $product );
-		$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
-
-		if ( $renewal_time > 0 ) {
-			$cart_key .= gmdate( 'Y_m_d_', $renewal_time );
-		}
-
-		// First start with the billing interval and period
-		switch ( $interval ) {
-			case 1:
-				if ( 'day' == $period ) {
-					$cart_key .= 'daily'; // always gotta be one exception
-				} else {
-					$cart_key .= sprintf( '%sly', $period );
-				}
-				break;
-			case 2:
-				$cart_key .= sprintf( 'every_2nd_%s', $period );
-				break;
-			case 3:
-				$cart_key .= sprintf( 'every_3rd_%s', $period ); // or sometimes two exceptions it would seem
-				break;
-			default:
-				$cart_key .= sprintf( 'every_%dth_%s', $interval, $period );
-				break;
-		}
-
-		if ( $length > 0 ) {
-			$cart_key .= '_for_';
-			$cart_key .= sprintf( '%d_%s', $length, $period );
-			if ( $length > 1 ) {
-				$cart_key .= 's';
-			}
-		}
-
-		if ( $trial_length > 0 ) {
-			$cart_key .= sprintf( '_after_a_%d_%s_trial', $trial_length, $trial_period );
-		}
-
-		return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', $cart_key, $cart_item );
+		return apply_filters( 'woocommerce_subscriptions_recurring_cart_key', wcs_get_subscription_grouping_key( $cart_item['data'], $renewal_time ), $cart_item );
 	}
 
 	/**

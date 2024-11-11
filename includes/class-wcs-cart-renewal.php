@@ -427,6 +427,7 @@ class WCS_Cart_Renewal {
 
 			if ( $subscription ) {
 				$subscription_items = $subscription->get_items();
+				$item_to_renew      = [];
 
 				/**
 				 * Find the subscription or order line item that represents this cart item.
@@ -445,6 +446,11 @@ class WCS_Cart_Renewal {
 					}
 				}
 
+				// If we can't find the item to renew, return the cart item session data as is.
+				if ( empty( $item_to_renew ) ) {
+					return $cart_item_session_data;
+				}
+
 				$price = $item_to_renew['line_subtotal'];
 
 				if ( $_product->is_taxable() && $subscription->get_prices_include_tax() ) {
@@ -459,7 +465,7 @@ class WCS_Cart_Renewal {
 
 					if ( isset( $item_to_renew['_subtracted_base_location_taxes'] ) ) {
 						$price += array_sum( $item_to_renew['_subtracted_base_location_taxes'] ) * $item_to_renew['qty'];
-					} else {
+					} elseif ( isset( $item_to_renew['taxes']['subtotal'] ) ) {
 						$price += array_sum( $item_to_renew['taxes']['subtotal'] ); // Use the taxes array items here as they contain taxes to a more accurate number of decimals.
 					}
 				}
@@ -488,33 +494,44 @@ class WCS_Cart_Renewal {
 	 * Returns address details from the renewal order if the checkout is for a renewal.
 	 *
 	 * @param string $value Default checkout field value.
-	 * @param string $key The checkout form field name/key
+	 * @param string $key   The checkout form field name/key.
+	 *
 	 * @return string $value Checkout field value.
 	 */
 	public function checkout_get_value( $value, $key ) {
 
-		// Only hook in after WC()->checkout() has been initialised
-		if ( $this->cart_contains() && did_action( 'woocommerce_checkout_init' ) > 0 ) {
+		// Only hook in after WC()->checkout() has been initialised.
+		if ( ! $this->cart_contains() || did_action( 'woocommerce_checkout_init' ) <= 0 ) {
+			return $value;
+		}
 
-			// Guard against the fake WC_Checkout singleton, see https://github.com/woocommerce/woocommerce-subscriptions/issues/427#issuecomment-260763250
-			remove_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10 );
+		// Get the most specific order object, which will be the renewal order for renewals, initial order for initial payments, or a subscription for switches/resubscribes.
+		$order = $this->get_order();
 
-			if ( is_callable( array( WC()->checkout(), 'get_checkout_fields' ) ) ) { // WC 3.0+
-				$address_fields = array_merge( WC()->checkout()->get_checkout_fields( 'billing' ), WC()->checkout()->get_checkout_fields( 'shipping' ) );
-			} else {
-				$address_fields = array_merge( WC()->checkout()->checkout_fields['billing'], WC()->checkout()->checkout_fields['shipping'] );
-			}
+		if ( ! $order ) {
+			return $value;
+		}
 
-			add_filter( 'woocommerce_checkout_get_value', array( &$this, 'checkout_get_value' ), 10, 2 );
+		$address_fields = array_merge(
+			WC()->countries->get_address_fields(
+				$order->get_billing_country(),
+				'billing_'
+			),
+			WC()->countries->get_address_fields(
+				$order->get_shipping_country(),
+				'shipping_'
+			)
+		);
 
-			if ( array_key_exists( $key, $address_fields ) && false !== ( $item = $this->cart_contains() ) ) {
+		// Generate the address getter method for the key.
+		$getter = "get_{$key}";
 
-				// Get the most specific order object, which will be the renewal order for renewals, initial order for initial payments, or a subscription for switches/resubscribes
-				$order = $this->get_order( $item );
+		if ( array_key_exists( $key, $address_fields ) && is_callable( [ $order, $getter ] ) ) {
+			$order_value = call_user_func( [ $order, $getter ] );
 
-				if ( ( $order_value = wcs_get_objects_property( $order, $key ) ) ) {
-					$value = $order_value;
-				}
+			// Given this is fetching the value for a checkout field, we need to ensure the value is a scalar.
+			if ( is_scalar( $order_value ) ) {
+				$value = $order_value;
 			}
 		}
 
@@ -910,7 +927,7 @@ class WCS_Cart_Renewal {
 			 * Allow other plugins to remove/add fees of an existing order prior to building the cart without changing the saved order values
 			 * (e.g. payment gateway based fees can remove fees and later can add new fees depending on the actual selected payment gateway)
 			 *
-			 * @param WC_Order $order is renderd by reference - change meta data of this object
+			 * @param WC_Order $order is rendered by reference - change meta data of this object
 			 * @param WC_Cart $cart
 			 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.9
 			 */
@@ -1354,8 +1371,9 @@ class WCS_Cart_Renewal {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.4.3
 	 */
 	public function setup_discounts( $order ) {
-		$order_discount = $order->get_total_discount();
-		$coupon_items   = $order->get_items( 'coupon' );
+		$prices_include_tax = $order->get_prices_include_tax();
+		$order_discount     = $order->get_total_discount( ! $prices_include_tax );
+		$coupon_items       = $order->get_items( 'coupon' );
 
 		if ( empty( $order_discount ) && empty( $coupon_items ) ) {
 			return;
@@ -1363,6 +1381,10 @@ class WCS_Cart_Renewal {
 
 		$total_coupon_discount = floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount' ) ) );
 		$coupons               = array();
+
+		if ( $prices_include_tax ) {
+			$total_coupon_discount += floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
+		}
 
 		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
 		$order_has_manual_discount = $order_discount !== $total_coupon_discount;
@@ -1613,16 +1635,8 @@ class WCS_Cart_Renewal {
 			return $has_status;
 		}
 
-		/**
-		 * This function is only concerned with updating the order cart hash during REST API requests - which is the request
-		 * context where the Store API Checkout Block validates the order for payment resumption.
-		 */
-		if ( ! WC()->is_rest_api_request() ) {
-			return $has_status;
-		}
-
 		// If the order being validated is the order in the cart, then we need to update the cart hash so it can be resumed.
-		if ( $order && $order->get_id() === WC()->session->get( 'store_api_draft_order', 0 ) ) {
+		if ( $order && $order->get_id() === (int) WC()->session->get( 'store_api_draft_order', 0 ) ) {
 			$cart_order = $this->get_order();
 
 			if ( $cart_order && $cart_order->get_id() === $order->get_id() ) {
@@ -1826,7 +1840,7 @@ class WCS_Cart_Renewal {
 
 			$order_id = absint( WC()->session->order_awaiting_payment );
 
-			// Guard against infinite loops in WC 3.0+ where default order staus is set in WC_Abstract_Order::__construct()
+			// Guard against infinite loops in WC 3.0+ where default order status is set in WC_Abstract_Order::__construct()
 			remove_filter( 'woocommerce_default_order_status', array( &$this, __FUNCTION__ ), 10 );
 
 			$order = $order_id > 0 ? wc_get_order( $order_id ) : null;

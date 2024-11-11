@@ -1,7 +1,118 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 6.5.0 - xxxx-xx-xx =
+= 7.7.0 - xxxx-xx-xx =
 * Fix: Deprecate upgrading from versions of WooCommerce Subscriptions prior to 3.0.0.
+* Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
+* Dev - Introduce the filter `woocommerce_subscriptions_synced_first_renewal_payment_timestamp` to enable plugins to modify the first renewal date of synced subscriptions.
+
+= 7.6.0 - 2024-10-14 =
+* Fix - Correctly updates a subscription status to `cancelled` during a payment failure call when the current status is `pending-cancel`.
+* Fix - Clear the `cancelled_email_sent` meta when a subscription is reactivated to allow the customer to receive future cancellation emails.
+* Fix - Prevent deprecation notices after updating to WooCommerce 9.3.
+* Fix - Prevent PHP fatal error that occurs when calculating the total tax refunded on a subscription.
+* Dev - Only initialise the `WCS_WC_Admin_Manager` class on stores running WC 9.2 or older. This class handled integration with the Woo Navigation feature that was removed in WC 9.3.
+
+= 7.5.0 - 2024-09-12 =
+* Dev - Removing the unused method `maybe_remove_formatted_order_total_filter` hooked to `woocommerce_get_formatted_order_total` which was deprecated.
+* Fix - Resolved two issues preventing the correct display of the "Subscription items can no longer be edited." message on the Edit Subscription page.
+* Fix - Checks for the existence of `wc_get_page_screen_id` before calling it on `wcs_get_page_screen_id`, and for the admin context before calling `list_table_primary_column` to prevent fatal errors.
+* Fix - Blocks the reactivation of a subscription when the end date is in the past.
+* Fix - Ensure a subscription's modified date is updated when its related order cache is updated on non-HPOS sites.
+* Fix - Ensure trial period form data is set before use to prevent fatal errors when the data is missing.
+* Fix - Resolved an error with coupon discount calculations for manual or early renewal orders on stores with tax-inclusive pricing.
+
+= 7.4.3 - 2024-09-05 =
+* Fix - Prevent errors during checkout when a customer is switching their subscription product and does not require payment.
+
+= 7.4.2 - 2024-08-27 =
+* Fix - Resolved an issue where simple product prices were incorrectly set to $0 when purchasing subscriptions and simple products with a coupon in WC 9.2.
+
+= 7.4.1 - 2024-08-21 =
+* Fix - Add a year to the next renewal date billing interval is 12 months or more for a synced subscription.
+
+= 7.4.0 - 2024-08-16 =
+* Dev - Introduce new parameter to WC_Subscription::get_last_order() to enable filtering out orders with specific statuses.
+* Update - Schedule subscription-related events with a priority of 1 to allow for earlier execution within the Action Scheduler.
+* Fix - Ensure admin notices are displayed after performing bulk actions on subscriptions when HPOS is enabled.
+* Fix - Resolved an error when purchasing subscription products on the block checkout with a limited recurring coupon.
+
+= 7.3.0 - 2024-07-16 =
+* Fix - Label improvements on subscription and order page templates.
+* Fix - Fixed an issue with subscriptions containing multiple renewal orders to mark a random item as processing, instead of the last order.
+* Fix - Prevent errors from invalid subscription objects during customer payment method updates.
+
+= 7.2.0 - 2024-06-13 =
+* Fix - label improvement on my subscription page template.
+* Fix - Regenerate subscriptions related order caches (renewal, resubscribe, switch) if it's stored as an invalid value to prevent fatal errors.
+* Update - Show "FREE" instead of 0 when there is no shipping cost in the recurring totals section of the Cart and Checkout blocks (requires WooCommerce 9.0+).
+* Dev - New function wcs_set_recurring_item_total() to set line item totals that have been copied from an initial order to their proper recurring totals (i.e. remove sign-up fees).
+
+= 7.1.1 - 2024-05-09 =
+* Fix - Resolved an issue that caused "WC_DateTime could not be converted to int" warnings to occur on non-hpos sites while editing a subscription.
+
+= 7.1.0 - 2024-05-09 =
+* Fix - Add check to prevent fatal error in rsort and array_sum.
+* Fix - Use `add_to_cart_ajax_redirect` instead of the deprecated `redirect_ajax_add_to_cart` function as callback.
+* Fix - Filtered order links in subscription reports returns all the orders when HPOS is enabled.
+* Fix - Typo in confirmation alert when users remove an item from a subscription.
+* Fix - Ensure the scheduled sale price for subscription products ends at the end of the "to" day set in product settings.
+* Fix - Subscription table is empty in mobile view when HPOS is enabled.
+* Fix - WooCommerce page header is hidden when HPOS is enabled.
+* Fix - Subscription updated messages missing on the Edit Subscription page when HPOS is enabled.
+* Fix - Resolved an issue that prevented bulk actions from running on the Subscriptions list table when the table was filtered by date, payment method, product or customer.
+* Update - Update the shipping method styling to apply borders to the highlighted shipping option in the Checkout block.
+* Update - Include a full stack trace in failed scheduled action logs to improve troubleshooting issues.
+* Update - Show notice about product being removed from the cart when a subscription is for disabled mixed checkout setting.
+* Dev - Calling wcs_create_subscription() will no longer attempt to fetch a fresh instance of the subscription at the end. This is to prevent loading the subscription from the database potentially unnecessarily.
+
+= 7.0.0 - 2024-04-11 =
+* Fix - Update the failing payment method on a subscription when customers successfully pay for a failed renewal order via the block checkout.
+* Fix - Resolved an issue that would cause subscriptions to be directly cancelled by the WooCommerce process of automatically cancelling unpaid orders in-line with the hold stock setting.
+* Fix - Prevent duplicate status transition notes on subscriptions and potential infinite loops when processing subscription status transitions.
+* Fix - Resolved an issue that could lead to "Undefined array key 'order-received'" errors.
+* Fix - Resolved errors that could occur when paying for renewal orders via the checkout when the store has custom checkout fields.
+* Fix - Resolved database errors that would occur when ordering the subscriptions list table by the 'Last order date' on sites with HPOS enabled.
+* Dev - Introduced a new filter ('wcs_setup_cart_for_subscription_initial_payment') to enable third-party plugins to use the pay-for-order flow to complete a subscription's initial payment.
+
+= 6.9.0 - 2024-03-28 =
+* Fix - Resolved an issue where discounts, when reapplied to failed or manual subscription order payments, would incorrectly account for inclusive tax.
+* Fix - Resolved an issue that could cause an empty error notice to appear on the My Account > Payment methods page when a customer attempted to delete a token used by subscriptions.
+* Fix - Make sure we always clear the subscription object from cache after updating dates.
+* Fix - Use block theme styles for the 'Add to Cart' button on subscription product pages.
+* Fix - Customer notes not being saved on the Edit Subscription page for stores with HPOS enabled.
+* Fix - Ensure products that have a yearly billing period can choose a date that the subscription is synchronized to.
+* Fix - Improved alignment of subscription product pricing fields on the edit product screen for consistency with other fields.
+* Fix - Avoid setting empty meta keys on subscriptions when changing the customer's default payment method.
+* Fix - Use a more scalable way to filter the orders admin list table by parent orders on HPOS stores.
+* Fix - Resolved an issue that prevented subscription custom place order button labels from working on the block checkout.
+* Update - Change the update all subscriptions checkbox displayed on the change payment method page to be enabled by default.
+
+= 6.8.0 - 2024-02-08 =
+* Fix - Block the UI after a customer clicks actions on the My Account > Subscriptions page to prevent multiple requests from being sent.
+* Fix - WC 8.6.0 compatibility: Resolved wc_get_log_file_path() deprecation warnings.
+
+= 6.7.1 - 2024-01-17 =
+* Fix - Resolved an error that would occur with WC 8.5.0 when editing a subscription customer from the admin dashboard.
+
+= 6.7.0 - 2024-01-11 =
+* Update - Changed the edit subscription product "Expire after" (Subscription length) so it more clearly describes when a subscription will automatically stop renewing.
+* Update - Log all exceptions caught by WooCommerce while processing a subscription scheduled action.
+* Fix - Resolved an issue that caused ordering the Admin Subscriptions List Table to not work when HPOS is enabled.
+
+= 6.6.0 - 2023-12-20 =
+* Fix - When using the checkout block to pay for renewal orders, ensure the order's cart hash is updated to make sure the existing order can be used.
+* Fix - Prevents a PHP fatal error that occurs when the cart contains a renewal order item that no longer exists.
+* Fix - When HPOS is enabled and data compatibility mode is turned on, make sure subscription date changes made to postmeta are synced to orders_meta table.
+* Fix - Resolved an issue that would cause undefined $current_page, $max_num_pages, and $paginate variable errors when viewing a page with the subscriptions-shortcode.
+
+= 6.5.0 - 2023-11-09 =
+* Add - When a customer toggles automatic renewals on or off via their My Account page, add a note to the subscription to record that event.
+* Fix - When a subscription is flagged as requiring manual payments, allow admin users to turn on automatic payments for a subscription via the Edit Subscription page by selecting a new payment method.
+* Fix - When processing an early renewal order, make sure the suspension count is reset back to 0 on payment complete.
+* Fix - Ensure proper backfilling of subscription metadata (i.e. dates and cache) to the postmeta table when HPOS is enabled and compatibility mode (data syncing) is turned on.
+* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatible way.
+* Dev - Introduce a new wcs_get_subscription_grouping_key() function to generate a unique key for a subscription based on its billing schedule. This function uses the existing recurring cart key concept.
+* Dev - Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.
 
 = 6.4.0 - 2023-10-18 =
 * Add - Use admin theme color and the correct WooCommerce colors.

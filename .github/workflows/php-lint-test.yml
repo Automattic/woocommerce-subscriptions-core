@@ -39,7 +39,7 @@ jobs:
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.0'
+          php-version: '7.3'
           coverage:    none
       # run CI checks
       - run: find . \( -path ./vendor \) -prune -o \( -name '*.php' \) -exec php -lf {} \;| (! grep -v "No syntax errors detected" )
@@ -51,7 +51,7 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        php: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
+        php: [ '7.4', '8.0', '8.1', '8.2' ]
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -67,19 +67,13 @@ jobs:
           tools:       composer
       # run CI checks
       - run: |
-          IS_PHP_71_OR_LOWER=`php -r "echo version_compare('7.1', phpversion(), '<=');"`
-          if [[ $IS_PHP_71_OR_LOWER == '1' ]]; then
-            echo "WC_VERSION=6.4.1 bash bin/run-ci-tests.sh"
-            WC_VERSION=6.4.1 bash bin/run-ci-tests.sh
-          else
-            echo "bash bin/run-ci-tests.sh"
-            bash bin/run-ci-tests.sh
-          fi
+          echo "bash bin/run-ci-tests.sh"
+          bash bin/run-ci-tests.sh
   compatibility-oldest:
     name: Run unit tests on Oldest supported version
     runs-on: ubuntu-latest
     env:
-      WC_VERSION: 5.5.0  # the min supported version as per L-2 policy
+      WC_VERSION: 7.7.0  # the min supported version as per L-2 policy
       WP_VERSION: 'latest'
     steps:
       # clone the repository
@@ -92,7 +86,7 @@ jobs:
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.1'
+          php-version: '7.3'
           tools: composer
       # run CI checks
       - run: bash bin/run-ci-tests.sh

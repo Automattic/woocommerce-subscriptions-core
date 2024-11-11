@@ -197,7 +197,7 @@ export function getSwitchString( switchType ) {
  * @param {Object} subscription                    Subscription object data.
  * @param {number} subscription.subscriptionLength Subscription length.
  * @param {number} subscription.billingInterval    Billing interval
- * @return {boolean} wether this is a one off subscription or not.
+ * @return {boolean} whether this is a one off subscription or not.
  */
 export function isOneOffSubscription( {
 	subscriptionLength,
