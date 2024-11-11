@@ -98,20 +98,18 @@ class WCS_Upgrade_2_2_7 {
 	 * @return array An list of subscription ids which may need to be repaired.
 	 */
 	public static function get_subscriptions_to_repair() {
-		$subscriptions_to_repair = wc_get_orders(
-			array(
-				'type'       => 'shop_subscription',
-				'status'     => 'wc-pending-cancel',
-				'limit'      => self::$batch_size,
-				'return'     => 'ids',
-				'meta_query' => array(
-					array(
-						'key'     => '_wcs_2_2_7_repaired',
-						'compare' => 'NOT EXISTS',
-					),
+		$subscriptions_to_repair = get_posts( array(
+			'post_type'      => 'shop_subscription',
+			'post_status'    => 'wc-pending-cancel',
+			'posts_per_page' => self::$batch_size,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_wcs_2_2_7_repaired',
+					'compare' => 'NOT EXISTS',
 				),
-			)
-		);
+			),
+		) );
 
 		return $subscriptions_to_repair;
 	}

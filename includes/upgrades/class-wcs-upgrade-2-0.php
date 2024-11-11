@@ -789,15 +789,13 @@ class WCS_Upgrade_2_0 {
 		global $wpdb;
 
 		// Get the renewal order IDs
-		$renewal_order_ids = wc_get_orders(
-			array(
-				'limit'  => -1,
-				'status' => 'any',
-				'type'   => 'shop_order',
-				'parent' => $order_id,
-				'return' => 'ids',
-			)
-		);
+		$renewal_order_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_order',
+			'post_parent'    => $order_id,
+			'fields'         => 'ids',
+		) );
 
 		// Set the post meta
 		foreach ( $renewal_order_ids as $renewal_order_id ) {
@@ -889,13 +887,13 @@ class WCS_Upgrade_2_0 {
 		) );
 
 		// Select the orders which had the items which were switched by this order
-		$previous_order_id = wc_get_orders(
+		$previous_order_id = get_posts(
 			array(
-				'type'       => 'shop_order',
-				'status'     => 'any',
-				'return'     => 'ids',
-				'limit'      => -1,
-				'meta_query' => array(
+				'post_type'      => 'shop_order',
+				'post_status'    => 'any',
+				'fields'         => 'ids',
+				'posts_per_page' => -1,
+				'meta_query'     => array(
 					array(
 						'key'   => '_switched_subscription_new_order',
 						'value' => wcs_get_objects_property( $switch_order, 'id' ),

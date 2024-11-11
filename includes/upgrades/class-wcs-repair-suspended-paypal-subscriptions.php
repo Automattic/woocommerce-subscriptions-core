@@ -69,34 +69,32 @@ class WCS_Repair_Suspended_PayPal_Subscriptions extends WCS_Background_Upgrader 
 	 * @return array A list of subscription ids which may need to be repaired.
 	 */
 	protected function get_items_to_update() {
-		return wc_get_orders(
-			array(
-				'limit'      => 20,
-				'type'       => 'shop_subscription',
-				'status'     => wcs_sanitize_subscription_status_key( 'active' ),
-				'return'     => 'ids',
-				'meta_query' => array(
-					array(
-						'key'     => '_schedule_next_payment',
-						'value'   => gmdate( 'Y-m-d H:i:s', wcs_strtotime_dark_knight( '-3 days' ) ),
-						'compare' => '<=',
-						'type'    => 'DATETIME',
-					),
-					array(
-						'key'   => '_payment_method',
-						'value' => 'paypal',
-					),
-					array(
-						'key'     => '_paypal_subscription_id',
-						'value'   => 'B-%',
-						'compare' => 'NOT LIKE',
-					),
-					array(
-						'key'     => 'wcs_repair_suspended_paypal_subscription_failed',
-						'compare' => 'NOT EXISTS',
-					),
+		return get_posts( array(
+			'posts_per_page' => 20,
+			'post_type'      => 'shop_subscription',
+			'post_status'    => wcs_sanitize_subscription_status_key( 'active' ),
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_schedule_next_payment',
+					'value'   => date( 'Y-m-d H:i:s', wcs_strtotime_dark_knight( '-3 days' ) ),
+					'compare' => '<=',
+					'type'    => 'DATETIME',
 				),
-			)
-		);
+				array(
+					'key'   => '_payment_method',
+					'value' => 'paypal',
+				),
+				array(
+					'key'     => '_paypal_subscription_id',
+					'value'   => 'B-%',
+					'compare' => 'NOT LIKE',
+				),
+				array(
+					'key'     => 'wcs_repair_suspended_paypal_subscription_failed',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		) );
 	}
 }

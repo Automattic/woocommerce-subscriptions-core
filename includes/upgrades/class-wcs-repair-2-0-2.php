@@ -20,23 +20,24 @@ class WCS_Repair_2_0_2 {
 	 * @return array IDs of subscription that have not been checked or repaired
 	 */
 	public static function get_subscriptions_to_repair( $batch_size ) {
+
 		// Get any subscriptions that haven't already been checked for repair
-		return wc_get_orders(
-			array(
-				'type'       => 'shop_subscription',
-				'status'     => 'any',
-				'limit'      => $batch_size,
-				'return'     => 'ids',
-				'orderby'    => 'ID',
-				'order'      => 'ASC',
-				'meta_query' => array(
-					array(
-						'key'     => '_wcs_repaired_2_0_2',
-						'compare' => 'NOT EXISTS',
-					),
+		$subscription_ids_to_repair = get_posts( array(
+			'post_type'      => 'shop_subscription',
+			'post_status'    => 'any',
+			'posts_per_page' => $batch_size,
+			'fields'         => 'ids',
+			'orderby'        => 'ID',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_wcs_repaired_2_0_2',
+					'compare' => 'NOT EXISTS',
 				),
-			)
-		);
+			),
+		) );
+
+		return $subscription_ids_to_repair;
 	}
 
 	/**

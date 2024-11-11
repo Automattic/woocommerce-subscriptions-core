@@ -60,19 +60,17 @@ class WCS_Repair_Subscription_Address_Indexes extends WCS_Background_Upgrader {
 	 * @return array A list of subscription ids which need address indexes.
 	 */
 	protected function get_items_to_update() {
-		return wc_get_orders(
-			array(
-				'type'       => 'shop_subscription',
-				'limit'      => 20,
-				'status'     => 'any',
-				'return'     => 'ids',
-				'meta_query' => array(
-					array(
-						'key'     => '_billing_address_index',
-						'compare' => 'NOT EXISTS',
-					),
+		return get_posts( array(
+			'post_type'      => 'shop_subscription',
+			'posts_per_page' => 20,
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_billing_address_index',
+					'compare' => 'NOT EXISTS',
 				),
-			)
-		);
+			),
+		) );
 	}
 }

@@ -563,17 +563,15 @@ class WCS_Repair_2_0 {
 	private static function get_renewal_orders( $subscription ) {
 		$related_orders = array();
 
-		$related_post_ids = wc_get_orders(
-			array(
-				'limit'   => -1,
-				'type'    => 'shop_order',
-				'status'  => 'any',
-				'return'  => 'ids',
-				'orderby' => 'date',
-				'order'   => 'DESC',
-				'parent'  => $subscription['order_id'],
-			)
-		);
+		$related_post_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_type'      => 'shop_order',
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_parent'    => $subscription['order_id'],
+		) );
 
 		foreach ( $related_post_ids as $post_id ) {
 			$related_orders[ $post_id ] = wc_get_order( $post_id );
