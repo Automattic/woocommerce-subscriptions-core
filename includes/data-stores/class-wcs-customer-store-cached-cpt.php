@@ -252,8 +252,7 @@ class WCS_Customer_Store_Cached_CPT extends WCS_Customer_Store_CPT implements WC
 			case 'delete':
 				// If we don't have a specific user ID, the post is being deleted as WCS_Post_Meta_Cache_Manager_Many_To_One doesn't pass the associated meta value for that event, so find the corresponding user ID from post meta directly
 				if ( empty( $user_id ) ) {
-					$subscription = wcs_get_subscription( $subscription_id );
-					$user_id      = $subscription->get_meta( $this->get_meta_key(), true );
+					$user_id = get_post_meta( $subscription_id, $this->get_meta_key(), true );
 				}
 				$this->delete_subscription_id_from_cache( $user_id, $subscription_id );
 				break;
