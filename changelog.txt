@@ -1,7 +1,9 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.7.0 - xxxx-xx-xx =
-* Update - Deprecate upgrade scripts for WooCommerce Subscriptions version prior to 3.0.0.
+* Fix - Prevent adding products to the cart if a subscription renewal is already present.
+* Update - Improved performance of wcs_get_subscription() when querying by product and customer or order.
+* Update - Deprecate upgrading from versions of WooCommerce Subscriptions prior to 3.0.0 (released Jan 2020).
 * Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
 * Dev - Introduce the filter `woocommerce_subscriptions_synced_first_renewal_payment_timestamp` to enable plugins to modify the first renewal date of synced subscriptions.
 
