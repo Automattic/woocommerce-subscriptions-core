@@ -1,5 +1,5 @@
 /**
- * @deprecated x.x.x This file is no longer in use and can be removed in future.
+ * @deprecated subscriptions-core 7.7.0 This file is no longer in use and can be removed in future.
  */
 jQuery( function ( $ ) {
 	var upgrade_start_time = null,

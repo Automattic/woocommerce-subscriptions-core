@@ -21,13 +21,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * @deprecated x.x.x
+ * @deprecated subscriptions-core 7.7.0
  */
 class WCS_Upgrade_1_2 {
 
 	public static function init() {
 		global $wpdb;
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 
 		// Get IDs only and use a direct DB query for efficiency
 		$orders_to_upgrade = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type = 'shop_order' AND post_parent = 0" );

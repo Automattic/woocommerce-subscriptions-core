@@ -33,13 +33,13 @@ class WC_Subscriptions_Upgrader {
 
 	/**
 	 * @var bool
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 */
 	public static $is_wc_version_2 = false;
 
 	/**
 	 * @var bool
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 */
 	public static $updated_to_wc_2_0;
 
@@ -74,7 +74,7 @@ class WC_Subscriptions_Upgrader {
 		}
 
 		if ( isset( $_POST['action'] ) && 'wcs_upgrade' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended We're checking for CSRF in ajax_upgrade
-			// Deprecated in x.x.x
+			// Deprecated in subscriptions-core 7.7.0
 			add_action( 'wp_ajax_wcs_upgrade', [ __CLASS__, 'ajax_upgrade' ], 10 );
 		} elseif ( @current_user_can( 'activate_plugins' ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors
 			if ( isset( $_GET['wcs_upgrade_step'] ) || $version_out_of_date ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -140,11 +140,12 @@ class WC_Subscriptions_Upgrader {
 	/**
 	 * Try to block WP-Cron until upgrading finishes. spawn_cron() will only let us steal the lock for 10 minutes into the future, so
 	 * we can actually only block it for 9 minutes confidently. But as long as the upgrade process continues, the lock will remain.
-	 * @deprecated x.x.x Cron lock was required for more intensive upgrades prior to v3.0
+	 *
+	 * @deprecated subscriptions-core 7.7.0 Cron lock was required for more intensive upgrades prior to v3.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	protected static function set_cron_lock() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 		delete_transient( 'doing_cron' );
 		set_transient( 'doing_cron', sprintf( '%.22F', 9 * MINUTE_IN_SECONDS + microtime( true ) ), 0 );
 	}
@@ -227,7 +228,7 @@ class WC_Subscriptions_Upgrader {
 
 	/**
 	 * Redirect to the Subscriptions major version Welcome/About page for major version updates
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1
 	 */
 	public static function maybe_redirect_after_upgrade_complete( $current_version, $previously_active_version ) {
@@ -241,11 +242,11 @@ class WC_Subscriptions_Upgrader {
 	 * Add support for quantities for subscriptions.
 	 * Update all current subscription wp_cron tasks to the new action-scheduler system.
 	 *
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
-	 * @deprecated x.x.x While this maybe required in the future, it is being marked as deprecated as it is not currently being called.
 	 */
 	private static function ajax_upgrade_handler() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 		$_GET['wcs_upgrade_step'] = ( ! isset( $_GET['wcs_upgrade_step'] ) ) ? 0 : $_GET['wcs_upgrade_step'];
 
 		switch ( (int) $_GET['wcs_upgrade_step'] ) {
@@ -271,12 +272,13 @@ class WC_Subscriptions_Upgrader {
 	 * Also set all existing subscriptions to "sold individually" to maintain previous behavior
 	 * for existing subscription products before the subscription quantities feature was enabled..
 	 *
-	 * @deprecated x.x.x ajax_upgrade is only used when upgrading from versions less than v3.0
+	 * @deprecated subscriptions-core 7.7.0 - This function is only used when upgrading from versions less than v3.0.
+	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.5
 	 */
 	public static function ajax_upgrade() {
 		global $wpdb;
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscription-core 7.7.0' );
 
 		check_admin_referer( 'wcs_upgrade_process', 'nonce' );
 
@@ -418,7 +420,7 @@ class WC_Subscriptions_Upgrader {
 	/**
 	 * Handle upgrades for really old versions.
 	 *
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	private static function upgrade_really_old_versions() {
@@ -450,7 +452,8 @@ class WC_Subscriptions_Upgrader {
 	/**
 	 * Version 1.2 introduced child renewal orders to keep a record of each completed subscription
 	 * payment. Before 1.2, these orders did not exist, so this function creates them.
-	 * @deprecated x.x.x
+	 *
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	private static function generate_renewal_orders() {
@@ -520,6 +523,7 @@ class WC_Subscriptions_Upgrader {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.2
 	 */
 	public static function display_database_upgrade_helper() {
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 
 		wp_register_style( 'wcs-upgrade', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/css/wcs-upgrade.css' ) );
 		wp_register_script( 'wcs-upgrade', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/wcs-upgrade.js' ), 'jquery' );
@@ -734,27 +738,27 @@ class WC_Subscriptions_Upgrader {
 
 	/**
 	 * Run the end of prepaid term repair script.
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.7
 	 */
 	public static function repair_end_of_prepaid_term_actions() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 		WCS_Upgrade_2_2_7::repair_pending_cancelled_subscriptions();
 	}
 
 	/**
 	 * Repair subscriptions with missing contains_synced_subscription post meta.
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.9
 	 */
 	public static function repair_subscription_contains_sync_meta() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 		WCS_Upgrade_2_2_9::repair_subscriptions_containing_synced_variations();
 	}
 
 	/**
 	 * When updating WC to a version after 3.0 from a version prior to 3.0, schedule the repair script to add address indexes.
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function maybe_add_subscription_address_indexes() {
@@ -762,7 +766,7 @@ class WC_Subscriptions_Upgrader {
 		$woocommerce_database_version = get_option( 'woocommerce_version' );
 
 		if ( $woocommerce_active_version !== $woocommerce_database_version && version_compare( $woocommerce_active_version, '3.0', '>=' ) && version_compare( $woocommerce_database_version, '3.0', '<' ) ) {
-			wcs_deprecated_function( __METHOD__, 'x.x.x' );
+			wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 			$logger             = new WC_logger();
 			$background_updater = new WCS_Repair_Subscription_Address_Indexes( $logger );
 			$background_updater->init();
@@ -795,10 +799,11 @@ class WC_Subscriptions_Upgrader {
 	 *
 	 * @see https://github.com/Prospress/woocommerce-subscriptions/issues/2822 for more details.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.3
-	 * @deprecated x.x.x
+	 * @deprecated subscriptions-core 7.7.0
 	 */
 	public static function maybe_display_external_object_cache_warning() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
+
 		$option_name = 'wcs_display_2_3_3_warning';
 		$nonce       = '_wcsnonce';
 		$action      = 'wcs_external_cache_warning';

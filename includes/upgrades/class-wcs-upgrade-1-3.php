@@ -15,12 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 /**
- * @deprecated x.x.x
+ * @deprecated subscription-core 7.7.0
  */
 class WCS_Upgrade_1_3 {
 
 	public static function init() {
-		wcs_deprecated_function( __METHOD__, 'x.x.x' );
+		wcs_deprecated_function( __METHOD__, 'subscriptions-core 7.7.0' );
 		global $wpdb;
 
 		// Change transient timeout entries to be a vanilla option
