@@ -2,6 +2,8 @@
 
 = 7.7.0 - xxxx-xx-xx =
 * Dev - Replace all calls to `get_post_meta` with `get_meta` to improve performance.
+* Fix - Prevent adding products to the cart if a subscription renewal is already present.
+* Update - Improved performance of wcs_get_subscription() when querying by product and customer or order.
 * Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
 * Dev - Introduce the filter `woocommerce_subscriptions_synced_first_renewal_payment_timestamp` to enable plugins to modify the first renewal date of synced subscriptions.
 
