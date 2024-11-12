@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.7.0 - xxxx-xx-xx =
-* Dev - Replace all calls to `get_post_meta` with `get_meta` to improve performance.
+* Dev - Update `get_post_meta()` calls to fetch product meta using CRUD getters.
 * Fix - Prevent adding products to the cart if a subscription renewal is already present.
 * Update - Improved performance of wcs_get_subscription() when querying by product and customer or order.
 * Dev - Minor refactoring of `init` method in `WC_Subscriptions_Upgrader` class.
