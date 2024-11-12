@@ -55,15 +55,11 @@ class WC_Subscriptions_Upgrader {
 	 */
 	public static function init() {
 		self::$active_version = get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' );
-
-		self::$is_wc_version_2 = version_compare( get_option( 'woocommerce_db_version' ), '2.0', '>=' );
-
 		self::$about_page_url = admin_url( 'admin.php?page=wc-admin' );
+		$version_out_of_date  = version_compare( self::$active_version, WC_Subscriptions_Core_Plugin::instance()->get_library_version(), '<' );
 
-		$version_out_of_date = version_compare( self::$active_version, WC_Subscriptions_Core_Plugin::instance()->get_library_version(), '<' );
-
-		if ( version_compare( WC_Subscriptions_Core_Plugin::instance()->get_library_version(), self::$minimum_supported_version, '>' ) ) {
-			// Show warning that upgrades are no longer supported
+		// Show warning that upgrades are no longer supported.
+		if ( '0' !== self::$active_version && version_compare( self::$active_version, self::$minimum_supported_version, '<=' ) ) {
 			add_action(
 				'admin_notices',
 				function () {
