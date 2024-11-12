@@ -16,15 +16,10 @@
  */
 class WC_Subscriptions_Upgrader {
 
+	/**
+	 * @var string The database version of Subscriptions.
+	 */
 	private static $active_version;
-
-	private static $upgrade_limit_hooks;
-
-	private static $upgrade_limit_subscriptions;
-
-	private static $about_page_url;
-
-	private static $old_subscription_count = null;
 
 	/**
 	 * @var string The minimum supported version that this class can upgrade from.
@@ -32,21 +27,21 @@ class WC_Subscriptions_Upgrader {
 	private static $minimum_supported_version = '3.0';
 
 	/**
-	 * @var bool
-	 * @deprecated subscriptions-core 7.7.0
-	 */
-	public static $is_wc_version_2 = false;
-
-	/**
-	 * @var bool
-	 * @deprecated subscriptions-core 7.7.0
-	 */
-	public static $updated_to_wc_2_0;
-
-	/**
 	 * @var array An array of WCS_Background_Updater objects used to run upgrade scripts in the background.
 	 */
 	protected static $background_updaters = array();
+
+	/**
+	 * Deprecated variables.
+	 *
+	 * @deprecated subscriptions-core 7.7.0
+	 */
+	public static $is_wc_version_2 = false;
+	public static $updated_to_wc_2_0;
+	private static $upgrade_limit_subscriptions;
+	private static $about_page_url;
+	private static $old_subscription_count = null;
+	private static $upgrade_limit_hooks;
 
 	/**
 	 * Hooks upgrade function to init.
