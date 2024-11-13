@@ -74,10 +74,10 @@ class WCS_Upgrade_1_2 {
 			$order_discount = $order->get_total_discount();
 			update_post_meta( $order_id, '_order_recurring_discount_total', $order_discount );
 
-			$order_shipping_tax = get_post_meta( $order_id, '_order_shipping_tax', true );
+			$order_shipping_tax = $order->get_meta( '_order_shipping_tax', true );
 			update_post_meta( $order_id, '_order_recurring_shipping_tax_total', $order_shipping_tax );
 
-			$order_tax = get_post_meta( $order_id, '_order_tax', true ); // $order->get_total_tax() includes shipping tax
+			$order_tax = $order->get_meta( '_order_tax', true ); // $order->get_total_tax() includes shipping tax
 			update_post_meta( $order_id, '_order_recurring_tax_total', $order_tax );
 
 			$order_total = $order->get_total();

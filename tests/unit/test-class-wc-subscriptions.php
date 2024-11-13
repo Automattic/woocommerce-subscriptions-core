@@ -707,7 +707,6 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_not_gmt() {
-
 		$start_date = '2014-01-01 01:01:01';
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -722,12 +721,11 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests for WC_Subscription::get_gate( $date, 'gmt' )
+	 * Tests for WC_Subscription::get_date( $date, 'gmt' )
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public function test_get_date_gmt() {
-
 		$expected_result = '2014-01-01 01:01:01';
 
 		$subscription = WCS_Helper_Subscription::create_subscription(
@@ -906,7 +904,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->subscriptions['active']->delete_date( 'end' );
 		$this->assertEquals( 0, $this->subscriptions['active']->get_date( 'end' ) );
-		$this->assertEmpty( get_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), true ) );
+		$this->assertEmpty( $this->subscriptions['active']->get_meta( wcs_get_date_meta_key( 'end' ), true ) );
 
 		update_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
 	}
@@ -919,7 +917,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_delete_date_other() {
 		$this->subscriptions['pending']->delete_date( 'wcs_rubbish' );
 		$this->assertEquals( 0, $this->subscriptions['pending']->get_date( 'wcs_rubbish' ) );
-		$this->assertEmpty( get_post_meta( $this->subscriptions['pending']->get_id(), wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
+		$this->assertEmpty( $this->subscriptions['pending']->get_meta( wcs_get_date_meta_key( 'wcs_rubbish' ), true ) );
 	}
 
 	/**
@@ -1218,6 +1216,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 	/**
 	 * Testing WC_Subscription::set_suspension_count function
 	 *
+	 * @group test_set_suspension_count
 	 */
 	public function test_set_suspension_count() {
 		$subscription         = WCS_Helper_Subscription::create_subscription();
@@ -1225,6 +1224,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->assertNotEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
 			$this->assertNotEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 
@@ -1232,6 +1232,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$this->assertEquals( $expected_suspensions, $subscription->get_suspension_count() );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
 			$this->assertEquals( $expected_suspensions, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 	}
@@ -2513,6 +2514,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->save();
 		$this->assertEquals( 3, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
 			$this->assertEquals( 3, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 
@@ -2523,6 +2525,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'active', $subscription->get_status() );
 		$this->assertEquals( 0, $subscription->get_suspension_count() );
 		if ( ! $hpos_enabled ) {
+			// Keeping usage of `get_post_meta` here due legacy meta key retrieval (those should have getters/setters instead).
 			$this->assertEquals( 0, get_post_meta( $subscription->get_id(), '_suspension_count', true ) );
 		}
 		$this->assertThat(

@@ -126,7 +126,7 @@ class WCS_Related_Order_Store_Cached_CPT_Test extends WCS_Base_Related_Order_Sto
 
 		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ), true ) );
 		if ( ! wcs_is_custom_order_tables_usage_enabled() ) {
-			$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
+			$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ), true ) );
 		}
 		$this->assertContains( $order_id, $this->get_cache_from_source( $subscription, $relation_type ), true );
 	}

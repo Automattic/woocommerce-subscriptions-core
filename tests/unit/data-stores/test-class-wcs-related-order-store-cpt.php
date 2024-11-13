@@ -140,14 +140,13 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 
 		$subscription = WCS_Helper_Subscription::create_subscription();
 		$order        = WCS_Helper_Subscription::create_order();
-		$order_id     = wcs_get_objects_property( $order, 'id' );
 
 		self::$store->add_relation( $order, $subscription, $relation_type );
 
 		$order->read_meta_data( true );
-		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ) ) );
+		$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ), true ) );
 		if ( ! $hpos_enabled ) {
-			$this->assertEquals( $subscription->get_id(), get_post_meta( $order_id, $this->get_meta_key( $relation_type ), true ) );
+			$this->assertEquals( $subscription->get_id(), $order->get_meta( $this->get_meta_key( $relation_type ) ) );
 		}
 
 		// Also make sure the same ID is not added more than once on subsequent calls
@@ -156,7 +155,7 @@ class WCS_Related_Order_Store_CPT_Test extends WCS_Base_Related_Order_Store_Test
 		$meta_values = $order->get_meta( $this->get_meta_key( $relation_type ), false );
 		$this->assertEquals( 1, count( $meta_values ) );
 		if ( ! $hpos_enabled ) {
-			$meta_values = get_post_meta( $order_id, $this->get_meta_key( $relation_type ) );
+			$meta_values = $order->get_meta( $this->get_meta_key( $relation_type ), false );
 			$this->assertEquals( 1, count( $meta_values ) );
 		}
 	}
