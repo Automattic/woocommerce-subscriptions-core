@@ -6,7 +6,7 @@
  * Customer notification email sent to customer when a there's an upcoming payment/expity/free trial expiry.
  *
  * @class WCS_Email_Customer_Notification
- * @version x.x.x
+ * @version 7.7.0
  * @package WooCommerce/Classes/Emails
  */
 class WCS_Email_Customer_Notification extends WC_Email {

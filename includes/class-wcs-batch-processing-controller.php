@@ -18,7 +18,7 @@
  *
  * @package  WooCommerce Subscriptions
  * @category Class
- * @since    x.x.x
+ * @since    7.7.0
  */
 class WCS_Batch_Processing_Controller {
 	/*
@@ -130,7 +130,7 @@ class WCS_Batch_Processing_Controller {
 			/**
 			 * Modify the delay interval for the batch processor's watchdog events.
 			 *
-			 * @since x.x.x
+			 * @since 7.7.0
 			 *
 			 * @param int $delay Time, in seconds, before the watchdog process will run. Defaults to 3600 (1 hour).
 			 */
@@ -466,7 +466,7 @@ class WCS_Batch_Processing_Controller {
 		 * @param array $error_context Context to be passed to the logging function.
 		 * @return string The actual error message that will be logged.
 		 *
-		 * @since x.x.x
+		 * @since 7.7.0
 		 */
 		$error_message = apply_filters( 'wcs_batch_processing_log_message', $error_message, $error, $batch_processor, $batch, $error_context );
 
@@ -487,7 +487,7 @@ class WCS_Batch_Processing_Controller {
 			 * process a batch that has resulted in a failure. Once above this threshold, the processor won't be
 			 * re-scheduled and will be removed from the queue.
 			 *
-			 * @since x.x.x
+			 * @since 7.7.0
 			 *
 			 * @param int $failure_threshold Maximum number of times for the processor to try processing a given batch.
 			 * @param WCS_Batch_Processor $batch_processor The processor instance.

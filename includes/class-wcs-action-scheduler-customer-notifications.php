@@ -4,7 +4,7 @@
  * Scheduler for subscription notifications that uses the Action Scheduler
  *
  * @class     WCS_Action_Scheduler_Customer_Notifications
- * @version   x.x.x
+ * @version   7.7.0
  * @package   WooCommerce Subscriptions/Classes
  * @category  Class
  */
@@ -87,7 +87,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		/**
 		 * Offset between a subscription event and related notification.
 		 *
-		 * @since x.x.x
+		 * @since 7.7.0
 		 *
 		 * @param int $time_offset In seconds
 		 * @param WC_Subscription $subscription

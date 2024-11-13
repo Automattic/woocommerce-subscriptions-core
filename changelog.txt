@@ -1,6 +1,6 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.7.0 - xxxx-xx-xx =
+= 7.7.0 - 2024-11-13 =
 * Fix - Prevent adding products to the cart if a subscription renewal is already present.
 * Update - Improved performance of wcs_get_subscription() when querying by product and customer or order.
 * Update - Improved performance when checking limited subscription product availability.

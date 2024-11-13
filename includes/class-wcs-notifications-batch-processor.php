@@ -17,7 +17,7 @@
  *
  * @package  WooCommerce Subscriptions
  * @category Class
- * @since    x.x.x
+ * @since    7.7.0
  */
 class WCS_Notifications_Batch_Processor implements WCS_Batch_Processor {
 
