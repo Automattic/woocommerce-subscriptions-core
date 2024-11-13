@@ -2,6 +2,7 @@
 
 = 7.7.1 - 2024-xx-xx =
 * Fix - Only show the individual subscription information in customer notification emails, not all subscriptions purchased in the initial order.
+* Fix - Resolved issues with Customer Notification emails not being sent due to unsupported emoji used in the default email subject.
 
 = 7.7.0 - 2024-11-13 =
 * Add - New Customer Notification feature: sends reminder emails for upcoming subscription renewals, trials ending, and subscription expirations.
