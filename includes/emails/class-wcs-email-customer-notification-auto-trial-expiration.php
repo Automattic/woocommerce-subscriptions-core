@@ -26,8 +26,8 @@ class WCS_Email_Customer_Notification_Auto_Trial_Expiration extends WCS_Email_Cu
 		$this->description = __( 'Free trial expiry notification emails are sent when customer\'s free trial for an automatically renewd subscription is about to expire.', 'woocommerce-subscriptions' );
 
 		$this->heading = __( 'Free trial expiration: automatic payment notice', 'woocommerce-subscriptions' );
-		// translators: placeholder is {customers_first_name}, a variable that will be substituted when email is sent out
-		$this->subject = sprintf( _x( 'Your paid subscription starts soon, %s 🗓️', 'default email subject for free trial expiry notification emails sent to the customer', 'woocommerce-subscriptions' ), '{customers_first_name}' );
+		// translators: $1: {site_title}, $2: {customers_first_name}, variables that will be substituted when email is sent out
+		$this->subject = sprintf( _x( '[%1$s] %2$s, your paid subscription starts soon!', 'default email subject for free trial expiry notification emails sent to the customer', 'woocommerce-subscriptions' ), '{site_title}', '{customers_first_name}' );
 
 		$this->template_html  = 'emails/customer-notification-auto-trial-ending.php';
 		$this->template_plain = 'emails/plain/customer-notification-auto-trial-ending.php';

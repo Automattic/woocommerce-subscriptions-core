@@ -26,8 +26,8 @@ class WCS_Email_Customer_Notification_Manual_Renewal extends WCS_Email_Customer_
 		$this->description = __( 'Customer Notification: Manual renewal notice are sent when customer\'s subscription needs to be manually renewed.', 'woocommerce-subscriptions' );
 
 		$this->heading = __( 'Manual renewal notice', 'woocommerce-subscriptions' );
-		// translators: placeholder is {customers_first_name}, a variable that will be substituted when email is sent out
-		$this->subject = sprintf( _x( '%s, your subscription is ready to be renewed 👍', 'default email subject for notification for a manually renewed subscription sent to the customer', 'woocommerce-subscriptions' ), '{customers_first_name}' );
+		// translators: $1: {site_title}, $2: {customers_first_name}, variables that will be substituted when email is sent out
+		$this->subject = sprintf( _x( '[%1$s] %2$s, your subscription is ready to be renewed!', 'default email subject for notification for a manually renewed subscription sent to the customer', 'woocommerce-subscriptions' ), '{site_title}', '{customers_first_name}' );
 
 		$this->template_html  = 'emails/customer-notification-manual-renewal.php';
 		$this->template_plain = 'emails/plain/customer-notification-manual-renewal.php';
