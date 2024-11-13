@@ -304,8 +304,7 @@ class WC_Subscriptions_Email {
 	 * @param WC_Email        $email
 	 */
 	public static function subscription_details( $subscriptions, $order = null, $sent_to_admin = false, $plain_text = false, $skip_my_account_link = false ) {
-		$template_base = WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' );
-		$template      = ( $plain_text ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
+		$template = ( $plain_text ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
 
 		wc_get_template(
 			$template,
@@ -316,7 +315,7 @@ class WC_Subscriptions_Email {
 				'skip_my_account_link' => $skip_my_account_link,
 			),
 			'',
-			$template_base
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 		);
 	}
 
