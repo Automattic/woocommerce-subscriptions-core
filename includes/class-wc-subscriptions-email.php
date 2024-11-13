@@ -297,11 +297,11 @@ class WC_Subscriptions_Email {
 	/**
 	 * Show the subscription details table.
 	 *
-	 * @param WC_Subscription $subscription The subscription.
-	 * @param WC_Order|null   $order        The order related to the subscription - defaults to parent order.
-	 * @param bool            $sent_to_admin Whether the email is sent to admin - defaults to false
-	 * @param bool            $plain_text Whether the email should use plain text templates - defaults to false
-	 * @param WC_Email        $email
+	 * @param WC_Subscription[] $subscriptions        List of subscriptions. Also accepts a single subscription.
+	 * @param WC_Order|null     $order                The order related to the subscription - defaults to parent order.
+	 * @param bool              $sent_to_admin        Whether the email is sent to admin - defaults to false.
+	 * @param bool              $plain_text           Whether the email should use plain text templates - defaults to false.
+	 * @param bool              $skip_my_account_link Whether to skip displaying the My Account link - defaults to false.
 	 */
 	public static function subscription_details( $subscriptions, $order = null, $sent_to_admin = false, $plain_text = false, $skip_my_account_link = false ) {
 		$template = ( $plain_text ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
