@@ -40,7 +40,7 @@ echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\
 esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
 echo "\n";
 // Show subscription details.
-\WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text, true );
+\WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text, true );
 
 esc_html_e( 'You can manage this subscription from your account dashboard: ', 'woocommerce-subscriptions' );
 echo esc_url( wc_get_page_permalink( 'myaccount' ) );

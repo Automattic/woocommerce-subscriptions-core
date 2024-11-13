@@ -38,7 +38,7 @@ echo esc_html(
 echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
 
 // Show subscription details.
-\WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text );
+\WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text );
 
 echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
 
