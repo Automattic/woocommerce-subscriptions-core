@@ -51,7 +51,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <?php
 
 // Show subscription details.
-\WC_Subscriptions_Order::add_sub_info_email( $order, $sent_to_admin, $plain_text );
+\WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text );
 
 /**
  * Show user-defined additional content - this is set in each email's settings.
