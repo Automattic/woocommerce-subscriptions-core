@@ -144,7 +144,8 @@ class WC_Subscriptions_Product {
 
 				$child_prices[] = $child_price;
 			} else {
-				$child_prices[] = $child_product->get_meta( '_price', true );
+				// Not replacing this call to `get_post_meta`. See https://github.com/Automattic/woocommerce-subscriptions-core/pull/718#issuecomment-2479441073
+				$child_prices[] = get_post_meta( $child_product_id, '_price', true );
 			}
 		}
 
