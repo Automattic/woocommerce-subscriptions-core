@@ -144,7 +144,7 @@ class WC_Subscriptions_Product {
 
 				$child_prices[] = $child_price;
 			} else {
-				$child_prices[] = $child_product->get_price();
+				$child_prices[] = $child_product->get_meta( '_price', true );
 			}
 		}
 
