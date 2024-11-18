@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 7.8.0 - xxxx-xx-xx =
+* Update - Changed the link on the order thank-you page to take customers directly to their "My Account > Subscriptions" page.
+
 = 7.7.1 - 2024-11-13 =
 * Fix - Only show the individual subscription information in customer notification emails, not all subscriptions purchased in the initial order.
 * Fix - Resolved issues with Customer Notification emails not being sent due to unsupported emoji used in the default email subject.
