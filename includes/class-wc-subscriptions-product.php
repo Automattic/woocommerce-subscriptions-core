@@ -127,6 +127,9 @@ class WC_Subscriptions_Product {
 
 		foreach ( $grouped_product->get_children() as $child_product_id ) {
 			$child_product = wc_get_product( $child_product_id );
+			if ( ! $child_product instanceof WC_Product ) {
+				continue;
+			}
 			if ( self::is_subscription( $child_product_id ) ) {
 				$contains_subscription = true;
 
@@ -144,8 +147,7 @@ class WC_Subscriptions_Product {
 
 				$child_prices[] = $child_price;
 			} else {
-				// Not replacing this call to `get_post_meta`. See https://github.com/Automattic/woocommerce-subscriptions-core/pull/718#issuecomment-2479441073
-				$child_prices[] = get_post_meta( $child_product_id, '_price', true );
+				$child_prices[] = $child_product->get_price();
 			}
 		}
 
