@@ -2,6 +2,7 @@
 
 = 7.8.0 - xxxx-xx-xx =
 * Fix - Use block theme-styled buttons for subscription and related-orders actions on My Account pages.
+* Fix - Prevents notices being displayed on WordPress 6.7 due to loading translations too early.
 * Update - Changed the link on the order thank-you page to take customers directly to their "My Account > Subscriptions" page.
 
 = 7.7.1 - 2024-11-13 =
