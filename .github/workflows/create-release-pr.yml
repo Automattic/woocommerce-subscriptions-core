@@ -12,7 +12,7 @@ jobs:
       - name: Check out the woocommerce-subscriptions-core repository
         uses: actions/checkout@v3
         with:
-          ref: trunk
+          ref: ${{ github.ref }}
           path: main
 
       - name: Check out the woorelease repository
