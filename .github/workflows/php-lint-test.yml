@@ -10,7 +10,7 @@ env:
 jobs:
   phpcs:
     name:    PHP Code Sniffer
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -27,12 +27,14 @@ jobs:
           php-version: '7.3' # needs >=7.3 for SARB
           tools:       composer
           coverage:    none
+      - name: Install SVN
+        run: sudo apt-get install -y subversion
       # install dependencies and run phpcs
       - run: composer self-update 2.0.6 && composer install --no-progress && composer phpcs
 
   lint:
     name:    PHP Linting
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -41,12 +43,14 @@ jobs:
         with:
           php-version: '7.3'
           coverage:    none
+      - name: Install SVN
+        run: sudo apt-get install -y subversion
       # run CI checks
       - run: find . \( -path ./vendor \) -prune -o \( -name '*.php' \) -exec php -lf {} \;| (! grep -v "No syntax errors detected" )
 
   test:
     name:    PHP testing
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast:    false
       max-parallel: 10
@@ -64,14 +68,16 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          tools:       composer
+          tools: composer
+      - name: Install SVN
+        run: sudo apt-get install -y subversion
       # run CI checks
       - run: |
           echo "bash bin/run-ci-tests.sh"
           bash bin/run-ci-tests.sh
   compatibility-oldest:
     name: Run unit tests on Oldest supported version
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       WC_VERSION: 7.7.0  # the min supported version as per L-2 policy
       WP_VERSION: 'latest'
@@ -88,11 +94,13 @@ jobs:
         with:
           php-version: '7.3'
           tools: composer
+      - name: Install SVN
+        run: sudo apt-get install -y subversion
       # run CI checks
       - run: bash bin/run-ci-tests.sh
   compatibility-beta:
     name: Run unit tests on beta WC
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       WC_VERSION: 'beta'
       WP_VERSION: 'latest'
@@ -108,6 +116,8 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
-          tools:       composer
+          tools: composer
+      - name: Install SVN
+        run: sudo apt-get install -y subversion
       # run CI checks
       - run: bash bin/run-ci-tests.sh
