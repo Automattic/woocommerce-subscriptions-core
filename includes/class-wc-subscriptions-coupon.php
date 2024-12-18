@@ -219,8 +219,16 @@ class WC_Subscriptions_Coupon {
 				}
 			}
 
-			// Apply sign-up discounts. Exclude switch cart items because their initial amount is entirely sign-up fees but should be treated as initial amounts
-			if ( ! $is_switch && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) > 0 ) {
+			// Compute the sign-up fee. If it's a switch, we need to get the signup fee less
+			// recurring payment upgrade/downgrade costs.
+			if ( $is_switch ) {
+				$sign_up_fee = (int) $cart_item['data']->get_meta( '_subscription_sign_up_fee_prorated' );
+			} else {
+				$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
+			}
+
+			// Apply sign-up discounts
+			if ( $sign_up_fee > 0 ) {
 
 				if ( 'sign_up_fee' == $coupon_type ) {
 					$apply_initial_coupon = true;
@@ -236,7 +244,7 @@ class WC_Subscriptions_Coupon {
 						$cart_item['data'],
 						array(
 							'qty'   => 1,
-							'price' => WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ),
+							'price' => $sign_up_fee,
 						)
 					);
 				} else {
@@ -244,7 +252,7 @@ class WC_Subscriptions_Coupon {
 						$cart_item['data'],
 						array(
 							'qty'   => 1,
-							'price' => WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ),
+							'price' => $sign_up_fee,
 						)
 					);
 				}
@@ -253,7 +261,7 @@ class WC_Subscriptions_Coupon {
 				if ( in_array( $coupon_type, array( 'sign_up_fee', 'sign_up_fee_percent' ) ) ) {
 					$discounting_amount = $signup_fee;
 				} else {
-					$discounting_amount -= $signup_fee;
+					$discounting_amount = max( 0, $discounting_amount - $signup_fee );
 				}
 			}
 
