@@ -1,6 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 7.9.0 - xxxx-xx-xx =
+* Add - Support use of sign up fee coupons during subscription switches.
 * Fix - Prevent payment gateways that complete Change Payment requests asynchronously from blocking future attempts to update payment methods for all subscriptions.
 
 = 7.8.0 - 2024-12-16 =
