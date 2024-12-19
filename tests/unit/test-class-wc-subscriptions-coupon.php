@@ -107,6 +107,7 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 		$this->cart->add_to_cart( $cart_item['data']->get_id() );
 		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee', 30 );
 		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee_prorated', 10 );
+		$cart_item['data']->update_meta_data( '_subscription_price_prorated', 20 );
 		$this->assertEquals(
 			1,
 			WC_Subscriptions_Coupon::get_discount_amount_for_cart_item(
@@ -141,7 +142,9 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 		);
 
 		// Subscription switch -- no sign up fee, no discount
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee', 20 );
 		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee_prorated', 0 );
+		$cart_item['data']->update_meta_data( '_subscription_price_prorated', 20 );
 		$this->assertEquals(
 			0,
 			WC_Subscriptions_Coupon::get_discount_amount_for_cart_item(
@@ -172,6 +175,22 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 				$discounting_amount,
 				$single,
 				$coupon_sign_up_fee_large
+			)
+		);
+
+		// Subscription switch -- no prorated fees, e.g. downgrade
+		$discounting_amount = 10;
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee', 10 );
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee_prorated', 0 );
+		$cart_item['data']->update_meta_data( '_subscription_price_prorated', 0 );
+		$this->assertEquals(
+			1,
+			WC_Subscriptions_Coupon::get_discount_amount_for_cart_item(
+				$cart_item,
+				$discount,
+				$discounting_amount,
+				$single,
+				$coupon_sign_up_fee_percent
 			)
 		);
 	}
@@ -255,6 +274,7 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 		$this->cart->add_to_cart( $cart_item['data']->get_id() );
 		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee', 30 );
 		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee_prorated', 10 );
+		$cart_item['data']->update_meta_data( '_subscription_price_prorated', 20 );
 		$this->assertEquals(
 			2,
 			WC_Subscriptions_Coupon::get_discount_amount_for_cart_item(
@@ -274,6 +294,22 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 				$discounting_amount,
 				$single,
 				$coupon_recurring_fee
+			)
+		);
+
+		// Subscription switch -- no prorated fees, e.g. downgrade
+		$discounting_amount = 10;
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee', 10 );
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee_prorated', 0 );
+		$cart_item['data']->update_meta_data( '_subscription_price_prorated', 0 );
+		$this->assertEquals(
+			0,
+			WC_Subscriptions_Coupon::get_discount_amount_for_cart_item(
+				$cart_item,
+				$discount,
+				$discounting_amount,
+				$single,
+				$coupon_recurring_percent
 			)
 		);
 	}
