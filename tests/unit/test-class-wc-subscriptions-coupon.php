@@ -100,7 +100,8 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 			'data'                => $this->variable_subscription_product,
 			'quantity'            => 1,
 			'subscription_switch' => [
-				'subscription_id' => 123,
+				'subscription_id'        => 123,
+				'upgraded_or_downgraded' => 'upgraded',
 			],
 		);
 		$this->cart->empty_cart();
@@ -172,6 +173,22 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 				$discounting_amount,
 				$single,
 				$coupon_sign_up_fee_large
+			)
+		);
+
+		// Subscription switch -- downgrade
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee', 10 );
+		$cart_item['data']->update_meta_data( '_subscription_sign_up_fee_prorated', 0 );
+		$cart_item['data']->update_meta_data( '_subscription_price_prorated', 0 );
+		$cart_item['subscription_switch']['upgraded_or_downgraded'] = 'downgraded';
+		$this->assertEquals(
+			1,
+			WC_Subscriptions_Coupon::get_discount_amount_for_cart_item(
+				$cart_item,
+				$discount,
+				$discounting_amount,
+				$single,
+				$coupon_sign_up_fee_percent
 			)
 		);
 	}
@@ -248,7 +265,8 @@ class WC_Subscriptions_Coupon_Test extends WP_UnitTestCase {
 			'data'                => $this->variable_subscription_product,
 			'quantity'            => 1,
 			'subscription_switch' => [
-				'subscription_id' => 123,
+				'subscription_id'        => 123,
+				'upgraded_or_downgraded' => 'upgraded',
 			],
 		);
 		$this->cart->empty_cart();

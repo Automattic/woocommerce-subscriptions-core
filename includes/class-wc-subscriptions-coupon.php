@@ -219,10 +219,14 @@ class WC_Subscriptions_Coupon {
 				}
 			}
 
-			// Compute the sign-up fee. If it's a switch, we need to get the signup fee less
-			// recurring payment upgrade/downgrade costs.
+			// Compute the true sign-up fee. If it's a subscription upgrade, we need to get the fee
+			// before extra charges, e.g. prorated recurring payment, were applied.
 			if ( $is_switch ) {
-				$sign_up_fee = (int) $cart_item['data']->get_meta( '_subscription_sign_up_fee_prorated' );
+				$is_downgrade = isset( $cart_item['subscription_switch']['upgraded_or_downgraded'] ) &&
+										'downgraded' === $cart_item['subscription_switch']['upgraded_or_downgraded'];
+				$sign_up_fee  = $is_downgrade ?
+										WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] ) :
+										(int) $cart_item['data']->get_meta( '_subscription_sign_up_fee_prorated' );
 			} else {
 				$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 			}
