@@ -317,11 +317,17 @@ class WC_Subscriptions_Email {
 	public static function subscription_details( $subscriptions, $order = null, $sent_to_admin = false, $plain_text = false, $skip_my_account_link = false ) {
 		$template = ( $plain_text ) ? 'emails/plain/subscription-info.php' : 'emails/subscription-info.php';
 
+		if ( ! is_array( $subscriptions ) ) {
+			$subscriptions = [ $subscriptions ];
+		}
+
+		$order = ! $order && ! empty( $subscriptions ) ? reset( $subscriptions )->get_parent() : $order;
+
 		wc_get_template(
 			$template,
 			array(
-				'order'                => ! $order ? $subscription->get_parent() : $order,
-				'subscriptions'        => is_array( $subscriptions ) ? $subscriptions : [ $subscriptions ],
+				'order'                => $order ?? null,
+				'subscriptions'        => $subscriptions,
 				'is_admin_email'       => $sent_to_admin,
 				'skip_my_account_link' => $skip_my_account_link,
 			),
