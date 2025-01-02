@@ -12,6 +12,24 @@
 class WC_Subscriptions_Email {
 
 	/**
+	 * List of all core subscription email classes.
+	 *
+	 * @var array
+	 */
+	public static $email_classes = [
+		'WCS_Email_New_Renewal_Order'              => true,
+		'WCS_Email_New_Switch_Order'               => true,
+		'WCS_Email_Processing_Renewal_Order'       => true,
+		'WCS_Email_Completed_Renewal_Order'        => true,
+		'WCS_Email_Customer_On_Hold_Renewal_Order' => true,
+		'WCS_Email_Completed_Switch_Order'         => true,
+		'WCS_Email_Customer_Renewal_Invoice'       => true,
+		'WCS_Email_Cancelled_Subscription'         => true,
+		'WCS_Email_Expired_Subscription'           => true,
+		'WCS_Email_On_Hold_Subscription'           => true,
+	];
+
+	/**
 	 * Bootstraps the class and hooks required actions & filters.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.0
@@ -36,16 +54,9 @@ class WC_Subscriptions_Email {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v1.4
 	 */
 	public static function add_emails( $email_classes ) {
-		$email_classes['WCS_Email_New_Renewal_Order']              = new WCS_Email_New_Renewal_Order();
-		$email_classes['WCS_Email_New_Switch_Order']               = new WCS_Email_New_Switch_Order();
-		$email_classes['WCS_Email_Processing_Renewal_Order']       = new WCS_Email_Processing_Renewal_Order();
-		$email_classes['WCS_Email_Completed_Renewal_Order']        = new WCS_Email_Completed_Renewal_Order();
-		$email_classes['WCS_Email_Customer_On_Hold_Renewal_Order'] = new WCS_Email_Customer_On_Hold_Renewal_Order();
-		$email_classes['WCS_Email_Completed_Switch_Order']         = new WCS_Email_Completed_Switch_Order();
-		$email_classes['WCS_Email_Customer_Renewal_Invoice']       = new WCS_Email_Customer_Renewal_Invoice();
-		$email_classes['WCS_Email_Cancelled_Subscription']         = new WCS_Email_Cancelled_Subscription();
-		$email_classes['WCS_Email_Expired_Subscription']           = new WCS_Email_Expired_Subscription();
-		$email_classes['WCS_Email_On_Hold_Subscription']           = new WCS_Email_On_Hold_Subscription();
+		foreach ( self::$email_classes as $email_class => $_ ) {
+			$email_classes[ $email_class ] = new $email_class();
+		}
 
 		return $email_classes;
 	}
