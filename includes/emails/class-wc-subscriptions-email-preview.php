@@ -26,11 +26,11 @@ class WC_Subscriptions_Email_Preview {
 	 * @return WC_Email
 	 */
 	public function prepare_email_for_preview( $email ) {
-		if ( ! $this->is_subscription_email( $email ) ) {
+		$this->email_type = get_class( $email );
+
+		if ( ! $this->is_subscription_email() ) {
 			return $email;
 		}
-
-		$this->email_type = get_class( $email );
 
 		$this->set_up_filters();
 
@@ -140,15 +140,12 @@ class WC_Subscriptions_Email_Preview {
 	}
 
 	/**
-	 * Check if an email is a subscription email.
-	 *
-	 * @param WC_Email $email The email class being previewed.
+	 * Check if the email being previewed is a subscription email.
 	 *
 	 * @return bool
 	 */
-	private function is_subscription_email( $email ) {
-		$class = get_class( $email );
-		return isset( WC_Subscriptions_Email::$email_classes[ $class ] ) || isset( WC_Subscriptions_Email_Notifications::$email_classes[ $class ] );
+	private function is_subscription_email() {
+		return isset( WC_Subscriptions_Email::$email_classes[ $this->email_type ] ) || isset( WC_Subscriptions_Email_Notifications::$email_classes[ $this->email_type ] );
 	}
 
 	/**
