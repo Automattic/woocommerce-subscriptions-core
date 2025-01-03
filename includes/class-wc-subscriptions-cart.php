@@ -650,6 +650,12 @@ class WC_Subscriptions_Cart {
 
 		if ( 'none' === self::$calculation_type ) {
 			foreach ( $packages as $index => $package ) {
+				foreach ( $package['contents'] as $cart_item_key => $cart_item ) {
+					if ( WC_Subscriptions_Product::get_trial_length( $cart_item['data'] ) > 0 && apply_filters( 'wcs_unset_package_contents', '__return_true' ) ) {
+						unset( $packages[ $index ]['contents'][ $cart_item_key ] );
+					}
+				}
+
 				if ( empty( $packages[ $index ]['contents'] ) ) {
 					unset( $packages[ $index ] );
 				}
