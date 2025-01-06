@@ -181,7 +181,7 @@ class WC_Subscriptions_Email_Preview {
 	 * @return string
 	 */
 	public function mock_last_order_date_created( $date, $subscription ) {
-		if ( 12346 === $subscription->get_id() && 1 === $subscription->customer_id ) {
+		if ( is_a( $subscription, 'WC_Subscription' ) && 12346 === $subscription->get_id() && 1 === $subscription->get_customer_id() ) {
 			return gmdate( 'Y-m-d H:i:s' );
 		}
 
