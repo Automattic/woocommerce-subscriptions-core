@@ -191,8 +191,9 @@ class WC_Subscriptions_Email_Preview {
 	/**
 	 * Allow early renewals for previewing emails.
 	 *
-	 * @param bool $can_renew_early Whether the subscription can be renewed early.
-	 * @param WC_Subscription $subscription The subscription.
+	 * @param bool            $can_renew_early Whether the subscription can be renewed early.
+	 * @param WC_Subscription $subscription    The subscription.
+	 * @param int             $user_id         The user ID.
 	 *
 	 * @return bool
 	 */
