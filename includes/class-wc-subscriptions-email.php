@@ -326,7 +326,7 @@ class WC_Subscriptions_Email {
 		wc_get_template(
 			$template,
 			array(
-				'order'                => $order ?? null,
+				'order'                => $order,
 				'subscriptions'        => $subscriptions,
 				'is_admin_email'       => $sent_to_admin,
 				'skip_my_account_link' => $skip_my_account_link,
