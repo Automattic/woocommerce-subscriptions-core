@@ -225,7 +225,7 @@ class WC_Subscriptions_Coupon {
 				// When sign-up fees are prorated, this meta will store the prorated amount:
 				// the original sign-up fee less what's already paid. When recurring fees are prorated,
 				// this meta contains the sign-up fee before extra fees are applied.
-				$is_sign_up_fee_prorated = (float) $cart_item['data']->meta_exists( '_subscription_sign_up_fee_prorated' );
+				$is_sign_up_fee_prorated = $cart_item['data']->meta_exists( '_subscription_sign_up_fee_prorated' );
 
 				if ( $is_sign_up_fee_prorated ) {
 					$sign_up_fee = (float) $cart_item['data']->get_meta( '_subscription_sign_up_fee_prorated' );
