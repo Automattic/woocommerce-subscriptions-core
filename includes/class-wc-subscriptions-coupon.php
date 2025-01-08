@@ -219,17 +219,18 @@ class WC_Subscriptions_Coupon {
 				}
 			}
 
-			// Compute the original sign-up fee. If it's a switch, we need to get the signup fee less
-			// upgrade costs.
+			// Compute the true sign-up fee.
+			// If it's a switch, we need to get the signup fee less upgrade costs.
 			if ( $is_switch ) {
-				$sign_up_fee_prorated = (float) $cart_item['data']->get_meta( '_subscription_sign_up_fee_prorated' );
-				$price_prorated       = (float) $cart_item['data']->get_meta( '_subscription_price_prorated' );
+				// When sign-up fees are prorated, this meta will store the prorated amount:
+				// the original sign-up fee less what's already paid. When recurring fees are prorated,
+				// this meta contains the sign-up fee before extra fees are applied.
+				$is_sign_up_fee_prorated = (float) $cart_item['data']->meta_exists( '_subscription_sign_up_fee_prorated' );
 
-				if ( 0.0 === $sign_up_fee_prorated && 0.0 === $price_prorated ) {
-					// No prorated recurring fees, i.e. no extra upgrade costs, so we can use the original sign-up fee.
-					$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
+				if ( $is_sign_up_fee_prorated ) {
+					$sign_up_fee = (float) $cart_item['data']->get_meta( '_subscription_sign_up_fee_prorated' );
 				} else {
-					$sign_up_fee = $sign_up_fee_prorated;
+					$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
 				}
 			} else {
 				$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $cart_item['data'] );
