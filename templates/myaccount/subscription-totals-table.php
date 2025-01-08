@@ -4,7 +4,7 @@
  *
  * @package WooCommerce_Subscription/Templates
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
- * @version 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
+ * @version 7.9.0 - Safety checks added to guard against fatal errors in certain unusual conditions
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,6 +25,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		foreach ( $subscription->get_items() as $item_id => $item ) {
 			$_product = apply_filters( 'woocommerce_subscriptions_order_item_product', $item->get_product(), $item );
+
+			if ( ! is_a( $_product, WC_Product::class ) ) {
+				wc_get_logger()->warning(
+					'A non-product was encountered while summarizing subscription product totals.',
+					array(
+						'backtrace'   => true,
+						'entity'      => $_product,
+						'entity_type' => gettype( $_product ),
+					)
+				);
+				continue;
+			}
+
 			if ( apply_filters( 'woocommerce_order_item_visible', true, $item ) ) {
 				?>
 				<tr class="<?php echo esc_attr( apply_filters( 'woocommerce_order_item_class', 'order_item', $item, $subscription ) ); ?>">
