@@ -294,7 +294,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			$subscription_billing_country  = $subscription->get_billing_country();
 			$subscription_billing_state    = $subscription->get_billing_state();
 			$subscription_billing_postcode = $subscription->get_billing_postcode();
-			$subscription_billing_city     = $subscription->get_billing_postcode();
+			$subscription_billing_city     = $subscription->get_billing_city();
 
 			// Set customer location to order location
 			if ( $subscription_billing_country ) {
