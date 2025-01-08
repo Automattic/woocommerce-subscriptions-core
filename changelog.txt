@@ -4,6 +4,7 @@
 * Add - Compatibility with WooCommerce's new preview email feature introduced in 9.6.
 * Fix - Prevent payment gateways that complete Change Payment requests asynchronously from blocking future attempts to update payment methods for all subscriptions.
 * Fix - Resolved an issue that could lead to undefined variable when attempting to send a customer notification email with no order.
+* Fix - Prevents the customer's postal code being used as their billing city in the current session, following a change to payment details.
 * Dev - Use the subscription's customer ID during the `wcs_can_user_renew_early()` function call when sending customer notification emails.
 * Dev - Fix PHP deprecated warnings caused by calling esc_url with null.
 
