@@ -35,7 +35,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 						'entity_type' => gettype( $_product ),
 					)
 				);
-				continue;
 			}
 
 			if ( apply_filters( 'woocommerce_order_item_visible', true, $item ) ) {
@@ -51,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<?php endif; ?>
 					<td class="product-name">
 						<?php
-						if ( $_product && ! $_product->is_visible() ) {
+						if ( is_a( $_product, WC_Product::class ) && ! $_product->is_visible() ) {
 							echo wp_kses_post( apply_filters( 'woocommerce_order_item_name', $item['name'], $item, false ) );
 						} else {
 							echo wp_kses_post( apply_filters( 'woocommerce_order_item_name', sprintf( '<a href="%s">%s</a>', get_permalink( $item['product_id'] ), $item['name'] ), $item, false ) );
@@ -89,7 +88,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php
 			}
 
-			$purchase_note = $_product->get_purchase_note();
+			$purchase_note = is_a( $_product, WC_Product::class ) ? $_product->get_purchase_note() : false;
+
 			if ( $subscription->has_status( array( 'completed', 'processing' ) ) && $purchase_note ) {
 				?>
 				<tr class="product-purchase-note">
