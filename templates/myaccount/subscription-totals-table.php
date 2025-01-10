@@ -4,7 +4,7 @@
  *
  * @package WooCommerce_Subscription/Templates
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.6.0
- * @version 7.1.0
+ * @version 7.2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
