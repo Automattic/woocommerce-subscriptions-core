@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 
 		<?php if ( $show_package_details ) : ?>
-			<?php echo '<p class="woocommerce-shipping-contents"><small>' . esc_html( $package_details ) . '</small></p>'; ?>
+			<?php echo '<p class="woocommerce-shipping-contents"><small>' . wp_kses_post( apply_filters( 'woocommerce_cart_item_name', $package_details ) ) . '</small></p>'; ?>
 		<?php endif; ?>
 	</td>
 </tr>
