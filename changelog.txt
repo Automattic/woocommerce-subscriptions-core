@@ -2,6 +2,7 @@
 
 = 8.0.0 - xxxx-xx-xx =
 * Fix - Safeguards added to the Subscriptions Totals template used in the My Account area, to guard against fatal errors that could arise in unusual conditions.
+* Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
 
 = 7.9.0 - 2025-01-10 =
 * Add - Compatibility with WooCommerce's new preview email feature introduced in 9.6.
