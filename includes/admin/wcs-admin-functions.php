@@ -73,8 +73,9 @@ function wcs_display_admin_notices( $clear = true ) {
 		$notice_output = array();
 
 		foreach ( $notices as $index => $notice ) {
-			// Ensure the notice data now has the expected shape.
+			// Ensure the notice data now has the expected shape. If it does not, remove it.
 			if ( ! is_array( $notice ) || ! isset( $notice['message'] ) || ! array_key_exists( 'screen_id', $notice ) ) {
+				unset( $notices[ $index ] );
 				continue;
 			}
 
@@ -92,7 +93,7 @@ function wcs_display_admin_notices( $clear = true ) {
 
 		// $notice_output may be empty if some notices were withheld, due to not matching the screen context.
 		if ( ! empty( $notice_output ) ) {
-			echo '<div id="moderated" class="' . esc_attr( $class ) . '">' . wp_kses_post( implode( "</p>\n<p>", $notice_output ) ) . '</p></div>';
+			echo '<div id="moderated" class="' . esc_attr( $class ) . '"><p>' . wp_kses_post( implode( "</p>\n<p>", $notice_output ) ) . '</p></div>';
 		}
 	};
 
