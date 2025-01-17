@@ -290,7 +290,7 @@ class WCS_Admin_Meta_Boxes {
 					'success',
 					sprintf(
 						/* Translators: %1$s opening link tag, %2$s closing link tag. */
-						__( 'A pending %1$srenewal order%2$s was successfully created!', 'woocommerce-subscriptions' ),
+						esc_html__( 'A pending %1$srenewal order%2$s was successfully created!', 'woocommerce-subscriptions' ),
 						'<a href="' . esc_url( $renewal_url ) . '">',
 						'</a>'
 					)
@@ -301,7 +301,7 @@ class WCS_Admin_Meta_Boxes {
 					'error',
 					sprintf(
 						/* Translators: %1$s opening link tag, %2$s closing link tag. */
-						__( 'A %1$spending renewal order%2$s was successfully created, but there was a problem setting the payment method. Please review the order.', 'woocommerce-subscriptions' ),
+						esc_html__( 'A %1$spending renewal order%2$s was successfully created, but there was a problem setting the payment method. Please review the order.', 'woocommerce-subscriptions' ),
 						'<a href="' . esc_url( $renewal_url ) . '">',
 						'</a>'
 					)
