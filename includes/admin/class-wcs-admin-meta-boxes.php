@@ -247,21 +247,65 @@ class WCS_Admin_Meta_Boxes {
 	/**
 	 * Handles the action request to create a pending renewal order.
 	 *
-	 * @param array $subscription
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 * @param WC_Subscription $subscription
 	 */
 	public static function create_pending_renewal_action_request( $subscription ) {
-		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
-		$subscription->update_status( 'on-hold' );
+		try {
+			$subscription->update_status( 'on-hold' );
+		} catch ( Exception $e ) {
+			self::notify(
+				$subscription,
+				'error',
+				esc_html__( 'Pending renewal order was not created, as it was not possible to update the subscription status.', 'woocommerce-subscriptions' )
+			);
+
+			return;
+		}
 
 		$renewal_order = wcs_create_renewal_order( $subscription );
 
+		if ( is_wp_error( $renewal_order ) ) {
+			self::notify(
+				$subscription,
+				'error',
+				esc_html__( 'Creation of the pending renewal order failed.', 'woocommerce-subscriptions' )
+			);
+
+			return;
+		}
+
 		if ( ! $subscription->is_manual() ) {
+			$renewal_url = $renewal_order->get_edit_order_url();
 
-			$renewal_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) ); // We need to pass the payment gateway instance to be compatible with WC < 3.0, only WC 3.0+ supports passing the string name
+			try {
+				// We need to pass the payment gateway instance to be compatible with WC < 3.0, only WC 3.0+ supports passing the string name.
+				$renewal_order->set_payment_method( wc_get_payment_gateway_by_order( $subscription ) );
 
-			if ( is_callable( array( $renewal_order, 'save' ) ) ) { // WC 3.0+
-				$renewal_order->save();
+				if ( is_callable( array( $renewal_order, 'save' ) ) ) { // WC 3.0+
+					$renewal_order->save();
+				}
+
+				self::notify(
+					$subscription,
+					'success',
+					sprintf(
+						/* Translators: %1$s opening link tag, %2$s closing link tag. */
+						__( 'A pending %1$srenewal order%2$s was successfully created!', 'woocommerce-subscriptions' ),
+						'<a href="' . esc_url( $renewal_url ) . '">',
+						'</a>'
+					)
+				);
+			} catch ( WC_Data_Exception $e ) {
+				self::notify(
+					$subscription,
+					'error',
+					sprintf(
+						/* Translators: %1$s opening link tag, %2$s closing link tag. */
+						__( 'A %1$spending renewal order%2$s was successfully created, but there was a problem setting the payment method. Please review the order.', 'woocommerce-subscriptions' ),
+						'<a href="' . esc_url( $renewal_url ) . '">',
+						'</a>'
+					)
+				);
 			}
 		}
 	}
@@ -721,5 +765,23 @@ class WCS_Admin_Meta_Boxes {
 			'high',
 			$items_meta_box['args']
 		);
+	}
+
+	/**
+	 * Notifies the user of an operational success or failure, and records a matching order note.
+	 *
+	 * In essence, it can be convenient to generate both an admin notice (to give the user some clear and
+	 * obvious feedback) and record the same as an order note (the admin notice could be missed, and is
+	 * auto-dismissed after the first view).
+	 *
+	 * @param WC_Subscription $subscription The subscription we are working with.
+	 * @param string          $type         Message type: 'success' or 'error.
+	 * @param string          $message      Message text, which will be used both for an admin notice and for the order note.
+	 *
+	 * @return void
+	 */
+	private static function notify( WC_Subscription $subscription, $type, $message ) {
+		$subscription->add_order_note( $message, false, true );
+		wcs_add_admin_notice( $message, $type );
 	}
 }
