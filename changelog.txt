@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 8.0.0 - xxxx-xx-xx =
-* Fix - Recommend WooPayments when there is no available payment gateway
+* Fix - Recommend WooPayments when there is no available payment gateway.
 * Fix - Safeguards added to the Subscriptions Totals template used in the My Account area, to guard against fatal errors that could arise in unusual conditions.
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
 
