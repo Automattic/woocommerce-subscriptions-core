@@ -27,7 +27,25 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
 function wcs_add_admin_notice( $message, $notice_type = 'success', $user_id = null, $screen_id = null ) {
-	$user_id = null === $user_id ? get_current_user_id() : $user_id;
+	$user_id = (int) ( null === $user_id ? get_current_user_id() : $user_id );
+
+	if ( $user_id < 1 ) {
+		wc_get_logger()->warning(
+			sprintf(
+				/* Translators: %1$s: notice type ('success' or 'error'), %2$s: notice text. */
+				'Admin notices can only be added if a user is currently logged in. Attemped (%1$s) notice: "%2$s"',
+				$notice_type,
+				$message
+			),
+			array(
+				'backtrace' => true,
+				'user_id'   => $user_id,
+			)
+		);
+
+		return;
+	}
+
 	$notices = get_transient( '_wcs_admin_notices_' . $user_id );
 
 	if ( ! is_array( $notices ) ) {

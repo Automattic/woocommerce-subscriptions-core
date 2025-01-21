@@ -79,6 +79,38 @@ class WCS_Admin_Functions_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Admin notices should not be accepted if a user is not actually logged in.
+	 *
+	 * This covers an edge case that generally should not arise. However, if it did, we would want to avoid
+	 * a scenario in which a '_wcs_admin_notices_0' transient is created and starts to balloon in size.
+	 *
+	 * @return void
+	 */
+	public function test_wcs_admin_notices_are_only_added_when_a_user_is_logged_in() {
+		$logged_messages = [];
+		$logging_monitor = function ( $message ) use ( &$logged_messages ) {
+			$logged_messages[] = $message;
+		};
+
+		add_filter( 'woocommerce_logger_log_message', $logging_monitor );
+		wp_set_current_user( 0 );
+		wcs_add_admin_notice( "You're gonna need a bigger subscription." );
+		remove_filter( 'woocommerce_logger_log_message', $logging_monitor );
+
+		$this->assertEquals(
+			'',
+			$this->capture_wcs_admin_notice_text(),
+			'If a user is not logged in, admin notifications are not accepted.'
+		);
+
+		$this->assertStringContainsString(
+			'Admin notices can only be added if a user is currently logged in',
+			$logged_messages[0],
+			'If an attempt is made to add an admin notice when nobody is logged in, a warning is logged.'
+		);
+	}
+
+	/**
 	 * Admin notices can target a specific admin screen, and should not render outside of that context.
 	 *
 	 * @see wcs_add_admin_notice()
@@ -121,6 +153,7 @@ class WCS_Admin_Functions_Test extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_wcs_admin_notice_queue_clearance() {
+		wp_set_current_user( self::$admin_id );
 		$message_text = "That's no moon, it's a subscription notice.";
 		wcs_add_admin_notice( $message_text, 'error' );
 
