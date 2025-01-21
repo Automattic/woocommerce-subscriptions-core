@@ -283,15 +283,14 @@ class WCS_Admin_Meta_Boxes {
 					$renewal_order->save();
 				}
 
-				self::notify(
-					$subscription,
-					'success',
+				wcs_add_admin_notice(
 					sprintf(
 						/* Translators: %1$s opening link tag, %2$s closing link tag. */
 						esc_html__( 'A pending %1$srenewal order%2$s was successfully created!', 'woocommerce-subscriptions' ),
 						'<a href="' . esc_url( $renewal_url ) . '">',
 						'</a>'
-					)
+					),
+					'success'
 				);
 			} catch ( WC_Data_Exception $e ) {
 				self::notify(
