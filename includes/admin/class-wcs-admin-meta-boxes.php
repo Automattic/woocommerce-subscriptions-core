@@ -253,12 +253,10 @@ class WCS_Admin_Meta_Boxes {
 		try {
 			$subscription->update_status( 'on-hold' );
 		} catch ( Exception $e ) {
-			self::notify(
-				$subscription,
-				'error',
-				esc_html__( 'Pending renewal order was not created, as it was not possible to update the subscription status.', 'woocommerce-subscriptions' )
+			wcs_add_admin_notice(
+				__( 'Pending renewal order was not created, as it was not possible to update the subscription status.', 'woocommerce-subscriptions' ),
+				'error'
 			);
-
 			return;
 		}
 
