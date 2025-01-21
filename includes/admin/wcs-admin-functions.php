@@ -71,6 +71,7 @@ function wcs_display_admin_notices( $clear = true ) {
 	 */
 	$handle_notices = static function ( &$notices, $class ) {
 		$notice_output = array();
+		$screen_id     = false;
 
 		foreach ( $notices as $index => $notice ) {
 			// Ensure the notice data now has the expected shape. If it does not, remove it.
@@ -79,8 +80,11 @@ function wcs_display_admin_notices( $clear = true ) {
 				continue;
 			}
 
-			$screen    = get_current_screen();
-			$screen_id = $screen instanceof WP_Screen ? $screen->id : '';
+			// We only need to determine the current screen ID once.
+			if ( false === $screen_id ) {
+				$screen    = get_current_screen();
+				$screen_id = $screen instanceof WP_Screen ? $screen->id : '';
+			}
 
 			// Should the notice display in the current screen context?
 			if ( is_string( $notice['screen_id'] ) && $screen_id !== $notice['screen_id'] ) {
