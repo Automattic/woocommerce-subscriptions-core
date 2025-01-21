@@ -115,7 +115,7 @@ function wcs_display_admin_notices( $clear = true ) {
 	}
 
 	// If all notices were rendered, clear the queue. If only some were rendered, clear what we can.
-	if ( empty( $notices ) ) {
+	if ( empty( $notices['success'] ) && empty( $notices['error'] ) ) {
 		wcs_clear_admin_notices();
 	} else {
 		set_transient( '_wcs_admin_notices_' . $user_id, $notices, HOUR_IN_SECONDS );
