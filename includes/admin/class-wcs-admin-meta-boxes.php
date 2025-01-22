@@ -250,6 +250,8 @@ class WCS_Admin_Meta_Boxes {
 	 * @param WC_Subscription $subscription
 	 */
 	public static function create_pending_renewal_action_request( $subscription ) {
+		$subscription->add_order_note( __( 'Create pending renewal order requested by admin action.', 'woocommerce-subscriptions' ), false, true );
+
 		try {
 			$subscription->update_status( 'on-hold' );
 		} catch ( Exception $e ) {
