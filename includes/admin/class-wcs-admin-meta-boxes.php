@@ -267,6 +267,7 @@ class WCS_Admin_Meta_Boxes {
 				$subscription,
 				'error',
 				esc_html__( 'Creation of the pending renewal order failed.', 'woocommerce-subscriptions' )
+				. ' ' . $renewal_order->get_error_message()
 			);
 
 			return;
