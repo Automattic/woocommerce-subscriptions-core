@@ -33,7 +33,7 @@ function wcs_add_admin_notice( $message, $notice_type = 'success', $user_id = nu
 		wc_get_logger()->warning(
 			sprintf(
 				/* Translators: %1$s: notice type ('success' or 'error'), %2$s: notice text. */
-				'Admin notices can only be added if a user is currently logged in. Attemped (%1$s) notice: "%2$s"',
+				'Admin notices can only be added if a user is currently logged in. Attempted (%1$s) notice: "%2$s"',
 				$notice_type,
 				$message
 			),
