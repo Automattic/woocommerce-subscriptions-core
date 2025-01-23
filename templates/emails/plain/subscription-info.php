@@ -4,7 +4,7 @@
  *
  * @author  Brent Shepherd / Chuck Mac
  * @package WooCommerce_Subscriptions/Templates/Emails
- * @version 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.4
+ * @version 7.2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,6 +16,8 @@ if ( empty( $subscriptions ) ) {
 
 $has_automatic_renewal = false;
 $is_parent_order       = wcs_order_contains_subscription( $order, 'parent' );
+
+do_action( 'woocommerce_subscriptions_email_before_subscription_info', $subscriptions, $order, $has_automatic_renewal, $is_parent_order, $is_admin_email, $plain_text );
 
 echo "\n\n" . __( 'Subscription information', 'woocommerce-subscriptions' ) . "\n\n";
 foreach ( $subscriptions as $subscription ) {
@@ -61,3 +63,5 @@ if ( $has_automatic_renewal && ! $is_admin_email && $subscription->get_time( 'ne
 		)
 	);
 }
+
+do_action( 'woocommerce_subscriptions_email_after_subscription_info', $subscriptions, $order, $has_automatic_renewal, $is_parent_order, $is_admin_email, $plain_text );
