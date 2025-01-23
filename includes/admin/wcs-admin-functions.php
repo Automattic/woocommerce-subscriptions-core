@@ -109,7 +109,7 @@ function wcs_display_admin_notices( $clear = true ) {
 				continue;
 			}
 
-			$notice_output[] = esc_html( $notice['message'] );
+			$notice_output[] = $notice['message'];
 			unset( $notices[ $index ] );
 		}
 
