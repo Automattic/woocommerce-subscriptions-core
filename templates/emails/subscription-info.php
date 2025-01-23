@@ -2,7 +2,6 @@
 /**
  * Subscription information template
  *
- * @author  Brent Shepherd / Chuck Mac
  * @package WooCommerce_Subscriptions/Templates/Emails
  * @version 7.2.0
  */
