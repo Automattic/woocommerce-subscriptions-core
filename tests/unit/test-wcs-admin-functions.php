@@ -158,13 +158,13 @@ class WCS_Admin_Functions_Test extends WP_UnitTestCase {
 		wcs_add_admin_notice( $message_text, 'error' );
 
 		$this->assertStringContainsString(
-			esc_html( $message_text ),
+			$message_text,
 			$this->capture_wcs_admin_notice_text( false ),
 			'The admin notice is displayed as expected.'
 		);
 
 		$this->assertStringContainsString(
-			esc_html( $message_text ),
+			$message_text,
 			$this->capture_wcs_admin_notice_text(),
 			'The admin notice is displayed a second time, because it was not cleared last time.'
 		);
