@@ -3,7 +3,7 @@
  * Customer Notification: Manual renewal needed. Plain text version.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails/Plain
- * @version x.x.x
+ * @version 7.2.0
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly

@@ -3,7 +3,7 @@
  * Customer Notification: Free trial of an automatically renewed subscription is about to expire email.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails
- * @version x.x.x
+ * @version 7.2.0
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * @hooked WC_Emails::email_header() Output the email header.
  *
- * @since x.x.x
+ * @since 6.9.0
  */
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
@@ -76,6 +76,6 @@ if ( $additional_content ) {
 /**
  * @hooked WC_Emails::email_footer() Output the email footer.
  *
- * @since x.x.x
+ * @since 6.9.0
  */
 do_action( 'woocommerce_email_footer', $email );
