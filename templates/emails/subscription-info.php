@@ -33,7 +33,7 @@ do_action( 'woocommerce_subscriptions_email_before_subscription_info', $subscrip
 	<?php foreach ( $subscriptions as $subscription ) : ?>
 		<?php $has_automatic_renewal = $has_automatic_renewal || ! $subscription->is_manual(); ?>
 		<tr>
-			<?php // translators: placeholder is the subscription number. ?>
+			<?php // Translators: placeholder is the subscription number. ?>
 			<td class="td" scope="row" style="text-align:left;"><a href="<?php echo esc_url( ( $is_admin_email ) ? wcs_get_edit_post_link( $subscription->get_id() ) : $subscription->get_view_order_url() ); ?>"><?php echo sprintf( esc_html_x( '#%s', 'subscription number in email table. (eg: #106)', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?></a></td>
 			<td class="td" scope="row" style="text-align:left;"><?php echo esc_html( date_i18n( wc_date_format(), $subscription->get_time( 'start_date', 'site' ) ) ); ?></td>
 			<td class="td" scope="row" style="text-align:left;"><?php echo esc_html( ( 0 < $subscription->get_time( 'end' ) ) ? date_i18n( wc_date_format(), $subscription->get_time( 'end', 'site' ) ) : _x( 'When cancelled', 'Used as end date for an indefinite subscription', 'woocommerce-subscriptions' ) ); ?></td>
@@ -41,7 +41,7 @@ do_action( 'woocommerce_subscriptions_email_before_subscription_info', $subscrip
 				<?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?>
 				<?php if ( $is_parent_order && $subscription->get_time( 'next_payment' ) > 0 ) : ?>
 					<br>
-					<?php // translators: placeholder is the next payment date. ?>
+					<?php // Translators: placeholder is the next payment date. ?>
 					<small><?php printf( esc_html__( 'Next payment: %s', 'woocommerce-subscriptions' ), esc_html( date_i18n( wc_date_format(), $subscription->get_time( 'next_payment', 'site' ) ) ) ); ?></small>
 				<?php endif; ?>
 			</td>
