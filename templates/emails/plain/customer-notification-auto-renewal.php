@@ -37,8 +37,6 @@ echo esc_html(
 
 echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
 
-esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
-echo "\n";
 // Show subscription details.
 \WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text, true );
 

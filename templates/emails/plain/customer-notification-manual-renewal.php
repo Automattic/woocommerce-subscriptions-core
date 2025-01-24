@@ -58,8 +58,6 @@ if ( $can_renew_early ) {
 
 echo "\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n";
 
-esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
-
 // Show subscription details.
 \WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text );
 

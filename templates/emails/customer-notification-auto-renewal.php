@@ -45,14 +45,6 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		);
 		?>
 	</p>
-
-	<p>
-		<?php
-			esc_html_e( 'Here are the details:', 'woocommerce-subscriptions' );
-		?>
-	</p>
-
-
 <?php
 
 // Show subscription details.
