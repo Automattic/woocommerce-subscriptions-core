@@ -42,6 +42,8 @@ echo "\n";
 // Show subscription details.
 \WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text, true );
 
+do_action( 'woocommerce_subscriptions_email_order_details', $subscription, $sent_to_admin, $plain_text, $email );
+
 esc_html_e( 'You can manage this subscription from your account dashboard: ', 'woocommerce-subscriptions' );
 echo esc_url( wc_get_page_permalink( 'myaccount' ) );
 
