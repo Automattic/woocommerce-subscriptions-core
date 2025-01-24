@@ -5,6 +5,8 @@
 * Fix - Safeguards added to the Subscriptions Totals template used in the My Account area, to guard against fatal errors that could arise in unusual conditions.
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
 * Fix - Improve our admin notice handling to ensure notices are displayed to the intended admin user.
+* Update - Include subscription items table in all customer notification emails.
+* Dev - Introduce before & after hooks within the subscription-info.php template.
 
 = 7.9.0 - 2025-01-10 =
 * Add - Compatibility with WooCommerce's new preview email feature introduced in 9.6.
