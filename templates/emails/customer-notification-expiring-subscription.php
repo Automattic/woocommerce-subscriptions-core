@@ -50,6 +50,18 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 // Show subscription details.
 \WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text, true );
 
+/**
+ * 'woocommerce_subscriptions_email_order_details' hook.
+ *
+ * @since 7.2.0
+ *
+ * @param WC_Subscription|WC_Order $subscription  The subscription object.
+ * @param bool                     $sent_to_admin Whether the email is being sent to an admin.
+ * @param bool                     $plain_text    Whether the email is being sent as plain text.
+ * @param WC_Email                 $email         The email object, useful for accessing the email's properties and methods.
+ *
+ * @hooked WC_Subscriptions_Email::order_details() - 10.
+ */
 do_action( 'woocommerce_subscriptions_email_order_details', $subscription, $sent_to_admin, $plain_text, $email );
 
 /**
