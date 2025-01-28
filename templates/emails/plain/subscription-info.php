@@ -16,8 +16,6 @@ if ( empty( $subscriptions ) ) {
 $has_automatic_renewal = false;
 $is_parent_order       = wcs_order_contains_subscription( $order, 'parent' );
 
-do_action( 'woocommerce_subscriptions_email_before_subscription_info', $subscriptions, $order, $has_automatic_renewal, $is_parent_order, $is_admin_email, $plain_text, $skip_my_account_link );
-
 echo "\n\n" . __( 'Subscription information', 'woocommerce-subscriptions' ) . "\n\n";
 foreach ( $subscriptions as $subscription ) {
 	$has_automatic_renewal = $has_automatic_renewal || ! $subscription->is_manual();
@@ -62,5 +60,3 @@ if ( $has_automatic_renewal && ! $is_admin_email && $subscription->get_time( 'ne
 		)
 	);
 }
-
-do_action( 'woocommerce_subscriptions_email_after_subscription_info', $subscriptions, $order, $has_automatic_renewal, $is_parent_order, $is_admin_email, $plain_text, $skip_my_account_link );
