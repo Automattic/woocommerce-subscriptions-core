@@ -515,7 +515,7 @@ class WCS_Action_Scheduler_Customer_Notifications extends WCS_Scheduler {
 		 * @param array           $notifications Array of valid notification types.
 		 * @param WC_Subscription $subscription  Subscription object.
 		 */
-		return apply_filters( 'woocommerce_subscription_valid_customer_notification_types', $notifications, $subscription );
+		return (array) apply_filters( 'woocommerce_subscription_valid_customer_notification_types', $notifications, $subscription );
 	}
 
 	/**
