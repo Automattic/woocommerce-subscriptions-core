@@ -274,7 +274,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 		$skipped_reasons = [];
 
 		if ( ! WC_Subscriptions_Email_Notifications::should_send_notification() ) {
-			$skipped_reasons[] = __( 'Not a production site', 'woocommerce-subscriptions' );
+			$skipped_reasons[] = __( 'Not a production site, or notifications have been globally disabled', 'woocommerce-subscriptions' );
 		}
 
 		if ( ! $this->get_recipient() ) {
