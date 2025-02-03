@@ -136,11 +136,6 @@ class WCS_Admin_Meta_Boxes {
 	public function enqueue_styles_scripts() {
 		global $theorder;
 
-		// If $theorder is empty, fallback to using the global post object.
-		if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) ) {
-			$theorder = wcs_get_subscription( $GLOBALS['post']->ID );
-		}
-
 		// Get admin screen ID.
 		$screen    = get_current_screen();
 		$screen_id = isset( $screen->id ) ? $screen->id : '';
@@ -148,7 +143,16 @@ class WCS_Admin_Meta_Boxes {
 		// Get the script version.
 		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 
-		if ( wcs_get_page_screen_id( 'shop_subscription' ) === $screen_id && wcs_is_subscription( $theorder ) ) {
+		if ( wcs_get_page_screen_id( 'shop_subscription' ) === $screen_id ) {
+			// If $theorder global is empty, fallback to using the global post object.
+			if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) && wcs_is_subscription( $GLOBALS['post']->ID ) ) {
+				$theorder = wcs_get_subscription( $GLOBALS['post']->ID );
+			}
+
+			if ( ! wcs_is_subscription( $theorder ) ) {
+				return;
+			}
+
 			// Declare a subscription variable for clearer use. The $theorder global on edit subscription screens is a subscription.
 			$subscription = $theorder;
 
