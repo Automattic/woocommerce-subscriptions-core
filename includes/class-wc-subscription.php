@@ -1596,9 +1596,13 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * Important notes:
 	 * - If the resulting calculated next payment date is less than 2 hours in the future, it will add an additional billing period
-	 *   until it finds a date a least 2 hours in the future.
+	 *   until it finds a date a least 2 hours in the future. This was originally necessary to combat daylight savings issues. ie if
+	 *   we added 1 billing period to the previous date but there has been a subsequent daylight savings change, the next payment date
+	 *   could be on the same day as the previous payment.
 	 * - If the subscription has an end date, and the calculated next payment occurs after it, the function returns 0. ie there are no
 	 *   more payments to be made.
+	 * - Although an inactive subscription does not have a public facing next payment date, this function will still calculate the date
+	 *   so it can be used when determining what the next date would be if the subscription were to be reactivated.
 	 *
 	 * Filters:
 	 * - wcs_calculate_next_payment_from_last_payment (bool) – Controls whether the function
