@@ -289,7 +289,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	}
 
 	/**
-	 * If WCS_DEBUG is enabled, attaches a note to the subscription to detail why a reminder email was not sent.
+	 * If WCS_DEBUG or WP_DEBUG is enabled, attach a note to the subscription to detail why a reminder email was not sent.
 	 *
 	 * @param WC_Subscription $subscription
 	 * @param array|string    $reasons
@@ -297,7 +297,7 @@ class WCS_Email_Customer_Notification extends WC_Email {
 	 * @return false
 	 */
 	private function log_reminder_email_not_sent( $subscription, $reasons ) {
-		if ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) {
+		if ( ( defined( 'WCS_DEBUG' ) && WCS_DEBUG ) || ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ) {
 			$reasons = (array) $reasons;
 
 			// translators: %1$s: email title, %2$s: list of reasons why email was skipped.
