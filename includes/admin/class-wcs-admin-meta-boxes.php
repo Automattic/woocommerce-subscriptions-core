@@ -145,11 +145,13 @@ class WCS_Admin_Meta_Boxes {
 
 		if ( wcs_get_page_screen_id( 'shop_subscription' ) === $screen_id ) {
 			// If $theorder global is empty, fallback to using the global post object.
-			if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) && wcs_is_subscription( $GLOBALS['post']->ID ) ) {
-				$theorder = wcs_get_subscription( $GLOBALS['post']->ID );
-			}
+			if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) ) {
+				$subscription = wcs_get_subscription( $GLOBALS['post']->ID );
 
-			if ( ! wcs_is_subscription( $theorder ) ) {
+				if ( $subscription ) {
+					$theorder = $subscription;
+				}
+			} elseif ( ! wcs_is_subscription( $theorder ) ) {
 				return;
 			}
 
