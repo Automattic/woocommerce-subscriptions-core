@@ -1520,6 +1520,7 @@ class WC_Subscription extends WC_Order {
 	 * @see WC_Subscription::calculate_next_payment_date() for more details about how the next payment date is calculated.
 	 *
 	 * @param string $date_type 'trial_end', 'next_payment', 'end_of_prepaid_term' or 'end'.
+	 *
 	 * @return string|int The calculated date in MySQL format (`YYYY-MM-DD HH:MM:SS`), or `0` if undefined.
 	 */
 	public function calculate_date( $date_type ) {
@@ -1565,7 +1566,7 @@ class WC_Subscription extends WC_Order {
 		 *  - 'woocommerce_subscription_calculated_trial_end_date'
 		 *  - 'woocommerce_subscription_calculated_end_of_prepaid_term_date'
 		 *
-		 * @param string|int $date The calculated date in MySQL format (`YYYY-MM-DD HH:MM:SS`), or `0` if undefined.
+		 * @param string|int      $date         The calculated date in MySQL format (`YYYY-MM-DD HH:MM:SS`), or `0` if undefined.
 		 * @param WC_Subscription $subscription The subscription object.
 		 */
 		return apply_filters( 'woocommerce_subscription_calculated_' . $date_type . '_date', $date, $this );
