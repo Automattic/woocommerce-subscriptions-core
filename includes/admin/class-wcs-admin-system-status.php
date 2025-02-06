@@ -17,6 +17,13 @@ class WCS_Admin_System_Status {
 	const WCS_PRODUCT_ID = 27147;
 
 	/**
+	 * Contains pre-determined SSR report data.
+	 *
+	 * @var array
+	 */
+	private static $report_data = [];
+
+	/**
 	 * Attach callbacks
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
@@ -28,9 +35,21 @@ class WCS_Admin_System_Status {
 	/**
 	 * Renders the Subscription information in the WC status page
 	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
+	 * @since 1.0.0 Migrated from WooCommerce Subscriptions v2.3.0
+	 * @since 7.2.0 Uses supplied report data if available.
+	 *
+	 * @param mixed $report Pre-determined SSR report data.
 	 */
-	public static function render_system_status_items() {
+	public static function render_system_status_items( $report = null ) {
+		/**
+		 * From WooCommerce 9.8.0, we will be supplied with SSR data fetched via a (programmatic)
+		 * REST API request. Using this when available can help prevent duplicated work.
+		 *
+		 * @see WC_REST_Subscription_System_Status_Manager::add_subscription_fields_to_response()
+		 */
+		if ( is_array( $report ) && is_array( $report['subscriptions'] ) && ! empty( $report['subscriptions'] ) ) {
+			self::$report_data = $report['subscriptions'];
+		}
 
 		$store_data                            = [];
 		$subscriptions_data                    = [];
@@ -118,10 +137,15 @@ class WCS_Admin_System_Status {
 	 * @param array $debug_data
 	 */
 	private static function set_live_site_url( &$debug_data ) {
+		// Use pre-determined SSR data if possible.
+		$site_url = isset( self::$report_data['live_url'] )
+			? self::$report_data['live_url']
+			: WCS_Staging::get_site_url_from_source( 'subscriptions_install' );
+
 		$debug_data['wcs_live_site_url'] = array(
 			'name'      => _x( 'Subscriptions Live URL', 'Live URL, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Subscriptions Live URL',
-			'note'      => '<a href="' . esc_url( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '">' . esc_html( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '</a>',
+			'note'      => '<a href="' . esc_url( $site_url ) . '">' . esc_html( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '</a>',
 			'mark'      => '',
 			'mark_icon' => '',
 		);
@@ -202,7 +226,7 @@ class WCS_Admin_System_Status {
 				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
 					$outdated                    = true;
 					$overridden_template_output .= sprintf(
-						/* translators: %1$s is the file version, %2$s is the core version */
+					/* translators: %1$s is the file version, %2$s is the core version */
 						esc_html__( 'version %1$s is out of date. The core version is %2$s', 'woocommerce-subscriptions' ),
 						'<strong style="color:red">' . esc_html( $theme_version ) . '</strong>',
 						'<strong>' . esc_html( $core_version ) . '</strong>'
@@ -222,7 +246,6 @@ class WCS_Admin_System_Status {
 	 * Add a breakdown of Subscriptions per status.
 	 */
 	private static function set_subscription_statuses( &$debug_data ) {
-
 		$debug_data['wcs_subscriptions_by_status'] = array(
 			'name'      => _x( 'Subscription Statuses', 'label for the system status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Subscription Statuses',
@@ -281,7 +304,11 @@ class WCS_Admin_System_Status {
 	private static function set_subscriptions_by_payment_gateway( &$debug_data ) {
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-		foreach ( self::get_subscriptions_by_gateway() as $payment_method => $status_counts ) {
+		$subscriptions_by_gateway = isset( self::$report_data['subscriptions_by_payment_gateway'] )
+			? self::$report_data['subscriptions_by_payment_gateway']
+			: self::get_subscriptions_by_gateway();
+
+		foreach ( $subscriptions_by_gateway as $payment_method => $status_counts ) {
 			if ( isset( $gateways[ $payment_method ] ) ) {
 				$payment_method_name  = $gateways[ $payment_method ]->method_title;
 				$payment_method_label = $gateways[ $payment_method ]->method_title;
@@ -418,7 +445,10 @@ class WCS_Admin_System_Status {
 	 * @return array
 	 */
 	public static function get_subscription_statuses() {
-		$subscriptions_by_status        = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
+		$subscriptions_by_status = isset( self::$report_data['statuses'] )
+			? self::$report_data['statuses']
+			: WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
+
 		$subscriptions_by_status_output = array();
 
 		foreach ( $subscriptions_by_status as $status => $count ) {
