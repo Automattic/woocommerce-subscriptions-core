@@ -144,19 +144,24 @@ class WCS_Admin_Meta_Boxes {
 		$ver = WC_Subscriptions_Core_Plugin::instance()->get_library_version();
 
 		if ( wcs_get_page_screen_id( 'shop_subscription' ) === $screen_id ) {
-			// If $theorder global is empty, fallback to using the global post object.
+			// If global $theorder is empty, fallback to using the global post object.
 			if ( empty( $theorder ) && ! empty( $GLOBALS['post']->ID ) ) {
 				$subscription = wcs_get_subscription( $GLOBALS['post']->ID );
 
+				// If we have a subscription, set it as the global $theorder.
 				if ( $subscription ) {
 					$theorder = $subscription;
+				} else {
+					return;
 				}
-			} elseif ( ! wcs_is_subscription( $theorder ) ) {
-				return;
 			}
 
 			// Declare a subscription variable for clearer use. The $theorder global on edit subscription screens is a subscription.
 			$subscription = $theorder;
+
+			if ( ! wcs_is_subscription( $subscription ) ) {
+				return;
+			}
 
 			wp_register_script( 'jstz', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/jstz.min.js' ), [], $ver, false );
 			wp_register_script( 'momentjs', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/moment.min.js' ), [], $ver, false );
