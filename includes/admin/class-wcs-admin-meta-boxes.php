@@ -151,13 +151,10 @@ class WCS_Admin_Meta_Boxes {
 				// If we have a subscription, set it as the global $theorder.
 				if ( $subscription ) {
 					$theorder = $subscription;
-				} else {
-					return;
 				}
+			} else {
+				$subscription = $theorder;
 			}
-
-			// Declare a subscription variable for clearer use. The $theorder global on edit subscription screens is a subscription.
-			$subscription = $theorder;
 
 			if ( ! wcs_is_subscription( $subscription ) ) {
 				return;
