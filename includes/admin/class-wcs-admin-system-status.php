@@ -24,6 +24,19 @@ class WCS_Admin_System_Status {
 	private static $report_data = [];
 
 	/**
+	 * Used to cache the result of the comparatively expensive queries executed by
+	 * the get_subscriptions_by_gateway() method.
+	 *
+	 * This cache is short-lived by design, as we don't necessarily want to cache this
+	 * across requests (in some troubleshooting/debug scenarios, that could be confusing
+	 * for the troubleshooter), which is why a transient or WP caching functions are not
+	 * used.
+	 *
+	 * @var null|array
+	 */
+	private static $statuses_by_gateway = null;
+
+	/**
 	 * Attach callbacks
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
@@ -388,10 +401,17 @@ class WCS_Admin_System_Status {
 	/**
 	 * Gets the store's subscription broken down by payment gateway and status.
 	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v3.1.0
+	 * @since 1.0.0 Migrated from WooCommerce Subscriptions v3.1.0.
+	 * @since 7.2.0 Information is cached per request.
+	 *
 	 * @return array The subscription gateway and status data array( 'gateway_id' => array( 'status' => count ) );
 	 */
 	public static function get_subscriptions_by_gateway() {
+		// Return cached result if possible.
+		if ( isset( self::$statuses_by_gateway ) ) {
+			return self::$statuses_by_gateway;
+		}
+
 		global $wpdb;
 		$subscription_gateway_data = [];
 		$is_hpos_in_use            = wcs_is_custom_order_tables_usage_enabled();
@@ -435,6 +455,7 @@ class WCS_Admin_System_Status {
 			$subscription_gateway_data[ $result['payment_method'] ][ $result[ $order_status_column_name ] ] = $result['count'];
 		}
 
+		self::$statuses_by_gateway = $subscription_gateway_data;
 		return $subscription_gateway_data;
 	}
 
