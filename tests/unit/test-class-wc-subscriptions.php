@@ -906,7 +906,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( 0, $this->subscriptions['active']->get_date( 'end' ) );
 		$this->assertEmpty( $this->subscriptions['active']->get_meta( wcs_get_date_meta_key( 'end' ), true ) );
 
-		update_post_meta( $this->subscriptions['active']->get_id(), wcs_get_date_meta_key( 'end' ), $old_date );
+		$this->subscriptions['active']->update_meta_data( wcs_get_date_meta_key( 'end' ), $old_date );
+		$this->subscriptions['active']->save_meta_data();
 	}
 
 	/**
@@ -990,7 +991,9 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 			]
 		);
 
-		update_post_meta( $post_id, '_subscription_renewal', $this->subscriptions['active']->get_id() );
+		$post = get_post( $post_id );
+		$post->update_meta_data( '_subscription_renewal', $this->subscriptions['active']->get_id() );
+		$post->save_meta_data();
 
 		$this->assertEmpty( $this->subscriptions['active']->get_payment_count() );
 	}
@@ -1873,7 +1876,8 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 		if ( is_callable( [ $order, 'set_date_paid' ] ) ) {
 			$order->set_date_paid( wcs_date_to_time( $paid_date ) );
 		} else {
-			update_post_meta( wcs_get_objects_property( $order, 'id' ), '_paid_date', get_date_from_gmt( $paid_date ) );
+			$order->update_meta_data( '_paid_date', get_date_from_gmt( $paid_date ) );
+			$order->save_meta_data();
 		}
 
 		return $order;

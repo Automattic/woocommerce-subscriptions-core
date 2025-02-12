@@ -617,7 +617,9 @@ class WCS_Upgrade_2_0 {
 			$order_meta_value = $order->get_meta( $order_meta_key, true );
 
 			if ( isset( $order_meta[ $order_meta_key ] ) && '' !== $order_meta[ $order_meta_key ] ) {
-				update_post_meta( $subscription_id, $subscription_meta_key, $order_meta_value );
+				$subscription = wc_get_product( $subscription_id );
+				$subscription->update_meta_data( $subscription_meta_key, $order_meta_value );
+				$subscription->save_meta_data();
 			}
 		}
 

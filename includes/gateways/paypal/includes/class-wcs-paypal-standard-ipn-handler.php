@@ -225,8 +225,9 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 			$existing_profile_id = wcs_get_paypal_id( $subscription );
 
 			if ( empty( $existing_profile_id ) || $existing_profile_id !== $transaction_details['subscr_id'] ) {
-				update_post_meta( $subscription->get_id(), '_old_paypal_subscriber_id', $existing_profile_id );
-				update_post_meta( $subscription->get_id(), '_old_payment_method', $subscription->get_payment_method() );
+				$subscription->update_meta_data( '_old_paypal_subscriber_id', $existing_profile_id );
+				$subscription->update_meta_data( '_old_payment_method', $subscription->get_payment_method() );
+				$subscription->save_meta_data();
 			}
 		}
 
@@ -258,7 +259,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 				if ( ! $is_payment_change && ! $is_renewal_sign_up_after_failure && 0 == $order->get_total() ) {
 					// Safe to assume the subscription has an order here because otherwise we wouldn't get a 'subscr_signup' IPN
 					$order->payment_complete(); // No 'txn_id' value for 'subscr_signup' IPN messages
-					update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
+					$subscription->update_meta_data( '_paypal_first_ipn_ignored_for_pdt', 'true' );
 				}
 
 				// Payment completed
@@ -350,21 +351,21 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 						$this->save_paypal_meta_data( $parent_order, $transaction_details );
 
 						// IPN got here first or PDT will never arrive. Normally PDT would have arrived, so the first IPN would not be the first payment. In case the the first payment is an IPN, we need to make sure to not ignore the second one
-						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
+						$subscription->update_meta_data( '_paypal_first_ipn_ignored_for_pdt', 'true' );
 
 					// Ignore the first IPN message if the PDT should have handled it (if it didn't handle it, it will have been dealt with as first payment), but set a flag to make sure we only ignore it once
 					} elseif ( $subscription->get_payment_count() === 1 && '' !== WCS_PayPal::get_option( 'identity_token' ) && 'true' !== $subscription->get_meta( '_paypal_first_ipn_ignored_for_pdt', true ) && false === $is_renewal_sign_up_after_failure ) {
 
 						WC_Gateway_Paypal::log( 'IPN subscription payment ignored for subscription ' . $subscription->get_id() . ' due to PDT previously handling the payment.' );
 
-						update_post_meta( $subscription->get_id(), '_paypal_first_ipn_ignored_for_pdt', 'true' );
+						$subscription->update_meta_data( '_paypal_first_ipn_ignored_for_pdt', 'true' );
 
 					// Process the payment if the subscription is active
 					} elseif ( ! $subscription->has_status( array( 'cancelled', 'expired', 'switched', 'trash' ) ) ) {
 
 						if ( true === $is_renewal_sign_up_after_failure && is_object( $transaction_order ) ) {
-
-							update_post_meta( $subscription->get_id(), '_paypal_failed_sign_up_recorded', wcs_get_objects_property( $transaction_order, 'id' ) );
+							
+							$subscription->update_meta_data( '_paypal_failed_sign_up_recorded', wcs_get_objects_property( $transaction_order, 'id' ) );
 
 							// We need to cancel the old subscription now that the method has been changed successfully
 							if ( 'paypal' === $subscription->get_meta( '_old_payment_method', true ) ) {
@@ -533,7 +534,7 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		// Store the transaction IDs to avoid handling requests duplicated by PayPal
 		if ( isset( $transaction_details['txn_id'] ) ) {
 			$handled_transactions[] = $ipn_transaction_id;
-			update_post_meta( $subscription->get_id(), '_paypal_ipn_tracking_ids', $handled_transactions );
+			$subscription->update_meta_data( '_paypal_ipn_tracking_ids', $handled_transactions );
 		}
 
 		// And delete the transient that's preventing other IPN's being processed
@@ -549,6 +550,8 @@ class WCS_PayPal_Standard_IPN_Handler extends WC_Gateway_Paypal_IPN_Handler {
 		}
 
 		WC_Gateway_Paypal::log( $log_message );
+
+		$subscription->save_meta_data();
 
 		// Prevent default IPN handling for subscription txn_types
 		exit;

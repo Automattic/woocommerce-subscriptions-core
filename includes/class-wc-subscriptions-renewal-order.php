@@ -105,7 +105,9 @@ class WC_Subscriptions_Renewal_Order {
 				);
 
 				wp_update_post( $update_post_data );
-				update_post_meta( $order_id, '_paid_date', current_time( 'mysql' ) );
+				$order = wc_get_order( $order_id );
+				$order->update_meta_data( '_paid_date', current_time( 'mysql' ) );
+				$order->save_meta_data();
 			} else {
 
 				$current_time = current_time( 'timestamp', 1 );

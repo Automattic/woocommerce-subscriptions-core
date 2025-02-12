@@ -46,9 +46,9 @@ class WCS_Upgrade_2_2_7 {
 		remove_action( 'woocommerce_subscription_status_updated', 'WC_Subscriptions_Email::send_cancelled_email', 10 );
 
 		foreach ( $subscriptions_to_repair as $subscription_id ) {
-			try {
-				$subscription = wcs_get_subscription( $subscription_id );
+			$subscription = wcs_get_subscription( $subscription_id );
 
+			try {
 				if ( false === $subscription ) {
 					throw new Exception( 'Failed to instantiate subscription object' );
 				}
@@ -75,12 +75,14 @@ class WCS_Upgrade_2_2_7 {
 				}
 
 				// Set a flag so we don't pull this subscription into a following batch
-				update_post_meta( $subscription_id, '_wcs_2_2_7_repaired', 'true' );
+				$subscription->update_meta_data( '_wcs_2_2_7_repaired', 'true' );
 
 			} catch ( Exception $e ) {
 				self::log( sprintf( '--- Exception caught repairing subscription %d - exception message: %s ---', $subscription_id, $e->getMessage() ) );
-				update_post_meta( $subscription_id, '_wcs_2_2_7_repaired', 'false' );
+				$subscription->update_meta_data( '_wcs_2_2_7_repaired', 'false' );
 			}
+
+			$subscription->save_meta_data();
 		}
 
 		// Reattach the cancelled subscription emails

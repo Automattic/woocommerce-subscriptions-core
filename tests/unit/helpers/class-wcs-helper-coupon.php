@@ -48,14 +48,10 @@ class WCS_Helper_Coupon {
 	 */
 	public static function create_coupon( $coupon_code = 'dummycoupon', $meta = [] ) {
 		// Insert post.
-		$coupon_id = wp_insert_post(
-			[
-				'post_title'   => $coupon_code,
-				'post_type'    => 'shop_coupon',
-				'post_status'  => 'publish',
-				'post_excerpt' => 'This is a dummy coupon',
-			]
-		);
+		$coupon = new WC_Coupon();
+		$coupon->set_code( $coupon_code );
+		$coupon->set_description( 'This is a dummy coupon' );
+
 
 		$meta = wp_parse_args(
 			$meta,
@@ -82,9 +78,11 @@ class WCS_Helper_Coupon {
 
 		// Update meta.
 		foreach ( $meta as $key => $value ) {
-			update_post_meta( $coupon_id, $key, $value );
+			$coupon->update_meta_data( $key, $value );
 		}
 
-		return new WC_Coupon( $coupon_code );
+		$coupon->save();
+
+		return $coupon;
 	}
 }

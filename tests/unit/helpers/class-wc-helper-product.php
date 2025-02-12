@@ -379,6 +379,8 @@ class WC_Helper_Product {
 	 * @param int $id ID to update.
 	 */
 	public static function save_post_test_update_meta_data_direct( $id ) {
-		update_post_meta( $id, '_test2', 'world' );
+		$product = wc_get_product( $id );
+		$product->update_meta_data( '_test2', 'world' );
+		$product->save_meta_data();
 	}
 }

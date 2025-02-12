@@ -924,7 +924,9 @@ class WC_Subscriptions_Product {
 
 		if ( in_array( $meta_key, self::$subscription_meta_fields ) ) {
 			foreach ( $variation_ids as $variation_id ) {
-				update_post_meta( $variation_id, $meta_key, stripslashes( $data['value'] ) );
+				$variation = wc_get_product( $variation_id );
+				$variation->update_meta_data( $meta_key, stripslashes( $data['value'] ) );
+				$variation->save_meta_data();
 			}
 		} elseif ( in_array( $meta_key, array( '_regular_price_increase', '_regular_price_decrease' ) ) ) {
 			$operator = ( '_regular_price_increase' == $meta_key ) ? '+' : '-';
@@ -941,7 +943,8 @@ class WC_Subscriptions_Product {
 					$subscription_price += $value * "{$operator}1";
 				}
 
-				update_post_meta( $variation_id, '_subscription_price', $subscription_price );
+				$variation->update_meta_data( '_subscription_price', $subscription_price );
+				$variation->save_meta_data();
 			}
 		}
 	}
@@ -1036,7 +1039,9 @@ class WC_Subscriptions_Product {
 			$subscription_one_time_shipping = 'yes';
 		}
 
-		update_post_meta( $_POST['product_id'], '_subscription_one_time_shipping', $subscription_one_time_shipping );
+		$product = wc_get_product( $_POST['product_id'] );
+		$product->update_meta_data( '_subscription_one_time_shipping', $subscription_one_time_shipping );
+		$product->save_meta_data();
 
 		wp_send_json( array( 'one_time_shipping' => $subscription_one_time_shipping ) );
 	}

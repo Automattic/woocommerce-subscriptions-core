@@ -247,7 +247,9 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 				$meta_value = $meta_value ? 'true' : 'false';
 			}
 
-			update_post_meta( $subscription->get_id(), $meta_key, $meta_value );
+			$setter = 'set' . $meta_key;
+			$subscription->$setter( $meta_value );
+			$subscription->save();
 			$updated_props[] = $prop;
 		}
 
@@ -473,10 +475,11 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		// Write the remaining dates to meta.
 		foreach ( $dates_to_save as $date_prop => $index ) {
 			$date_type = wcs_normalise_date_type_key( $date_prop );
-
-			update_post_meta( $subscription->get_id(), wcs_get_date_meta_key( $date_type ), $subscription->get_date( $date_type ) );
+			$subscription->update_meta_data( wcs_get_date_meta_key( $date_type ), $subscription->get_date( $date_type ) );
 			$dates_saved[ $date_prop ] = wcs_get_datetime_from( $subscription->get_time( $date_type ) );
 		}
+
+		$subscription->save_meta_data();
 
 		return $dates_saved;
 	}
@@ -632,7 +635,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string $date
 	 */
 	public function set_schedule_start( $subscription, $date ) {
-		update_post_meta( $subscription->get_id(), '_schedule_start', $date );
+		$subscription->update_meta_data( '_schedule_start', $date );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -645,7 +649,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string $date
 	 */
 	public function set_schedule_trial_end( $subscription, $date ) {
-		update_post_meta( $subscription->get_id(), '_schedule_trial_end', $date );
+		$subscription->update_meta_data( '_schedule_trial_end', $date );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -658,7 +663,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string $date
 	 */
 	public function set_schedule_next_payment( $subscription, $date ) {
-		update_post_meta( $subscription->get_id(), '_schedule_next_payment', $date );
+		$subscription->update_meta_data( '_schedule_next_payment', $date );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -671,7 +677,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string $date
 	 */
 	public function set_schedule_cancelled( $subscription, $date ) {
-		update_post_meta( $subscription->get_id(), '_schedule_cancelled', $date );
+		$subscription->update_meta_data( '_schedule_cancelled', $date );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -684,7 +691,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string $date
 	 */
 	public function set_schedule_end( $subscription, $date ) {
-		update_post_meta( $subscription->get_id(), '_schedule_end', $date );
+		$subscription->update_meta_data( '_schedule_end', $date );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -697,7 +705,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 * @param string $date
 	 */
 	public function set_schedule_payment_retry( $subscription, $date ) {
-		update_post_meta( $subscription->get_id(), '_schedule_payment_retry', $date );
+		$subscription->update_meta_data( '_schedule_payment_retry', $date );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -711,7 +720,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function set_renewal_order_ids_cache( $subscription, $renewal_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'renewal' );
-		update_post_meta( $subscription->get_id(), '_subscription_renewal_order_ids_cache', $renewal_order_ids );
+		$subscription->update_meta_data( '_subscription_renewal_order_ids_cache', $renewal_order_ids );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -725,7 +735,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function set_resubscribe_order_ids_cache( $subscription, $resubscribe_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'resubscribe' );
-		update_post_meta( $subscription->get_id(), '_subscription_resubscribe_order_ids_cache', $resubscribe_order_ids );
+		$subscription->update_meta_data( '_subscription_resubscribe_order_ids_cache', $resubscribe_order_ids );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -739,7 +750,8 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function set_switch_order_ids_cache( $subscription, $switch_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'switch' );
-		update_post_meta( $subscription->get_id(), '_subscription_switch_order_ids_cache', $switch_order_ids );
+		$subscription->update_meta_data( '_subscription_switch_order_ids_cache', $switch_order_ids );
+		$subscription->save_meta_data();
 	}
 
 	/**

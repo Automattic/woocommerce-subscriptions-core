@@ -38,7 +38,9 @@ class WCS_Upgrade_1_5 {
 		$subscription_product_ids = $wpdb->get_results( $sql );
 
 		foreach ( $subscription_product_ids as $product_id ) {
-			update_post_meta( $product_id->ID, '_sold_individually', 'yes' );
+			$product = wc_get_product( $product_id->ID );
+			$product->update_meta_data( '_sold_individually', 'yes' );
+			$product->save_meta_data();
 		}
 
 		// Update to new system to limit subscriptions by status rather than in a binary way

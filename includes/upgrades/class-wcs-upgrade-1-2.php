@@ -69,19 +69,19 @@ class WCS_Upgrade_1_2 {
 
 			// Create recurring_* meta data from existing cart totals
 			$cart_discount = $order->get_total_discount();
-			update_post_meta( $order_id, '_order_recurring_discount_cart', $cart_discount );
+			$order->update_meta_data( '_order_recurring_discount_cart', $cart_discount );
 
 			$order_discount = $order->get_total_discount();
-			update_post_meta( $order_id, '_order_recurring_discount_total', $order_discount );
+			$order->update_meta_data( '_order_recurring_discount_total', $order_discount );
 
 			$order_shipping_tax = $order->get_meta( '_order_shipping_tax', true );
-			update_post_meta( $order_id, '_order_recurring_shipping_tax_total', $order_shipping_tax );
+			$order->update_meta_data( '_order_recurring_shipping_tax_total', $order_shipping_tax );
 
 			$order_tax = $order->get_meta( '_order_tax', true ); // $order->get_total_tax() includes shipping tax
-			update_post_meta( $order_id, '_order_recurring_tax_total', $order_tax );
+			$order->update_meta_data( '_order_recurring_tax_total', $order_tax );
 
 			$order_total = $order->get_total();
-			update_post_meta( $order_id, '_order_recurring_total', $order_total );
+			$order->update_meta_data( '_order_recurring_total', $order_total );
 
 			// Set order totals to include sign up fee fields, if there was a sign up fee on the order and a trial period (other wise, the recurring totals are correct)
 			if ( $sign_up_fee_total > 0 ) {
@@ -103,10 +103,10 @@ class WCS_Upgrade_1_2 {
 
 				}
 
-				update_post_meta( $order_id, '_order_total', $order_total );
-				update_post_meta( $order_id, '_cart_discount', $cart_discount );
-				update_post_meta( $order_id, '_order_discount', $order_discount );
-				update_post_meta( $order_id, '_order_tax', $order_tax );
+				$order->update_meta_data( '_order_total', $order_total );
+				$order->update_meta_data( '_cart_discount', $cart_discount );
+				$order->update_meta_data( '_order_discount', $order_discount );
+				$order->update_meta_data( '_order_tax', $order_tax );
 
 			}
 
@@ -128,7 +128,7 @@ class WCS_Upgrade_1_2 {
 			}
 
 			// Set recurring taxes to order taxes, if using WC 2.0, this will be migrated to the new format in @see WC_Subscriptions_Upgrader::upgrade_to_latest_wc()
-			update_post_meta( $order_id, '_order_recurring_taxes', $order_taxes );
+			$order->update_meta_data( '_order_recurring_taxes', $order_taxes );
 
 			$sign_up_fee_taxes = WC_Subscriptions_Order::get_meta( $order, '_sign_up_fee_taxes', array() );
 
@@ -150,7 +150,7 @@ class WCS_Upgrade_1_2 {
 
 			if ( false == WC_Subscriptions_Upgrader::$is_wc_version_2 ) { // Doing it right: updated Subs *before* updating WooCommerce, the WooCommerce updater will take care of data migration
 
-				update_post_meta( $order_id, '_order_taxes', $order_taxes );
+				$order->update_meta_data( '_order_taxes', $order_taxes );
 
 			} else { // Doing it wrong: updated Subs *after* updating WooCommerce, need to store in WC2.0 tax structure
 
@@ -270,8 +270,10 @@ class WCS_Upgrade_1_2 {
 
 			// Save the new meta on the order items for WC 1.x (the API functions already saved the data for WC2.x)
 			if ( false == WC_Subscriptions_Upgrader::$is_wc_version_2 ) {
-				update_post_meta( $order_id, '_order_items', $order_items );
+				$order->update_meta_data( '_order_items', $order_items );
 			}
+			
+			$order->save_meta_data();
 
 			$upgraded_orders[] = $order_id;
 

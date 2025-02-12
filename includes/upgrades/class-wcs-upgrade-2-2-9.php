@@ -57,7 +57,8 @@ class WCS_Upgrade_2_2_9 {
 					$product_id = wcs_get_canonical_product_id( $item );
 
 					if ( WC_Subscriptions_Synchroniser::is_product_synced( $product_id ) ) {
-						update_post_meta( $subscription->get_id(), '_contains_synced_subscription', 'true' );
+						$subscription->update_meta_data( '_contains_synced_subscription', 'true' );
+						$subscription->save_meta_data();
 						self::log( sprintf( 'Subscription %d repaired for synced product ID: %d', $subscription_id, $product_id ) );
 						$subscription_updated = true;
 						break;

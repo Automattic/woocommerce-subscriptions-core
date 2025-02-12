@@ -595,8 +595,9 @@ class WC_Subscriptions_Upgrader {
 							);
 							wp_update_post( $renewal_order );
 
-							update_post_meta( $renewal_order_id, '_paid_date', $payment_date );
-							update_post_meta( $renewal_order_id, '_completed_date', $payment_date );
+							$renewal_order->update_meta_data( '_paid_date', $payment_date );
+							$renewal_order->update_meta_data( '_completed_date', $payment_date );
+							$renewal_order->save_meta_data();
 
 						}
 					}

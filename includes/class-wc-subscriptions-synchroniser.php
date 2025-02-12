@@ -393,7 +393,9 @@ class WC_Subscriptions_Synchroniser {
 			}
 		}
 
-		update_post_meta( $post_id, self::$post_meta_key, $_POST[ self::$post_meta_key ] );
+		$subscription = wcs_get_subscription( $post_id );
+		$subscription->update_meta_data( self::$post_meta_key, $_POST[ self::$post_meta_key ] );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -406,9 +408,11 @@ class WC_Subscriptions_Synchroniser {
 		if ( empty( $_POST['_wcsnonce_save_variations'] ) || ! wp_verify_nonce( $_POST['_wcsnonce_save_variations'], 'wcs_subscription_variations' ) || ! isset( $_POST['variable_post_id'] ) || ! is_array( $_POST['variable_post_id'] ) ) {
 			return;
 		}
-
+		
 		// Make sure the parent product doesn't have a sync value (in case it was once a simple subscription)
-		update_post_meta( $post_id, self::$post_meta_key, 0 );
+		$subscription = wcs_get_subscription( $post_id );
+		$subscription->update_meta_data( self::$post_meta_key, 0 );
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -436,7 +440,9 @@ class WC_Subscriptions_Synchroniser {
 			$_POST[ 'variable' . self::$post_meta_key ][ $index ] = 0;
 		}
 
-		update_post_meta( $variation_id, self::$post_meta_key, $_POST[ 'variable' . self::$post_meta_key ][ $index ] );
+		$variation = wc_get_product( $variation_id );
+		$variation->update_meta_data( self::$post_meta_key, $_POST[ 'variable' . self::$post_meta_key ][ $index ] );
+		$variation->save_meta_data();
 	}
 
 	/**
@@ -1529,7 +1535,9 @@ class WC_Subscriptions_Synchroniser {
 		global $woocommerce;
 
 		if ( $cart_item = self::cart_contains_synced_subscription() ) {
-			update_post_meta( $order_id, '_order_contains_synced_subscription', 'true' );
+			$order = wc_get_order( $order_id );
+			$order->update_meta_data( '_order_contains_synced_subscription', 'true' );
+			$order->save_meta_data();
 		}
 	}
 

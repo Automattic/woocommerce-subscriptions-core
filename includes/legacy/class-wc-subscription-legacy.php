@@ -600,7 +600,8 @@ class WC_Subscription_Legacy extends WC_Subscription {
 			}
 		}
 
-		update_post_meta( $this->get_id(), '_' . $prop, $value );
+		$this->update_meta_data( '_' . $prop, $value );
+		$this->save_meta_data();
 	}
 
 	/**
@@ -635,15 +636,15 @@ class WC_Subscription_Legacy extends WC_Subscription {
 
 			switch ( $date_type ) {
 				case 'date_paid':
-					update_post_meta( $last_order->id, '_paid_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
+					$last_order->update_meta_data( '_paid_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
 					// Preemptively set the UTC timestamp for WC 3.0+ also to avoid incorrect values when the site's timezone is changed between now and upgrading to WC 3.0
-					update_post_meta( $last_order->id, '_date_paid', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
+					$last_order->update_meta_data( '_date_paid', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
 				break;
 
 				case 'date_completed':
-					update_post_meta( $last_order->id, '_completed_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
+					$last_order->update_meta_data( '_completed_date', ! is_null( $date ) ? $datetime->date( 'Y-m-d H:i:s' ) : '' );
 					// Preemptively set the UTC timestamp for WC 3.0+ also to avoid incorrect values when the site's timezone is changed between now and upgrading to WC 3.0
-					update_post_meta( $last_order->id, '_date_completed', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
+					$last_order->update_meta_data( '_date_completed', ! is_null( $date ) ? $datetime->getTimestamp() : '' );
 				break;
 
 				case 'date_modified':
@@ -760,7 +761,7 @@ class WC_Subscription_Legacy extends WC_Subscription {
 		if ( ! empty( $meta_id ) ) {
 			update_metadata_by_mid( 'post', $meta_id, $value, $key );
 		} else {
-			update_post_meta( $this->get_id(), $key, $value );
+			$this->update_meta_data( $key, $value );
 		}
 	}
 

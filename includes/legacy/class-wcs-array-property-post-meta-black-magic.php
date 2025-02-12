@@ -56,7 +56,8 @@ class WCS_Array_Property_Post_Meta_Black_Magic implements ArrayAccess {
 	 */
 	#[\ReturnTypeWillChange]
 	public function offsetSet( $key, $value ) {
-		update_post_meta( $this->product_id, $this->maybe_prefix_meta_key( $key ), $value );
+		$this->update_meta_data( $this->maybe_prefix_meta_key( $key ), $value );
+		$this->save_meta_data();
 	}
 
 	/**

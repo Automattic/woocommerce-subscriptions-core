@@ -40,9 +40,10 @@ class WCS_Product_Variable_Data_Store_CPT extends WC_Product_Variable_Data_Store
 			self::$reading_min_max_variation_data[ $product->get_id() ] = '';
 
 			$product->set_min_and_max_variation_data();
+			$product->update_meta_data( '_min_max_variation_data', $product->get_meta( '_min_max_variation_data', true ), true );
+			$product->update_meta_data( '_min_max_variation_ids_hash', $product->get_meta( '_min_max_variation_ids_hash', true ), true );
+			$product->save_meta_data();
 
-			update_post_meta( $product->get_id(), '_min_max_variation_data', $product->get_meta( '_min_max_variation_data', true ), true );
-			update_post_meta( $product->get_id(), '_min_max_variation_ids_hash', $product->get_meta( '_min_max_variation_ids_hash', true ), true );
 			unset( self::$reading_min_max_variation_data[ $product->get_id() ] );
 		}
 	}

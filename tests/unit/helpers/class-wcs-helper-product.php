@@ -46,20 +46,25 @@ class WCS_Helper_Product {
 
 		$post_data  = wp_parse_args( $post_filters, $default_post_args );
 		$product_id = wp_insert_post( $post_data );
+		
+		$product = wc_get_product( $product_id );
 
 		if ( is_wp_error( $product_id ) ) {
 			return false;
 		}
 
 		foreach ( $meta_data as $meta_key => $meta_value ) {
-			update_post_meta( $product_id, '_' . $meta_key, $meta_value );
+			$setter = 'set_' . $meta_key;
+			$product->$setter( $meta_value );
 		}
+
+		$product->save_meta_data();
 
 		wp_set_object_terms( $product_id, 'subscription', 'product_type' );
 
 		self::clear_product_cache( $product_id );
 
-		return wc_get_product( $product_id );
+		return $product;
 	}
 
 	/**
@@ -74,36 +79,32 @@ class WCS_Helper_Product {
 
 		// Create all attribute related things and a product
 		$attribute_data = self::create_attribute();
-		$product_id     = wp_insert_post(
-			[
-				'post_title'  => 'Dummy Product',
-				'post_type'   => 'product',
-				'post_status' => 'publish',
-			]
-		);
+		$product = new WC_Product();
+		$product->set_name( 'Dummy Product' );
+		$product->set_status( 'publish' );
+		$product->save();
 
 		// Set it as variable.
 		wp_set_object_terms( $product_id, 'variable-subscription', 'product_type' );
 
 		// Price related meta
-		update_post_meta( $product_id, '_price', '10' );
-		update_post_meta( $product_id, '_min_variation_price', '10' );
-		update_post_meta( $product_id, '_max_variation_price', '15' );
-		update_post_meta( $product_id, '_min_variation_regular_price', '10' );
-		update_post_meta( $product_id, '_max_variation_regular_price', '15' );
+		$product->set_price( '10' );
+		$product->update_meta_data( '_min_variation_price', '10' );
+		$product->update_meta_data( '_max_variation_price', '15' );
+		$product->update_meta_data( '_min_variation_regular_price', '10' );
+		$product->update_meta_data( '_max_variation_regular_price', '15' );
 
 		// General meta
-		update_post_meta( $product_id, '_sku', 'DUMMY SKU' );
-		update_post_meta( $product_id, '_manage_stock', 'no' );
-		update_post_meta( $product_id, '_tax_status', 'taxable' );
-		update_post_meta( $product_id, '_downloadable', 'no' );
-		update_post_meta( $product_id, '_virtual', 'no' );
-		update_post_meta( $product_id, '_stock_status', 'instock' );
+		$product->update_meta_data( '_sku', 'DUMMY SKU' );
+		$product->update_meta_data( '_manage_stock', 'no' );
+		$product->update_meta_data( '_tax_status', 'taxable' );
+		$product->update_meta_data( '_downloadable', 'no' );
+		$product->update_meta_data( '_virtual', 'no' );
+		$product->update_meta_data( '_stock_status', 'instock' );
 
 		// Attributes
-		update_post_meta( $product_id, '_default_attributes', [] );
-		update_post_meta(
-			$product_id,
+		$product->update_meta_data( '_default_attributes', [] );
+		$product->update_meta_data(
 			'_product_attributes',
 			[
 				'pa_size' => [
@@ -143,21 +144,25 @@ class WCS_Helper_Product {
 			]
 		);
 
+		$variation = wc_get_product( $variation_id );
+
 		// Price related meta
-		update_post_meta( $variation_id, '_price', '10' );
-		update_post_meta( $variation_id, '_regular_price', '10' );
+		$variation->set_price( '10' );
+		$variation->set_regular_price( '10' );
 
 		// General meta
-		update_post_meta( $variation_id, '_sku', 'DUMMY SKU VARIABLE SMALL' );
-		update_post_meta( $variation_id, '_manage_stock', 'no' );
-		update_post_meta( $variation_id, '_downloadable', 'no' );
-		update_post_meta( $variation_id, '_virtual', 'no' );
-		update_post_meta( $variation_id, '_stock_status', 'instock' );
+		$variation->update_meta_data( '_sku', 'DUMMY SKU VARIABLE SMALL' );
+		$variation->update_meta_data( '_manage_stock', 'no' );
+		$variation->update_meta_data( '_downloadable', 'no' );
+		$variation->update_meta_data( '_virtual', 'no' );
+		$variation->update_meta_data( '_stock_status', 'instock' );
 
 		wp_set_object_terms( $variation_id, 'variation', 'product_type' );
 
 		// Attribute meta
-		update_post_meta( $variation_id, 'attribute_pa_size', 'small' );
+		$variation->update_meta_data( 'attribute_pa_size', 'small' );
+		$variation->save_meta_data();
+
 		self::clear_product_cache( $variation_id );
 
 		// Create the variation
@@ -171,22 +176,25 @@ class WCS_Helper_Product {
 			]
 		);
 
+		$variation = wc_get_product( $variation_id );
+
 		// Price related meta
-		update_post_meta( $variation_id, '_price', '15' );
-		update_post_meta( $variation_id, '_regular_price', '15' );
+		$variation->set_price( '15' );
+		$variation->set_regular_price( '15' );
 
 		// General meta
-		update_post_meta( $variation_id, '_sku', 'DUMMY SKU VARIABLE LARGE' );
-		update_post_meta( $variation_id, '_manage_stock', 'no' );
-		update_post_meta( $variation_id, '_downloadable', 'no' );
-		update_post_meta( $variation_id, '_virtual', 'no' );
-		update_post_meta( $variation_id, '_stock_status', 'instock' );
+		$variation->update_meta_data( '_sku', 'DUMMY SKU VARIABLE LARGE' );
+		$variation->update_meta_data( '_manage_stock', 'no' );
+		$variation->update_meta_data( '_downloadable', 'no' );
+		$variation->update_meta_data( '_virtual', 'no' );
+		$variation->update_meta_data( '_stock_status', 'instock' );
 
 		// Attribute meta
-		update_post_meta( $variation_id, 'attribute_pa_size', 'large' );
+		$variation->update_meta_data( 'attribute_pa_size', 'large' );
+		$variation->save_meta_data();
 
 		// Add the variation meta to the main product
-		update_post_meta( $product_id, '_max_price_variation_id', $variation_id );
+		$product->update_meta_data( '_max_price_variation_id', $variation_id );
 		wp_set_object_terms( $variation_id, 'variation', 'product_type' );
 
 		self::clear_product_cache( $product_id );
@@ -211,19 +219,21 @@ class WCS_Helper_Product {
 				'post_status' => 'publish',
 			]
 		);
-
+		                       $product_obj = wc_get_product( $product );
 		$simple_product_1 = self::create_simple_subscription_product();
 		$simple_product_2 = self::create_simple_subscription_product();
 
-		update_post_meta( $product, '_sku', 'DUMMY GROUPED SKU' );
-		update_post_meta( $product, '_manage_stock', 'no' );
-		update_post_meta( $product, '_tax_status', 'taxable' );
-		update_post_meta( $product, '_downloadable', 'no' );
-		update_post_meta( $product, '_virtual', 'no' );
-		update_post_meta( $product, '_stock_status', 'instock' );
+		
+		$product_obj->update_meta_data( '_sku', 'DUMMY GROUPED SKU' );
+		$product_obj->update_meta_data( '_manage_stock', 'no' );
+		$product_obj->update_meta_data( '_tax_status', 'taxable' );
+		$product_obj->update_meta_data( '_downloadable', 'no' );
+		$product_obj->update_meta_data( '_virtual', 'no' );
+		$product_obj->update_meta_data( '_stock_status', 'instock' );
 
 		// Set the subscription product grouped relationship in a version compatible way.
-		update_post_meta( $product, '_children', [ $simple_product_1->get_id(), $simple_product_2->get_id() ] );
+		$product_obj->update_meta_data( '_children', [ $simple_product_1->get_id(), $simple_product_2->get_id() ] );
+		$product_obj->save_meta_data();
 
 		wp_set_object_terms( $product, 'grouped', 'product_type' );
 

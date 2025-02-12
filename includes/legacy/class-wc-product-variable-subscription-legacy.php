@@ -109,7 +109,7 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 				$price = '';
 			}
 		} else {
-			$price = $this->get_meta( '_price', true );
+			$price = $this->set_price( true );
 		}
 
 		return apply_filters( 'woocommerce_get_variation_price', $price, $this, $min_or_max, $display );
@@ -225,29 +225,29 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 
 			$this->set_min_and_max_variation_data( $min_max_data, $child_variation_ids );
 
-			update_post_meta( $this->id, '_min_price_variation_id', $min_max_data['min']['variation_id'] );
-			update_post_meta( $this->id, '_max_price_variation_id', $min_max_data['max']['variation_id'] );
+			$this->update_meta_data( '_min_price_variation_id', $min_max_data['min']['variation_id'] );
+			$this->update_meta_data( '_max_price_variation_id', $min_max_data['max']['variation_id'] );
 
-			update_post_meta( $this->id, '_price', $min_max_data['min']['price'] );
-			update_post_meta( $this->id, '_min_variation_price', $min_max_data['min']['price'] );
-			update_post_meta( $this->id, '_max_variation_price', $min_max_data['max']['price'] );
-			update_post_meta( $this->id, '_min_variation_regular_price', $min_max_data['min']['regular_price'] );
-			update_post_meta( $this->id, '_max_variation_regular_price', $min_max_data['max']['regular_price'] );
-			update_post_meta( $this->id, '_min_variation_sale_price', $min_max_data['min']['sale_price'] );
-			update_post_meta( $this->id, '_max_variation_sale_price', $min_max_data['max']['sale_price'] );
+			// $this->update_meta_data( '_price', $min_max_data['min']['price'] );
+			$this->update_meta_data( '_min_variation_price', $min_max_data['min']['price'] );
+			$this->update_meta_data( '_max_variation_price', $min_max_data['max']['price'] );
+			$this->update_meta_data( '_min_variation_regular_price', $min_max_data['min']['regular_price'] );
+			$this->update_meta_data( '_max_variation_regular_price', $min_max_data['max']['regular_price'] );
+			$this->update_meta_data( '_min_variation_sale_price', $min_max_data['min']['sale_price'] );
+			$this->update_meta_data( '_max_variation_sale_price', $min_max_data['max']['sale_price'] );
 
-			update_post_meta( $this->id, '_min_variation_period', $min_max_data['min']['period'] );
-			update_post_meta( $this->id, '_max_variation_period', $min_max_data['max']['period'] );
-			update_post_meta( $this->id, '_min_variation_period_interval', $min_max_data['min']['interval'] );
-			update_post_meta( $this->id, '_max_variation_period_interval', $min_max_data['max']['interval'] );
+			$this->update_meta_data( '_min_variation_period', $min_max_data['min']['period'] );
+			$this->update_meta_data( '_max_variation_period', $min_max_data['max']['period'] );
+			$this->update_meta_data( '_min_variation_period_interval', $min_max_data['min']['interval'] );
+			$this->update_meta_data( '_max_variation_period_interval', $min_max_data['max']['interval'] );
 
-			update_post_meta( $this->id, '_subscription_price', $min_max_data['min']['price'] );
-			update_post_meta( $this->id, '_subscription_sign_up_fee', $min_max_data['subscription']['signup-fee'] );
-			update_post_meta( $this->id, '_subscription_period', $min_max_data['min']['period'] );
-			update_post_meta( $this->id, '_subscription_period_interval', $min_max_data['min']['interval'] );
-			update_post_meta( $this->id, '_subscription_trial_period', $min_max_data['subscription']['trial_period'] );
-			update_post_meta( $this->id, '_subscription_trial_length', $min_max_data['subscription']['trial_length'] );
-			update_post_meta( $this->id, '_subscription_length', $min_max_data['subscription']['length'] );
+			$this->update_meta_data( '_subscription_price', $min_max_data['min']['price'] );
+			$this->update_meta_data( '_subscription_sign_up_fee', $min_max_data['subscription']['signup-fee'] );
+			$this->update_meta_data( '_subscription_period', $min_max_data['min']['period'] );
+			$this->update_meta_data( '_subscription_period_interval', $min_max_data['min']['interval'] );
+			$this->update_meta_data( '_subscription_trial_period', $min_max_data['subscription']['trial_period'] );
+			$this->update_meta_data( '_subscription_trial_length', $min_max_data['subscription']['trial_length'] );
+			$this->update_meta_data( '_subscription_length', $min_max_data['subscription']['length'] );
 
 			$this->subscription_price           = $min_max_data['min']['price'];
 			$this->subscription_period          = $min_max_data['min']['period'];
@@ -404,8 +404,9 @@ class WC_Product_Variable_Subscription_Legacy extends WC_Product_Variable_Subscr
 			$min_and_max_data = wcs_get_min_max_variation_data( $this, $variation_ids );
 		}
 
-		update_post_meta( $this->id, '_min_max_variation_data', $min_and_max_data, true );
-		update_post_meta( $this->id, '_min_max_variation_ids_hash', $this->get_variation_ids_hash( $variation_ids ), true );
+		$this->update_meta_data( '_min_max_variation_data', $min_and_max_data, true );
+		$this->update_meta_data( '_min_max_variation_ids_hash', $this->get_variation_ids_hash( $variation_ids ), true );
+		$this->save_meta_data();
 	}
 
 	/**

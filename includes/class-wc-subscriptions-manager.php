@@ -567,8 +567,10 @@ class WC_Subscriptions_Manager {
 		} else {
 			$prices_include_tax = 'no';
 		}
-		update_post_meta( $subscription->get_id(), '_order_currency', wcs_get_objects_property( $order, 'currency' ) );
-		update_post_meta( $subscription->get_id(), '_prices_include_tax', $prices_include_tax );
+
+		$subscription->update_meta_data( '_order_currency', wcs_get_objects_property( $order, 'currency' ) );
+		$subscription->update_meta_data( '_prices_include_tax', $prices_include_tax );
+		$subscription->save();
 
 		// Adding a new subscription so set the expiry date/time from the order date
 		if ( ! empty( $args['expiry_date'] ) ) {
@@ -2040,7 +2042,8 @@ class WC_Subscriptions_Manager {
 			$subscription->payment_failed();
 
 			// Only force the failed payment once
-			update_post_meta( $subscription_id, '_wcs_repaired_2_0_2_needs_failed_payment', 'false' );
+			$subscription->update_meta_data( '_wcs_repaired_2_0_2_needs_failed_payment', 'false' );
+			$subscription->save_meta_data();
 
 			// We've already processed the renewal
 			remove_action( 'woocommerce_scheduled_subscription_payment', __CLASS__ . '::prepare_renewal' );

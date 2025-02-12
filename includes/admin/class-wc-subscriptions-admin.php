@@ -504,11 +504,13 @@ class WC_Subscriptions_Admin {
 		$subscription_price = isset( $_REQUEST['_subscription_price'] ) ? wc_format_decimal( $_REQUEST['_subscription_price'] ) : '';
 		$sale_price         = wc_format_decimal( $_REQUEST['_sale_price'] );
 
-		update_post_meta( $post_id, '_subscription_price', $subscription_price );
-
+		$subscription = wcs_get_subscription( $post_id );
+		$subscription->update_meta_data( '_subscription_price', $subscription_price );
+		
 		// Set sale details - these are ignored by WC core for the subscription product type
-		update_post_meta( $post_id, '_regular_price', $subscription_price );
-		update_post_meta( $post_id, '_sale_price', $sale_price );
+		$subscription->update_meta_data( '_regular_price', $subscription_price );
+		$subscription->update_meta_data( '_sale_price', $sale_price );
+
 
 		$site_offset = wc_timezone_offset();
 
@@ -529,7 +531,7 @@ class WC_Subscriptions_Admin {
 			$price = $subscription_price;
 		}
 
-		update_post_meta( $post_id, '_price', stripslashes( $price ) );
+		$subscription->set_price(stripslashes( $price ) );
 
 		// Make sure trial period is within allowable range
 		$subscription_ranges = wcs_get_subscription_ranges();
@@ -542,7 +544,7 @@ class WC_Subscriptions_Admin {
 			$_POST['_subscription_trial_length'] = $max_trial_length;
 		}
 
-		update_post_meta( $post_id, '_subscription_trial_length', $_POST['_subscription_trial_length'] );
+		$subscription->update_meta_data( '_subscription_trial_length', $_POST['_subscription_trial_length'] );
 
 		$_REQUEST['_subscription_sign_up_fee']       = wc_format_decimal( $_REQUEST['_subscription_sign_up_fee'] );
 		$_REQUEST['_subscription_one_time_shipping'] = isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no';
@@ -559,12 +561,14 @@ class WC_Subscriptions_Admin {
 
 		foreach ( $subscription_fields as $field_name ) {
 			if ( isset( $_REQUEST[ $field_name ] ) ) {
-				update_post_meta( $post_id, $field_name, stripslashes( $_REQUEST[ $field_name ] ) );
+				$subscription->update_meta_data( $field_name, stripslashes( $_REQUEST[ $field_name ] ) );
 			}
 		}
 
 		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
 		self::$saved_product_meta = true;
+
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -580,14 +584,18 @@ class WC_Subscriptions_Admin {
 			return;
 		}
 
+		$subscription = wcs_get_subscription( $post_id );
+
 		if ( isset( $_REQUEST['_subscription_limit'] ) ) {
-			update_post_meta( $post_id, '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
+			$subscription->update_meta_data( '_subscription_limit', stripslashes( $_REQUEST['_subscription_limit'] ) );
 		}
 
-		update_post_meta( $post_id, '_subscription_one_time_shipping', stripslashes( isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no' ) );
+		$subscription->update_meta_data( '_subscription_one_time_shipping', stripslashes( isset( $_REQUEST['_subscription_one_time_shipping'] ) ? 'yes' : 'no' ) );
 
 		// To prevent running this function on multiple save_post triggered events per update. Similar to WC_Admin_Meta_Boxes:$saved_meta_boxes implementation.
 		self::$saved_product_meta = true;
+
+		$subscription->save_meta_data();
 	}
 
 	/**
@@ -738,16 +746,18 @@ class WC_Subscriptions_Admin {
 		if ( ! WC_Subscriptions_Product::is_subscription( $variation_id ) || empty( $_POST['_wcsnonce_save_variations'] ) || ! wp_verify_nonce( $_POST['_wcsnonce_save_variations'], 'wcs_subscription_variations' ) ) {
 			return;
 		}
-
+		
+		$variation = wc_get_product( $variation_id );
+		
 		if ( isset( $_POST['variable_subscription_sign_up_fee'][ $index ] ) ) {
 			$subscription_sign_up_fee = wc_format_decimal( $_POST['variable_subscription_sign_up_fee'][ $index ] );
-			update_post_meta( $variation_id, '_subscription_sign_up_fee', $subscription_sign_up_fee );
+			$variation->update_meta_data( '_subscription_sign_up_fee', $subscription_sign_up_fee );
 		}
 
 		if ( isset( $_POST['variable_subscription_price'][ $index ] ) ) {
 			$subscription_price = wc_format_decimal( $_POST['variable_subscription_price'][ $index ] );
-			update_post_meta( $variation_id, '_subscription_price', $subscription_price );
-			update_post_meta( $variation_id, '_regular_price', $subscription_price );
+			$variation->update_meta_data( '_subscription_price', $subscription_price );
+			$variation->update_meta_data( '_regular_price', $subscription_price );
 		}
 
 		// Make sure trial period is within allowable range
@@ -775,9 +785,11 @@ class WC_Subscriptions_Admin {
 
 		foreach ( $subscription_fields as $field_name ) {
 			if ( isset( $_POST[ 'variable' . $field_name ][ $index ] ) ) {
-				update_post_meta( $variation_id, $field_name, wc_clean( $_POST[ 'variable' . $field_name ][ $index ] ) );
+				$variation->update_meta_data( $field_name, wc_clean( $_POST[ 'variable' . $field_name ][ $index ] ) );
 			}
 		}
+
+		$variation->save_meta_data();
 	}
 
 	/**
@@ -819,10 +831,12 @@ class WC_Subscriptions_Admin {
 	public static function set_variation_meta_defaults_on_bulk_add( $variation_id ) {
 
 		if ( ! empty( $variation_id ) ) {
-			update_post_meta( $variation_id, '_subscription_period', 'month' );
-			update_post_meta( $variation_id, '_subscription_period_interval', '1' );
-			update_post_meta( $variation_id, '_subscription_length', '0' );
-			update_post_meta( $variation_id, '_subscription_trial_period', 'month' );
+			$variation = wc_get_product( $variation_id );
+			$variation->update_meta_data( '_subscription_period', 'month' );
+			$variation->update_meta_data( '_subscription_period_interval', '1' );
+			$variation->update_meta_data( '_subscription_length', '0' );
+			$variation->update_meta_data( '_subscription_trial_period', 'month' );
+			$variation->save_meta_data();
 		}
 	}
 
