@@ -239,7 +239,7 @@ class WCS_Admin_System_Status {
 				if ( $core_version && ( empty( $theme_version ) || version_compare( $theme_version, $core_version, '<' ) ) ) {
 					$outdated                    = true;
 					$overridden_template_output .= sprintf(
-					/* translators: %1$s is the file version, %2$s is the core version */
+						/* translators: %1$s is the file version, %2$s is the core version */
 						esc_html__( 'version %1$s is out of date. The core version is %2$s', 'woocommerce-subscriptions' ),
 						'<strong style="color:red">' . esc_html( $theme_version ) . '</strong>',
 						'<strong>' . esc_html( $core_version ) . '</strong>'
