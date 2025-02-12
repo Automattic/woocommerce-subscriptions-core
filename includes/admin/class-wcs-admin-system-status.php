@@ -37,6 +37,15 @@ class WCS_Admin_System_Status {
 	private static $statuses_by_gateway = null;
 
 	/**
+	 * Used to cache the subscriptions-by-status counts.
+	 *
+	 * As with with self::$statuses_by_gateway, the cache is deliberately short-lived.
+	 *
+	 * @var null|array
+	 */
+	private static $subscription_status_counts = null;
+
+	/**
 	 * Attach callbacks
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
@@ -466,10 +475,9 @@ class WCS_Admin_System_Status {
 	 * @return array
 	 */
 	public static function get_subscription_statuses() {
-		$subscriptions_by_status = isset( self::$report_data['statuses'] )
-			? self::$report_data['statuses']
-			: WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
-
+		// We don't look inside self::$report_data here, because the REST API report itself
+		// also uses self::get_subscription_status_counts().
+		$subscriptions_by_status        = self::get_subscription_status_counts();
 		$subscriptions_by_status_output = array();
 
 		foreach ( $subscriptions_by_status as $status => $count ) {
@@ -479,5 +487,37 @@ class WCS_Admin_System_Status {
 		}
 
 		return $subscriptions_by_status_output;
+	}
+
+	/**
+	 * Returns a cached array of subscription statuses along with the corresponding number
+	 * of subscriptions for each (the values).
+	 *
+	 * Example:
+	 *
+	 *     [
+	 *         'wc-active'    => 100,
+	 *         'wc-cancelled' => 200,
+	 *         '...'          => 300,
+	 *     ]
+	 *
+	 * @param bool $fresh If cached results should be discarded.
+	 *
+	 * @return array
+	 */
+	public static function get_subscription_status_counts( bool $fresh = false ): array {
+		// Return cached result if possible.
+		if ( ! $fresh && isset( self::$subscription_status_counts ) ) {
+			return self::$subscription_status_counts;
+		}
+
+		try {
+			self::$subscription_status_counts = WC_Data_Store::load( 'subscription' )->get_subscriptions_count_by_status();
+		} catch ( Exception $e ) {
+			// If an exception was raised, don't cache the result.
+			return [];
+		}
+
+		return self::$subscription_status_counts;
 	}
 }
