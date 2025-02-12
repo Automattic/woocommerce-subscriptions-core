@@ -167,7 +167,7 @@ class WCS_Admin_System_Status {
 		$debug_data['wcs_live_site_url'] = array(
 			'name'      => _x( 'Subscriptions Live URL', 'Live URL, Label on WooCommerce -> System Status page', 'woocommerce-subscriptions' ),
 			'label'     => 'Subscriptions Live URL',
-			'note'      => '<a href="' . esc_url( $site_url ) . '">' . esc_html( WCS_Staging::get_site_url_from_source( 'subscriptions_install' ) ) . '</a>',
+			'note'      => '<a href="' . esc_url( $site_url ) . '">' . esc_html( $site_url ) . '</a>',
 			'mark'      => '',
 			'mark_icon' => '',
 		);
