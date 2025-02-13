@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 8.0.1 - 2025-xx-xx =
+* Fix: Revert a fix released in 8.0.0 which attempted to display HTML in product names within the cart/checkout shipping package section.
+
 = 8.0.0 - 2025-02-13 =
 * Fix - Recommend WooPayments when there is no available payment gateway.
 * Fix - Safeguards added to the Subscriptions Totals template used in the My Account area, to guard against fatal errors that could arise in unusual conditions.
