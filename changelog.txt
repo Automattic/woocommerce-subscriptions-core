@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 8.0.1 - 2025-xx-xx =
+* Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
+
 = 8.0.0 - 2025-02-13 =
 * Fix - Recommend WooPayments when there is no available payment gateway.
 * Fix - Safeguards added to the Subscriptions Totals template used in the My Account area, to guard against fatal errors that could arise in unusual conditions.
