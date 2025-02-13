@@ -13,6 +13,7 @@
 * Fix - After enabling the Customer Notification feature or changing the reminder timer setting, ensure notification emails are scheduled for subscriptions with pending cancellation status.
 * Update - Include subscription items table in all customer notification emails.
 * Update - Subscription notes for unsent customer notification emails now only occurs if WCS_DEBUG is enabled.
+* Update - Improved performance of Subscriptions-related aspects of the WooCommerce System Status Report.
 * Dev - Introduces a new `woocommerce_subscription_valid_customer_notification_types` filter to modify which notification types are scheduled in Action Scheduler.
 
 = 7.9.0 - 2025-01-10 =
