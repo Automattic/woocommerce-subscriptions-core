@@ -534,12 +534,9 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 		global $wpdb;
 
 		$subscription_ids = array();
-
-		$search_fields = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
-			'_order_key',
+		$search_fields    = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
 			'_billing_address_index',
 			'_shipping_address_index',
-			'_billing_email',
 		) ) );
 
 		if ( is_numeric( $term ) ) {
