@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 8.1.0 - 2025-xx-xx =
+* Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
+
 = 8.0.1 - 2025-02-13 =
 * Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
 
