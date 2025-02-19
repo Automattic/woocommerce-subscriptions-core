@@ -2124,13 +2124,20 @@ class WC_Subscription extends WC_Order {
 	 */
 	protected function get_related_order_ids( $order_type = 'any', $return_type = 'flat' ) {
 		$related_order_ids = [];
+		$any_order_types   = [ 'parent', 'renewal', 'resubscribe', 'switch' ];
 
 		if ( 'any' === $order_type ) {
-			$order_types = array( 'parent', 'renewal', 'resubscribe', 'switch' );
+			$order_types = $any_order_types;
 		} elseif ( is_array( $order_type ) ) {
-			$order_types = $order_type;
+			if ( in_array( 'any', $order_type, true ) ) {
+				// Replace 'any' with the actual order types.
+				$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'
+				$order_types = array_merge( $order_types, $any_order_types ); // Add replacements
+			} else {
+				$order_types = $order_type;
+			}
 		} else {
-			$order_types = array( $order_type );
+			$order_types = [ $order_type ];
 		}
 
 		// Get the parent order ID first.
