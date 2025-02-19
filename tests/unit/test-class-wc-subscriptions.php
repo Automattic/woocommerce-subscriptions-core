@@ -1067,7 +1067,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		$related_orders = $subscription->get_related_orders();
 
-		$this->assertEquals( 1, count( $related_orders ), '[FAILED]: Should only be one related order. Got: ' . print_r( $related_orders, true ) );
+		$this->assertEquals( 1, count( $related_orders ) );
 		$this->assertEquals( wcs_get_objects_property( $order, 'id' ), reset( $related_orders ) );
 
 		$related_orders = $subscription->get_related_orders( 'all' );
@@ -1108,7 +1108,7 @@ class WC_Subscriptions_Test extends WP_UnitTestCase {
 
 		// test no param
 		$related_order_ids = $subscription->get_related_orders();
-		$this->assertCount( 3, $related_order_ids, '[FAILED]: Should only be three related order. Got: ' . print_r( $related_order_ids, true ) );
+		$this->assertCount( 3, $related_order_ids );
 		$this->assertEquals( wcs_get_objects_property( $orders[0], 'id' ), array_pop( $related_order_ids ) );
 
 		// test with 'ids' param
