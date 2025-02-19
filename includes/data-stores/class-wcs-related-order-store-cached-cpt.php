@@ -698,7 +698,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * Gets the subscription's meta data.
 	 *
 	 * @param WC_Subscription $subscription The subscription to get the meta for.
-     * @param mixed           $data_store   The data store to use to get the meta. Defaults to the current subscription's data store.
+	 * @param mixed           $data_store   The data store to use to get the meta. Defaults to the current subscription's data store.
 	 *
 	 * @return array The subscription's meta data.
 	 */
