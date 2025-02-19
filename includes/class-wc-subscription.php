@@ -2147,6 +2147,7 @@ class WC_Subscription extends WC_Order {
 		$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $relation_types );
 
 		if ( 'flat' === $return_type ) {
+			// Flatten the array, remove duplicates and return in the [order_id] => order_id format.
 			$flattened         = array_merge( ...array_values( $related_order_ids ) );
 			$related_order_ids = array_combine( $flattened, $flattened );
 		}
