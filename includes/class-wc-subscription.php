@@ -2128,7 +2128,7 @@ class WC_Subscription extends WC_Order {
 
 		if ( 'any' === $order_type ) {
 			$order_types = $any_order_types;
-		} elseif ( in_array( 'any', $order_type, true ) ) {
+		} elseif ( is_array( $order_type ) && in_array( 'any', $order_type, true ) ) {
 			// For backwards compatibility, replace 'any' with the actual order types.
 			$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'
 			$order_types = array_unique( array_merge( $order_types, $any_order_types ) ); // Add replacements
