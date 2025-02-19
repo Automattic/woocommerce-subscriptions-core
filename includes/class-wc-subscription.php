@@ -2128,7 +2128,7 @@ class WC_Subscription extends WC_Order {
 
 		// For backwards compatibility, replace 'any' with the actual order types.
 		if ( in_array( 'any', $order_types, true ) ) {
-			$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'.
+			$order_types = array_diff( $order_types, [ 'any' ] ); // Remove 'any'.
 			$order_types = array_unique( array_merge( $order_types, [ 'parent', 'renewal', 'resubscribe', 'switch' ] ) ); // Add the 'any' order types.
 		}
 
