@@ -2135,7 +2135,7 @@ class WC_Subscription extends WC_Order {
 		// Get the parent order ID first.
 		if ( in_array( 'parent', $order_types, true ) ) {
 			// Remove the parent order type from the list of order types.
-			$relation_types = array_diff( $order_types, [ 'parent' ] );
+			$order_types = array_diff( $order_types, [ 'parent' ] );
 			$parent_id      = $this->get_parent_id();
 
 			if ( $parent_id ) {
@@ -2143,9 +2143,9 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		if ( ! empty( $relation_types ) ) {
+		if ( ! empty( $order_types ) ) {
 			// Get the related order IDs based on the remaining order types.
-			$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $relation_types );
+			$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $order_types );
 		}
 
 		if ( 'flat' === $return_type && ! empty( $related_order_ids ) ) {
