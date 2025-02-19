@@ -2140,10 +2140,10 @@ class WC_Subscription extends WC_Order {
 
 		// Get the parent order ID first.
 		if ( in_array( 'parent', $order_types, true ) ) {
-			$parent_id = [ $this->get_parent_id() ];
+			$parent_id = $this->get_parent_id();
 
 			if ( $parent_id ) {
-				$related_order_ids['parent'] = $parent_id;
+				$related_order_ids['parent'] = [ $parent_id ];
 			}
 		}
 
