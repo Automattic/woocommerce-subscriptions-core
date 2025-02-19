@@ -2118,7 +2118,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the related order IDs for a subscription based on an order type.
 	 *
-	 * @param string $order_type Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'any'.
+	 * @param string|array $order_type Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'any'.
 	 * @return array List of related order IDs.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
@@ -2128,14 +2128,12 @@ class WC_Subscription extends WC_Order {
 
 		if ( 'any' === $order_type ) {
 			$order_types = $any_order_types;
+		} elseif ( in_array( 'any', $order_type, true ) ) {
+			// For backwards compatibility, replace 'any' with the actual order types.
+			$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'
+			$order_types = array_unique( array_merge( $order_types, $any_order_types ) ); // Add replacements
 		} elseif ( is_array( $order_type ) ) {
-			if ( in_array( 'any', $order_type, true ) ) {
-				// Replace 'any' with the actual order types.
-				$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'
-				$order_types = array_merge( $order_types, $any_order_types ); // Add replacements
-			} else {
-				$order_types = $order_type;
-			}
+			$order_types = $order_type;
 		} else {
 			$order_types = [ $order_type ];
 		}
