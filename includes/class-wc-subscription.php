@@ -2095,10 +2095,11 @@ class WC_Subscription extends WC_Order {
 			$order_types = array( $order_types );
 		}
 
-		$related_orders = array();
-		foreach ( $order_types as $order_type ) {
-			$related_orders_for_order_type = array();
-			foreach ( $this->get_related_order_ids( $order_type ) as $order_id ) {
+		$related_orders = [];
+
+		foreach ( $this->get_related_order_ids( $order_types, 'grouped' ) as $order_type => $order_ids ) {
+			$related_orders_for_order_type = [];
+			foreach ( $order_ids as $order_id ) {
 				if ( 'all' === $return_fields && $order = wc_get_order( $order_id ) ) {
 					$related_orders_for_order_type[ $order_id ] = $order;
 				} elseif ( 'ids' === $return_fields ) {
@@ -2121,21 +2122,33 @@ class WC_Subscription extends WC_Order {
 	 * @return array List of related order IDs.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
-	protected function get_related_order_ids( $order_type = 'any' ) {
+	protected function get_related_order_ids( $order_type = 'any', $return_type = 'flat' ) {
+		$related_order_ids = [];
 
-		$related_order_ids = array();
-
-		if ( in_array( $order_type, array( 'any', 'parent' ) ) && $this->get_parent_id() ) {
-			$related_order_ids[ $this->get_parent_id() ] = $this->get_parent_id();
+		if ( 'any' === $order_type ) {
+			$order_types = array( 'parent', 'renewal', 'resubscribe', 'switch' );
+		} elseif ( is_array( $order_type ) ) {
+			$order_types = $order_type;
+		} else {
+			$order_types = array( $order_type );
 		}
 
-		if ( 'parent' !== $order_type ) {
+		// Get the parent order ID first.
+		if ( in_array( 'parent', $order_types, true ) ) {
+			$parent_id = [ $this->get_parent_id() ];
 
-			$relation_types = ( 'any' === $order_type ) ? array( 'renewal', 'resubscribe', 'switch' ) : array( $order_type );
-
-			foreach ( $relation_types as $relation_type ) {
-				$related_order_ids = array_merge( $related_order_ids, WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $relation_type ) );
+			if ( $parent_id ) {
+				$related_order_ids['parent'] = $parent_id;
 			}
+		}
+
+		// Remove the parent order type from the list of order types.
+		$relation_types = array_diff( $order_types, [ 'parent' ] );
+		$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $relation_types );
+
+		if ( 'flat' === $return_type ) {
+			$flattened         = array_merge( ...array_values( $related_order_ids ) );
+			$related_order_ids = array_combine( $flattened, $flattened );
 		}
 
 		return $related_order_ids;

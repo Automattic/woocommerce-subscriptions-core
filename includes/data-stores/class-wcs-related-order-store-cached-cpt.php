@@ -47,6 +47,22 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	private static $override_ignored_props = false;
 
 	/**
+	 * A list of subscription IDs that are requesting multiple related order caches to be read.
+	 *
+	 * This is used by @see get_related_order_ids_by_types() to enable fetching multiple related order caches without reading the subscriptions meta query multiple times.
+	 *
+	 * @var array $batch_processing_subscriptions An array of subscription IDs.
+	 */
+	private static $batch_processing_related_orders = [];
+
+	/**
+	 * A cache of subscription meta data. Used when fetching multiple related order caches for a subscription to avoid multiple database queries.
+	 *
+	 * @var array $subscription_meta_cache An array of subscription meta data.
+	 */
+	private static $subscription_meta_cache = [];
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -645,20 +661,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$cache_meta_key = $this->get_cache_meta_key( $relation_type );
 		$data_store     = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
 
-		/**
-		 * Bypass the related order cache keys being ignored when fetching subscription meta.
-		 *
-		 * By default the related order cache keys are ignored via $this->add_related_order_cache_props(). In order to fetch the subscription's
-		 * meta with those keys, we need to bypass that function.
-		 *
-		 * We use a static variable because it is possible to have multiple instances of this class in memory, and we want to make sure we bypass
-		 * the function in all instances.
-		 */
-		self::$override_ignored_props = true;
-		$subscription_meta            = $data_store->read_meta( $subscription );
-		self::$override_ignored_props = false;
-
-		foreach ( $subscription_meta as $meta ) {
+		foreach ( $this->get_subscription_meta( $subscription, $data_store ) as $meta ) {
 			if ( isset( $meta->meta_key ) && $cache_meta_key === $meta->meta_key ) {
 				return $meta;
 			}
@@ -689,5 +692,72 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$subscription->set_date_modified( time() );
 			$subscription->save();
 		}
+	}
+
+	/**
+	 * Gets the subscription's meta data.
+	 *
+	 * @param WC_Subscription $subscription The subscription to get the meta for.
+     * @param mixed           $data_store   The data store to use to get the meta. Defaults to the current subscription's data store.
+	 *
+	 * @return array The subscription's meta data.
+	 */
+	private function get_subscription_meta( $subscription, $data_store ) {
+		$is_batch_processing = isset( self::$batch_processing_related_orders[ $subscription->get_id() ] );
+
+		// If we are in batch processing mode, return the cached meta data.
+		if ( $is_batch_processing && isset( self::$subscription_meta_cache[ $subscription->get_id() ] ) ) {
+			return self::$subscription_meta_cache[ $subscription->get_id() ];
+		}
+
+		/**
+		 * Bypass the related order cache keys being ignored when fetching subscription meta.
+		 *
+		 * By default the related order cache keys are ignored via $this->add_related_order_cache_props(). In order to fetch the subscription's
+		 * meta with those keys, we need to bypass that function.
+		 *
+		 * We use a static variable because it is possible to have multiple instances of this class in memory, and we want to make sure we bypass
+		 * the function in all instances.
+		 */
+		self::$override_ignored_props = true;
+		$subscription_meta            = $data_store->read_meta( $subscription );
+		self::$override_ignored_props = false;
+
+		// If we are in batch processing mode, cache the meta data.
+		if ( $is_batch_processing ) {
+			self::$subscription_meta_cache[ $subscription->get_id() ] = $subscription_meta;
+		}
+
+		return $subscription_meta;
+	}
+
+	/**
+	 * Gets the related order IDs for a subscription by multiple relation types.
+	 *
+	 * This function is a more efficient way to get related order IDs for multiple relation types at once.
+	 * It will only query the database once for all cache data, and then return the related order IDs for each relation type.
+	 *
+	 * The alternative of calling the get_related_order_ids() function for each relation type will result in a full subscription meta read for each relation type.
+	 *
+	 * @param WC_Order $subscription        The subscription to get related order IDs for.
+	 * @param array    $related_order_types The related order types to get IDs for. Must be an array of supported relation types.
+	 *
+	 * @return array An array of related order IDs for each relation type.
+	 */
+	public function get_related_order_ids_by_types( WC_Order $subscription, $related_order_types ) {
+		$related_order_ids = [];
+
+		// Declare batch processing mode for this subscription.
+		self::$batch_processing_related_orders[ $subscription->get_id() ] = true;
+
+		foreach ( $related_order_types as $relation_type ) {
+			$related_order_ids[ $relation_type ] = $this->get_related_order_ids( $subscription, $relation_type );
+		}
+
+		// Unset the batch processing mode for this subscription.
+		unset( self::$batch_processing_related_orders[ $subscription->get_id() ] );
+		unset( self::$subscription_meta_cache[ $subscription->get_id() ] );
+
+		return $related_order_ids;
 	}
 }
