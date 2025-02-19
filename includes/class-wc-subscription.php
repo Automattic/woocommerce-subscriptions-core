@@ -2124,22 +2124,18 @@ class WC_Subscription extends WC_Order {
 	 */
 	protected function get_related_order_ids( $order_type = 'any', $return_type = 'flat' ) {
 		$related_order_ids = [];
-		$any_order_types   = [ 'parent', 'renewal', 'resubscribe', 'switch' ];
+		$order_types       = is_array( $order_type ) ? $order_type : [ $order_type ];
 
-		if ( 'any' === $order_type ) {
-			$order_types = $any_order_types;
-		} elseif ( is_array( $order_type ) && in_array( 'any', $order_type, true ) ) {
-			// For backwards compatibility, replace 'any' with the actual order types.
-			$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'
-			$order_types = array_unique( array_merge( $order_types, $any_order_types ) ); // Add replacements
-		} elseif ( is_array( $order_type ) ) {
-			$order_types = $order_type;
-		} else {
-			$order_types = [ $order_type ];
+		// For backwards compatibility, replace 'any' with the actual order types.
+		if ( in_array( 'any', $order_types, true ) ) {
+			$order_types = array_diff( $order_type, [ 'any' ] ); // Remove 'any'.
+			$order_types = array_unique( array_merge( $order_types, [ 'parent', 'renewal', 'resubscribe', 'switch' ] ) ); // Add the 'any' order types.
 		}
 
 		// Get the parent order ID first.
 		if ( in_array( 'parent', $order_types, true ) ) {
+			// Remove the parent order type from the list of order types.
+			$relation_types = array_diff( $order_types, [ 'parent' ] );
 			$parent_id = $this->get_parent_id();
 
 			if ( $parent_id ) {
@@ -2147,11 +2143,12 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		// Remove the parent order type from the list of order types.
-		$relation_types     = array_diff( $order_types, [ 'parent' ] );
-		$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $relation_types );
+		if ( ! empty( $relation_types ) ) {
+			// Get the related order IDs based on the remaining order types.
+			$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $relation_types );
+		}
 
-		if ( 'flat' === $return_type ) {
+		if ( 'flat' === $return_type && ! empty( $related_order_ids ) ) {
 			// Flatten the array, remove duplicates and return in the [order_id] => order_id format.
 			$flattened         = array_merge( ...array_values( $related_order_ids ) );
 			$related_order_ids = array_combine( $flattened, $flattened );
