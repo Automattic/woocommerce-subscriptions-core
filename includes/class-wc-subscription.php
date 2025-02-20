@@ -2122,8 +2122,8 @@ class WC_Subscription extends WC_Order {
 	 * @return array List of related order IDs.
 	 */
 	protected function get_related_order_ids( $order_type = 'any', $return_type = 'flat' ) {
-		$related_order_ids = [];
 		$order_types       = is_array( $order_type ) ? $order_type : [ $order_type ];
+		$related_order_ids = [];
 
 		// For backwards compatibility, replace 'any' with the actual order types.
 		if ( in_array( 'any', $order_types, true ) ) {
