@@ -2074,8 +2074,8 @@ class WC_Subscription extends WC_Order {
 	 * @return array
 	 */
 	public function get_related_orders( $return_fields = 'ids', $order_types = array( 'parent', 'renewal', 'switch' ) ) {
-
-		$return_fields = ( 'ids' == $return_fields ) ? $return_fields : 'all';
+		$related_orders = [];
+		$return_fields  = ( 'ids' == $return_fields ) ? $return_fields : 'all';
 
 		if ( 'all' === $order_types ) {
 			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'The "all" value for $order_type parameter is deprecated. It was a misnomer, as it did not return resubscribe orders. It was also inconsistent with order type values accepted by wcs_get_subscription_orders(). Use array( "parent", "renewal", "switch" ) to maintain previous behaviour, or "any" to receive all order types, including switch and resubscribe.', 'woocommerce-subscriptions' ), __CLASS__ ) );
@@ -2085,12 +2085,16 @@ class WC_Subscription extends WC_Order {
 			$order_types = array( $order_types );
 		}
 
-		$related_orders = array();
-		foreach ( $order_types as $order_type ) {
-			$related_orders_for_order_type = array();
-			foreach ( $this->get_related_order_ids( $order_type ) as $order_id ) {
-				if ( 'all' === $return_fields && $order = wc_get_order( $order_id ) ) {
-					$related_orders_for_order_type[ $order_id ] = $order;
+		foreach ( $this->get_related_order_ids( $order_types, 'grouped' ) as $order_type => $order_ids ) {
+			$related_orders_for_order_type = [];
+
+			foreach ( $order_ids as $order_id ) {
+				if ( 'all' === $return_fields ) {
+					$order = wc_get_order( $order_id );
+
+					if ( $order ) {
+						$related_orders_for_order_type[ $order_id ] = $order;
+					}
 				} elseif ( 'ids' === $return_fields ) {
 					$related_orders_for_order_type[ $order_id ] = $order_id;
 				}
@@ -2107,25 +2111,44 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Get the related order IDs for a subscription based on an order type.
 	 *
-	 * @param string $order_type Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'any'.
-	 * @return array List of related order IDs.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
+	 * @since 7.2.1 - The $order_type parameter can now be an array of order types and the $return_type parameter was added.
+	 *
+	 * @param string|array $order_type  Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Defaults to 'any'.
+	 * @param string       $return_type The format to return the related order IDs in. Can be 'flat' or 'grouped'. Defaults to 'flat'.
+	 *
+	 * @return array List of related order IDs.
 	 */
-	protected function get_related_order_ids( $order_type = 'any' ) {
+	protected function get_related_order_ids( $order_type = 'any', $return_type = 'flat' ) {
+		$related_order_ids = [];
+		$order_types       = is_array( $order_type ) ? $order_type : [ $order_type ];
 
-		$related_order_ids = array();
-
-		if ( in_array( $order_type, array( 'any', 'parent' ) ) && $this->get_parent_id() ) {
-			$related_order_ids[ $this->get_parent_id() ] = $this->get_parent_id();
+		// For backwards compatibility, replace 'any' with the actual order types.
+		if ( in_array( 'any', $order_types, true ) ) {
+			$order_types = array_diff( $order_types, [ 'any' ] ); // Remove 'any'.
+			$order_types = array_unique( array_merge( $order_types, [ 'parent', 'renewal', 'resubscribe', 'switch' ] ) ); // Add the 'any' order types.
 		}
 
-		if ( 'parent' !== $order_type ) {
+		// Get the parent order ID first.
+		if ( in_array( 'parent', $order_types, true ) ) {
+			// Remove the parent order type from the list of order types.
+			$order_types = array_diff( $order_types, [ 'parent' ] );
+			$parent_id   = $this->get_parent_id();
 
-			$relation_types = ( 'any' === $order_type ) ? array( 'renewal', 'resubscribe', 'switch' ) : array( $order_type );
-
-			foreach ( $relation_types as $relation_type ) {
-				$related_order_ids = array_merge( $related_order_ids, WCS_Related_Order_Store::instance()->get_related_order_ids( $this, $relation_type ) );
+			if ( $parent_id ) {
+				$related_order_ids['parent'] = [ $parent_id ];
 			}
+		}
+
+		if ( ! empty( $order_types ) ) {
+			// Get the related order IDs based on the remaining order types.
+			$related_order_ids += WCS_Related_Order_Store::instance()->get_related_order_ids_by_types( $this, $order_types );
+		}
+
+		if ( 'flat' === $return_type && ! empty( $related_order_ids ) ) {
+			// Flatten the array, remove duplicates and return in the [order_id] => order_id format.
+			$flattened         = array_merge( ...array_values( $related_order_ids ) );
+			$related_order_ids = array_combine( $flattened, $flattened );
 		}
 
 		return $related_order_ids;
