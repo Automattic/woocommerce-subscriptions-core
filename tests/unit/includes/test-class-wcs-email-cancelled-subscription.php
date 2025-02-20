@@ -11,21 +11,21 @@ class WCS_Email_Cancelled_Subscription_Test extends WP_UnitTestCase {
 	 *
 	 * @var string
 	 */
-	private string $email_subject = '';
+	private $email_subject = '';
 
 	/**
 	 * If an email was dispatched during test execution.
 	 *
 	 * @var bool
 	 */
-	private bool $email_sent = false;
+	private $email_sent = false;
 
 	/**
 	 * Cancelled subscription email (for admins).
 	 *
 	 * @var WCS_Email_Cancelled_Subscription
 	 */
-	private WCS_Email_Cancelled_Subscription $sut;
+	private $sut;
 
 	/**
 	 * Initialize WC_Emails (required by our subject-under-test), and setup our email watcher.
@@ -63,13 +63,13 @@ class WCS_Email_Cancelled_Subscription_Test extends WP_UnitTestCase {
 	 *
 	 * @return array
 	 */
-	public function email_watcher( array $email_params ): array {
+	public function email_watcher( array $email_params ) {
 		$this->email_subject = $email_params[1];
 		$this->email_sent    = true;
 		return $email_params;
 	}
 
-	private function reset_email_watcher(): void {
+	private function reset_email_watcher() {
 		$this->email_subject = '';
 		$this->email_sent    = false;
 	}
