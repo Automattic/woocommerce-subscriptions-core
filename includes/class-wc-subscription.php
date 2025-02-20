@@ -2074,8 +2074,8 @@ class WC_Subscription extends WC_Order {
 	 * @return array
 	 */
 	public function get_related_orders( $return_fields = 'ids', $order_types = array( 'parent', 'renewal', 'switch' ) ) {
+		$return_fields  = ( 'ids' === $return_fields ) ? $return_fields : 'all';
 		$related_orders = [];
-		$return_fields  = ( 'ids' == $return_fields ) ? $return_fields : 'all';
 
 		if ( 'all' === $order_types ) {
 			wcs_deprecated_argument( __METHOD__, '2.3.0', sprintf( __( 'The "all" value for $order_type parameter is deprecated. It was a misnomer, as it did not return resubscribe orders. It was also inconsistent with order type values accepted by wcs_get_subscription_orders(). Use array( "parent", "renewal", "switch" ) to maintain previous behaviour, or "any" to receive all order types, including switch and resubscribe.', 'woocommerce-subscriptions' ), __CLASS__ ) );
@@ -2089,14 +2089,16 @@ class WC_Subscription extends WC_Order {
 			$related_orders_for_order_type = [];
 
 			foreach ( $order_ids as $order_id ) {
-				if ( 'all' === $return_fields ) {
-					$order = wc_get_order( $order_id );
-
-					if ( $order ) {
-						$related_orders_for_order_type[ $order_id ] = $order;
-					}
-				} elseif ( 'ids' === $return_fields ) {
+				if ( 'ids' === $return_fields ) {
 					$related_orders_for_order_type[ $order_id ] = $order_id;
+					continue;
+				}
+
+				// Handle the "all" return type by fetching the order object
+				$order = wc_get_order( $order_id );
+
+				if ( $order ) {
+					$related_orders_for_order_type[ $order_id ] = $order;
 				}
 			}
 
