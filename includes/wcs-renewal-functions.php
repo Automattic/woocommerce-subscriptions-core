@@ -35,7 +35,17 @@ function wcs_create_renewal_order( $subscription ) {
 
 	WCS_Related_Order_Store::instance()->add_relation( $renewal_order, $subscription, 'renewal' );
 
-	return apply_filters( 'wcs_renewal_order_created', $renewal_order, $subscription );
+	/**
+	 * Provides an opportunity to monitor, interact with and replace renewal orders when they
+	 * are first created.
+	 *
+	 * @param WC_Order        $renewal_order The renewal order.
+	 * @param WC_Subscription $subscription  The subscription the renewal is related to.
+	 */
+	$filtered_renewal_order = apply_filters( 'wcs_renewal_order_created', $renewal_order, $subscription );
+
+	// It is possible that a filter function will replace the renewal order with something else entirely.
+	return $filtered_renewal_order instanceof WC_Order ? $filtered_renewal_order : $renewal_order;
 }
 
 /**
@@ -124,11 +134,12 @@ function wcs_cart_contains_failed_renewal_order_payment() {
 }
 
 /**
- * Get the subscription/s to which a resubscribe order relates.
+ * Get the subscription/s to which a renewal order relates.
+ *
+ * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  *
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
  * @return WC_Subscription[] Subscription details in post_id => WC_Subscription form.
- * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_subscriptions_for_renewal_order( $order ) {
 	return wcs_get_subscriptions_for_order( $order, array( 'order_type' => 'renewal' ) );

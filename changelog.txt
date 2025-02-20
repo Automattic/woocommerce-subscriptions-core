@@ -1,9 +1,42 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 7.8.0 - xxxx-xx-xx =
+= 8.1.0 - 2025-xx-xx =
+* Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
+
+= 8.0.1 - 2025-02-13 =
+* Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
+
+= 8.0.0 - 2025-02-13 =
+* Fix - Recommend WooPayments when there is no available payment gateway.
+* Fix - Safeguards added to the Subscriptions Totals template used in the My Account area, to guard against fatal errors that could arise in unusual conditions.
+* Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
+* Fix - Improve our admin notice handling to ensure notices are displayed to the intended admin user.
+* Fix - Improve protections around the pending renewal order-creation process, to prevent uncaught exceptions and other errors from breaking the subscription editor.
+* Fix - Prevent unnecessary subscription object lookups on non-subscription admin pages when global $post is set.
+* Fix - After enabling the Customer Notification feature or changing the reminder timer setting, ensure notification emails are scheduled for subscriptions with pending cancellation status.
+* Update - Include subscription items table in all customer notification emails.
+* Update - Subscription notes for unsent customer notification emails now only occurs if WCS_DEBUG is enabled.
+* Update - Improved performance of Subscriptions-related aspects of the WooCommerce System Status Report.
+* Dev - Introduces a new `woocommerce_subscription_valid_customer_notification_types` filter to modify which notification types are scheduled in Action Scheduler.
+
+= 7.9.0 - 2025-01-10 =
+* Add - Compatibility with WooCommerce's new preview email feature introduced in 9.6.
+* Fix - Prevent payment gateways that complete Change Payment requests asynchronously from blocking future attempts to update payment methods for all subscriptions.
+* Fix - Resolved an issue that could lead to undefined variable when attempting to send a customer notification email with no order.
+* Fix - Prevents the customer's postal code being used as their billing city in the current session, following a change to payment details.
+* Dev - Use the subscription's customer ID during the `wcs_can_user_renew_early()` function call when sending customer notification emails.
+* Dev - Fix PHP deprecated warnings caused by calling esc_url with null.
+
+= 7.8.0 - 2024-12-16 =
+* Fix - Prevent failing non-recent renewal order from suspending the subscription and marking the most recent renewal order as failed.
 * Fix - Use block theme-styled buttons for subscription and related-orders actions on My Account pages.
+* Fix - Subscription totals not properly updating when customers remove items via the My Account > View Subscription page on some stores with caching enabled.
+* Fix - Resolved unexpected errors during the renewal process when a subscription contains metadata with key "id".
 * Update - Changed the link on the order thank-you page to take customers directly to their "My Account > Subscriptions" page.
 * Update - Improved performance when checking if an order is a subscription renewal, resubscribe or switch order.
+
+= 7.7.2 - 2024-11-26 =
+* Fix - Prevents notices being displayed on WordPress 6.7 due to loading translations too early.
 
 = 7.7.1 - 2024-11-13 =
 * Fix - Only show the individual subscription information in customer notification emails, not all subscriptions purchased in the initial order.
