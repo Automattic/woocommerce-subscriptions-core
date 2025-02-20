@@ -1298,11 +1298,6 @@ class WC_Subscription extends WC_Order {
 		$date_type     = wcs_normalise_date_type_key( $date_type, true );
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
-		// Don't display next payment date when the subscription is inactive
-		if ( 'next_payment' == $date_type && ! $this->has_status( 'active' ) ) {
-			$timestamp_gmt = 0;
-		}
-
 		return $this->format_date_to_display( $timestamp_gmt, $date_type );
 	}
 
@@ -1315,6 +1310,12 @@ class WC_Subscription extends WC_Order {
 	 *  @return string The formatted date to display.
 	 */
 	public function format_date_to_display( $timestamp_gmt, $date_type ) {
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
+
+		// Don't display next payment date when the subscription is inactive
+		if ( 'next_payment' === $date_type && ! $this->has_status( 'active' ) ) {
+			$timestamp_gmt = 0;
+		}
 
 		if ( $timestamp_gmt > 0 ) {
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
