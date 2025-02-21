@@ -98,7 +98,7 @@ class WC_Subscriptions_Renewal_Order {
 		if ( $order_completed && $order_needed_payment ) {
 			// Prior to WC 3.0, we need to update the post date (i.e. the date created) to have a reliable representation of the paid date (both because it was in GMT and because it was always set). That's not needed in WC 3.0, but some plugins and store owners still rely on it being updated, so we want to make it possible to update it with 3.0 also.
 			if ( apply_filters( 'wcs_renewal_order_payment_update_date_created', false, $order, $subscriptions ) ) {
-				$order->set_date_created( current_time( 'timestamp', 1 ) );
+				$order->set_date_created( time() );
 			}
 		}
 
