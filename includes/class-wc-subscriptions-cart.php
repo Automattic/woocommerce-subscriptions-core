@@ -2283,20 +2283,6 @@ class WC_Subscriptions_Cart {
 	}
 
 	/**
-	 * One time shipping can null the need for shipping needs. WooCommerce treats that as no need to ship, therefore it will call
-	 * WC()->shipping->reset() on it, which will wipe the preferences saved. That can cause the chosen shipping method for the one
-	 * time shipping feature to be lost, and the first default to be applied instead. To counter that, we save the chosen shipping
-	 * method to a key that's not going to get wiped by WC's method, and then later restore it.
-	 */
-	public static function maybe_restore_chosen_shipping_method() {
-		$chosen_shipping_method_cache = WC()->session->get( 'wcs_shipping_methods', false );
-
-		if ( false !== $chosen_shipping_method_cache ) {
-			WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_method_cache );
-		}
-	}
-
-	/**
 	 * Return a localized free trial period string.
 	 *
 	 * @param int An interval in the range 1-6
