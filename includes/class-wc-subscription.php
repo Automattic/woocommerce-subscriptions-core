@@ -1307,7 +1307,7 @@ class WC_Subscription extends WC_Order {
 	 * @param int    $timestamp The subscription date in a timestamp format.
 	 * @param string $date_type The subscription date type to display. @see WC_Subscription::get_valid_date_types()
 	 *
-	 *  @return string The formatted date to display.
+	 * @return string The formatted date to display.
 	 */
 	public function format_date_to_display( $timestamp_gmt, $date_type ) {
 		$date_type = wcs_normalise_date_type_key( $date_type, true );
