@@ -703,18 +703,16 @@ class WCS_Admin_Post_Types {
 		);
 
 		// Custom handling for `Next payment` date column.
-		if ( 'next_payment_date' === $column ) {
-			$subscription_is_active = $subscription->has_status( 'active' );
-
+		if ( 'next_payment_date' === $column && $subscription->has_status( 'active' ) ) {
 			$tooltip_message = '';
 			$tooltip_classes = 'woocommerce-help-tip';
 
-			if ( $subscription_is_active && $datetime->getTimestamp() < time() ) {
+			if ( $datetime->getTimestamp() < time() ) {
 				$tooltip_message .= __( '<b>Subscription payment overdue.</b></br>', 'woocommerce-subscriptions' );
 				$tooltip_classes .= ' wcs-payment-overdue';
 			}
 
-			if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() && $subscription_is_active ) {
+			if ( $subscription->payment_method_supports( 'gateway_scheduled_payments' ) && ! $subscription->is_manual() ) {
 				$tooltip_message .= __( 'This date should be treated as an estimate only. The payment gateway for this subscription controls when payments are processed.</br>', 'woocommerce-subscriptions' );
 				$tooltip_classes .= ' wcs-offsite-renewal';
 			}
