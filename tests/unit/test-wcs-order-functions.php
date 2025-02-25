@@ -456,6 +456,6 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 		$subscription_2->set_parent_id( $parent_order->get_id() );
 		$subscription_2->save();
 
-		$this->assertEquals( [ $subscription->get_id(), $subscription_2->get_id() ], wcs_get_subscription_ids_for_order( $parent_order, 'parent' ) );
+		$this->assertEquals( [ $subscription_2->get_id(), $subscription->get_id() ], wcs_get_subscription_ids_for_order( $parent_order, 'parent' ) );
 	}
 }
