@@ -12,7 +12,7 @@ $text_align = is_rtl() ? 'right' : 'left';
 
 do_action( 'woocommerce_email_before_' . $order_type . '_table', $order, $sent_to_admin, $plain_text, $email );
 
-if ( 'cancelled_subscription' != $email->id ) {
+if ( 'cancelled_subscription' !== $email->id ) {
 	echo '<h2>';
 
 	$link_element_url = ( $sent_to_admin ) ? wcs_get_edit_post_link( wcs_get_objects_property( $order, 'id' ) ) : $order->get_view_order_url();
