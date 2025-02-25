@@ -12,12 +12,14 @@ $text_align = is_rtl() ? 'right' : 'left';
 
 do_action( 'woocommerce_email_before_' . $order_type . '_table', $order, $sent_to_admin, $plain_text, $email );
 
+$order_item_totals = $order->get_order_item_totals();
+
 if ( 'cancelled_subscription' !== $email->id ) {
 	echo '<h2>';
 
-	$link_element_url = ( $sent_to_admin ) ? wcs_get_edit_post_link( wcs_get_objects_property( $order, 'id' ) ) : $order->get_view_order_url();
+	$link_element_url = ( $sent_to_admin ) ? wcs_get_edit_post_link( $order->get_id() ) : $order->get_view_order_url();
 
-	if ( 'order' == $order_type ) {
+	if ( 'order' === $order_type ) {
 		// translators: $1-$2: opening and closing <a> tags $3: order's order number $4: date of order in <time> element
 		printf( esc_html_x( '%1$sOrder #%3$s%2$s (%4$s)', 'Used in email notification', 'woocommerce-subscriptions' ), '<a href="' . esc_url( $link_element_url ) . '">', '</a>', esc_html( $order->get_order_number() ), sprintf( '<time datetime="%s">%s</time>', esc_attr( wcs_get_objects_property( $order, 'date_created' )->format( 'c' ) ), esc_html( wcs_format_datetime( wcs_get_objects_property( $order, 'date_created' ) ) ) ) );
 	} else {
@@ -41,14 +43,14 @@ if ( 'cancelled_subscription' !== $email->id ) {
 		</tbody>
 		<tfoot>
 			<?php
-			if ( $totals = $order->get_order_item_totals() ) {
+			if ( $order_item_totals ) {
 				$i = 0;
-				foreach ( $totals as $total ) {
+				foreach ( $order_item_totals as $total ) {
 					$i++;
 					?>
 					<tr>
-						<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>; <?php if ( 1 == $i ) { echo 'border-top-width: 4px;'; } ?>"><?php echo esc_html( $total['label'] ); ?></th>
-						<td class="td" style="text-align:<?php echo esc_attr( $text_align ); ?>; <?php if ( 1 == $i ) { echo 'border-top-width: 4px;'; } ?>"><?php echo wp_kses_post( $total['value'] ); ?></td>
+						<th class="td" scope="row" colspan="2" style="text-align:<?php echo esc_attr( $text_align ); ?>; <?php echo ( 1 === $i ) ? 'border-top-width: 4px;' : ''; ?>"><?php echo esc_html( $total['label'] ); ?></th>
+						<td class="td" style="text-align:<?php echo esc_attr( $text_align ); ?>; <?php echo ( 1 === $i ) ? 'border-top-width: 4px;' : ''; ?>"><?php echo wp_kses_post( $total['value'] ); ?></td>
 					</tr>
 					<?php
 				}
