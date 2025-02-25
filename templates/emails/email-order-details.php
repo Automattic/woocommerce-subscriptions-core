@@ -2,13 +2,11 @@
 /**
  * Order/Subscription details table shown in emails.
  *
- * @author  Prospress
  * @package WooCommerce_Subscriptions/Templates/Emails
  * @version 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.0
  */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+
+defined( 'ABSPATH' ) || exit;
 
 $text_align = is_rtl() ? 'right' : 'left';
 
