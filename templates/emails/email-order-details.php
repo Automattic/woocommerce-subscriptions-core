@@ -28,8 +28,11 @@ if ( 'cancelled_subscription' !== $email->id ) {
 	$after   = '</a>';
 	$heading = ( 'order' === $order_type ) ? __( 'Order summary', 'woocommerce-subscriptions' ) : __( 'Subscription summary', 'woocommerce-subscriptions' );
 
-	/* translators: %s: Order or subscription ID. */
-	$sub_heading = ( 'order' === $order_type ) ? __( 'Order #%s', 'woocommerce-subscriptions' ) : __( 'Subscription #%s', 'woocommerce-subscriptions' );
+	$sub_heading = sprintf(
+		/* translators: %s: Order or subscription ID. */
+		( 'order' === $order_type ) ? __( 'Order #%s', 'woocommerce-subscriptions' ) : __( 'Subscription #%s', 'woocommerce-subscriptions' ),
+		$order->get_order_number()
+	);
 
 	echo wp_kses_post( $heading );
 
@@ -41,9 +44,8 @@ if ( 'cancelled_subscription' !== $email->id ) {
 	}
 
 	echo wp_kses_post(
-		$before . sprintf(
-			$sub_heading . $after . ' (<time datetime="%s">%s</time>)',
-			$order->get_order_number(),
+		$before . $sub_heading . $after . sprintf(
+			' (<time datetime="%s">%s</time>)',
 			$order->get_date_created()->format( 'c' ),
 			wcs_format_datetime( $order->get_date_created() )
 		)
