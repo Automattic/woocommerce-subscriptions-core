@@ -156,7 +156,7 @@ class WC_Subscriptions_Email_Notifications {
 		switch ( current_action() ) {
 			case 'woocommerce_scheduled_subscription_customer_notification_renewal':
 				$subscription = wcs_get_subscription( $subscription_id );
-				if ( $subscription->get_total() <= 0) {
+				if ( $subscription->get_total() <= 0 ) {
 					break;
 				}
 				if ( $subscription->is_manual() ) {
