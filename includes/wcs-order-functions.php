@@ -112,11 +112,12 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
 	if ( empty( $subscription_ids ) && in_array( 'parent', $order_types, true ) ) {
 		$subscription_ids = wc_get_orders(
 			[
-				'parent' => $order->get_id(),
-				'type'   => 'shop_subscription',
-				'status' => 'any',
-				'limit'  => -1,
-				'return' => 'ids',
+				'parent'  => $order->get_id(),
+				'type'    => 'shop_subscription',
+				'status'  => 'any',
+				'limit'   => -1,
+				'return'  => 'ids',
+				'orderby' => 'ID',
 			]
 		);
 	}
