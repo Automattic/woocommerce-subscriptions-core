@@ -108,6 +108,19 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
 		$subscription_ids += WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $order_type );
 	}
 
+	// An order cannot be both a renewal, switch or resubscribe as well as a parent order, so only fetch subscription IDs if we didn't find any in the related order store.
+	if ( empty( $subscription_ids ) && in_array( 'parent', $order_types, true ) ) {
+		$subscription_ids = wc_get_orders(
+			[
+				'parent' => $order->get_id(),
+				'type'   => 'shop_subscription',
+				'status' => 'any',
+				'limit'  => -1,
+				'return' => 'ids',
+			]
+		);
+	}
+
 	return $subscription_ids;
 }
 
