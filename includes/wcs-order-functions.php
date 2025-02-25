@@ -68,15 +68,11 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 
 	$all_relation_types = WCS_Related_Order_Store::instance()->get_relation_types();
 	$relation_types     = $get_all ? $all_relation_types : array_intersect( $all_relation_types, $args['order_type'] );
+	$subscription_ids   = wcs_get_subscription_ids_for_order( $order, $relation_types );
 
-	foreach ( $relation_types as $relation_type ) {
-
-		$subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $relation_type );
-
-		foreach ( $subscription_ids as $subscription_id ) {
-			if ( wcs_is_subscription( $subscription_id ) ) {
-				$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
-			}
+	foreach ( $subscription_ids as $subscription_id ) {
+		if ( wcs_is_subscription( $subscription_id ) ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 		}
 	}
 
