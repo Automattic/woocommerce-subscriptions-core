@@ -84,6 +84,38 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
 }
 
 /**
+ * Get the subscription IDs for an order.
+ *
+ * @param WC_Order     $order       The order to get the subscription IDs for.
+ * @param string|array $order_types The order types to get the subscription IDs for.
+ *
+ * @return array The subscription IDs.
+ */
+function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
+	$subscription_ids = [];
+
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+		$order = wc_get_order( $order );
+	}
+
+	if ( ! wcs_is_order( $order ) ) {
+		return $subscription_ids;
+	}
+
+	if ( ! is_array( $order_types ) ) {
+		$order_types = [ $order_types ];
+	}
+
+	$valid_order_types = array_intersect( WCS_Related_Order_Store::instance()->get_relation_types(), $order_types );
+
+	foreach ( $valid_order_types as $order_type ) {
+		$subscription_ids += WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $order_type );
+	}
+
+	return $subscription_ids;
+}
+
+/**
  * Copy the billing, shipping or all addresses from one order or subscription to another.
  *
  * @since 2.0.0
