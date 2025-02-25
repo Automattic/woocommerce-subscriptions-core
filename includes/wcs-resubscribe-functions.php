@@ -21,18 +21,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_order_contains_resubscribe( $order ) {
+	$is_resubscribe_order = false;
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
 		$order = wc_get_order( $order );
 	}
 
-	// Pluck the `_subscription_resubscribe` meta key from the order
-	$related_subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'resubscribe' );
-
-	if ( wcs_is_order( $order ) && ! empty( $related_subscription_ids ) ) {
-		$is_resubscribe_order = true;
-	} else {
-		$is_resubscribe_order = false;
+	if ( wcs_is_order( $order ) ) {
+		$related_subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'resubscribe' );
+		$is_resubscribe_order     = ! empty( $related_subscription_ids );
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_is_resubscribe_order', $is_resubscribe_order, $order );

@@ -56,18 +56,15 @@ function wcs_create_renewal_order( $subscription ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_order_contains_renewal( $order ) {
+	$is_renewal = false;
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
 		$order = wc_get_order( $order );
 	}
 
-	// Pluck the `_subscription_renewal` meta key from the order.
-	$related_subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'renewal' );
-
-	if ( wcs_is_order( $order ) && ! empty( $related_subscription_ids ) ) {
-		$is_renewal = true;
-	} else {
-		$is_renewal = false;
+	if ( wcs_is_order( $order ) ) {
+		$related_subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'renewal' );
+		$is_renewal               = ! empty( $related_subscription_ids );
 	}
 
 	return apply_filters( 'woocommerce_subscriptions_is_renewal_order', $is_renewal, $order );

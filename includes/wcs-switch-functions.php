@@ -19,15 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_order_contains_switch( $order ) {
+	$is_switch_order = false;
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
 		$order = wc_get_order( $order );
 	}
 
-	if ( ! wcs_is_order( $order ) || wcs_order_contains_renewal( $order ) ) {
-		$is_switch_order = false;
-
-	} else {
+	if ( wcs_is_order( $order ) ) {
 		$switched_subscription_ids = WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, 'switch' );
 		$is_switch_order           = ! empty( $switched_subscription_ids );
 	}
