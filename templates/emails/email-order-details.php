@@ -37,7 +37,6 @@ if ( 'cancelled_subscription' !== $email->id ) {
 		echo '<span>';
 	} else {
 		// Prior to the email improvements, the sub_heading was wrapped in square brackets.
-		// This is to ensure backwards compatibility.
 		$sub_heading = '[' . $sub_heading . ']';
 	}
 
