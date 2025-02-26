@@ -113,12 +113,11 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [ 'any' ] ) 
 	if ( $get_all || in_array( 'parent', $order_types, true ) ) {
 		$subscription_ids_for_parent_order = wc_get_orders(
 			[
-				'parent'  => $order->get_id(),
-				'type'    => 'shop_subscription',
-				'status'  => 'any',
-				'limit'   => -1,
-				'return'  => 'ids',
-				'orderby' => 'ID',
+				'parent' => $order->get_id(),
+				'type'   => 'shop_subscription',
+				'status' => 'any',
+				'limit'  => -1,
+				'return' => 'ids',
 			]
 		);
 
@@ -126,6 +125,8 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [ 'any' ] ) 
 			$subscription_ids = array_merge( $subscription_ids, $subscription_ids_for_parent_order );
 		}
 	}
+
+	rsort( $subscription_ids );
 
 	return $subscription_ids;
 }
