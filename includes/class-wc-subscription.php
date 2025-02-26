@@ -1295,18 +1295,29 @@ class WC_Subscription extends WC_Order {
 	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created', 'end' or 'end_of_prepaid_term'
 	 */
 	public function get_date_to_display( $date_type = 'next_payment' ) {
-
-		$date_type = wcs_normalise_date_type_key( $date_type, true );
-
+		$date_type     = wcs_normalise_date_type_key( $date_type, true );
 		$timestamp_gmt = $this->get_time( $date_type, 'gmt' );
 
+		return $this->format_date_to_display( $timestamp_gmt, $date_type );
+	}
+
+	/**
+	 * Formats a subscription date timestamp for display.
+	 *
+	 * @param int    $timestamp The subscription date in a timestamp format.
+	 * @param string $date_type The subscription date type to display. @see WC_Subscription::get_valid_date_types()
+	 *
+	 * @return string The formatted date to display.
+	 */
+	public function format_date_to_display( $timestamp_gmt, $date_type ) {
+		$date_type = wcs_normalise_date_type_key( $date_type, true );
+
 		// Don't display next payment date when the subscription is inactive
-		if ( 'next_payment' == $date_type && ! $this->has_status( 'active' ) ) {
+		if ( 'next_payment' === $date_type && ! $this->has_status( 'active' ) ) {
 			$timestamp_gmt = 0;
 		}
 
 		if ( $timestamp_gmt > 0 ) {
-
 			$time_diff = $timestamp_gmt - current_time( 'timestamp', true );
 
 			if ( $time_diff > 0 && $time_diff < WEEK_IN_SECONDS ) {
@@ -1316,7 +1327,7 @@ class WC_Subscription extends WC_Order {
 				// translators: placeholder is human time diff (e.g. "3 weeks")
 				$date_to_display = sprintf( __( '%s ago', 'woocommerce-subscriptions' ), human_time_diff( current_time( 'timestamp', true ), $timestamp_gmt ) );
 			} else {
-				$date_to_display = date_i18n( wc_date_format(), $this->get_time( $date_type, 'site' ) );
+				$date_to_display = date_i18n( wc_date_format(), $timestamp_gmt + wc_timezone_offset() );
 			}
 		} else {
 			switch ( $date_type ) {
