@@ -10,16 +10,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+$columns = array(
+	esc_html( 'Order Number', 'woocommerce-subscriptions' ),
+	esc_html( 'Relationship', 'woocommerce-subscriptions' ),
+	esc_html( 'Date', 'woocommerce-subscriptions' ),
+	esc_html( 'Status', 'woocommerce-subscriptions' ),
+	esc_html_x( 'Total', 'table heading', 'woocommerce-subscriptions' ),
+);
+
+$columns = apply_filters( 'wcs_related_orders_table_header_columns', $columns );
+
 ?>
 <div class="woocommerce_subscriptions_related_orders">
 	<table>
 		<thead>
 			<tr>
-				<th><?php esc_html_e( 'Order Number', 'woocommerce-subscriptions' ); ?></th>
-				<th><?php esc_html_e( 'Relationship', 'woocommerce-subscriptions' ); ?></th>
-				<th><?php esc_html_e( 'Date', 'woocommerce-subscriptions' ); ?></th>
-				<th><?php esc_html_e( 'Status', 'woocommerce-subscriptions' ); ?></th>
-				<th><?php echo esc_html_x( 'Total', 'table heading', 'woocommerce-subscriptions' ); ?></th>
+				<?php foreach ( $columns as $row ) { ?>
+					<th><?php echo $row ?></th>
+				<?php } ?>	
 			</tr>
 		</thead>
 		<tbody>
