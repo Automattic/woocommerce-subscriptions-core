@@ -2138,11 +2138,7 @@ class WC_Subscription extends WC_Order {
 			$parent_id   = $this->get_parent_id();
 
 			// Because the call requested the parent order, if there is no parent ID, we need to return an empty array.
-			$related_order_ids['parent'] = [];
-
-			if ( $parent_id ) {
-				$related_order_ids['parent'] = [ $parent_id ];
-			}
+			$related_order_ids['parent'] = $parent_id ? [ $parent_id ] : [];
 		}
 
 		if ( ! empty( $order_types ) ) {
