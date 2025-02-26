@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // translators: placeholder is an order number.
 $order_number = '<a href="' . esc_url( $order->get_edit_order_url() ) . '" aria-label="' . esc_attr( sprintf( __( 'Edit order number %s', 'woocommerce-subscriptions' ), $order->get_order_number() ) ) . '">' .
 			// translators: placeholder is an order number.
-			sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ) . 
+			sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ) .
 		'</a>';
 
 // Relationship column
@@ -58,11 +58,11 @@ $total = '<span class="amount">' . wp_kses(
 	$order->get_formatted_order_total(),
 	array(
 		'small' => array(),
-		'span' => array(
-			'class' => array()
+		'span'  => array(
+			'class' => array(),
 		),
-		'del' => array(),
-		'ins' => array()
+		'del'   => array(),
+		'ins'   => array(),
 	)
 ) . '</span>';
 
