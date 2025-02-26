@@ -24,28 +24,27 @@ do_action( 'woocommerce_email_before_' . $order_type . '_table', $order, $sent_t
 if ( 'cancelled_subscription' !== $email->id ) {
 	echo '<h2 class="' . esc_attr( $heading_class ) . '">';
 
-	$before  = '<a class="link" href="' . esc_url( ( $sent_to_admin ) ? wcs_get_edit_post_link( $order->get_id() ) : $order->get_view_order_url() ) . '">';
-	$after   = '</a>';
-	$heading = ( 'order' === $order_type ) ? __( 'Order summary', 'woocommerce-subscriptions' ) : __( 'Subscription summary', 'woocommerce-subscriptions' );
-
-	$sub_heading = sprintf(
+	$id_heading = sprintf(
 		/* translators: %s: Order or subscription ID. */
 		( 'order' === $order_type ) ? __( 'Order #%s', 'woocommerce-subscriptions' ) : __( 'Subscription #%s', 'woocommerce-subscriptions' ),
 		$order->get_order_number()
 	);
 
-	echo wp_kses_post( $heading );
-
 	if ( $email_improvements_enabled ) {
+		$heading = ( 'order' === $order_type ) ? __( 'Order summary', 'woocommerce-subscriptions' ) : __( 'Subscription summary', 'woocommerce-subscriptions' );
+		echo wp_kses_post( $heading );
 		echo '<span>';
 	} else {
 		// Prior to the email improvements, the sub_heading was wrapped in square brackets.
-		$sub_heading = '[' . $sub_heading . ']';
+		$id_heading = '[' . $id_heading . ']';
 	}
 
 	echo wp_kses_post(
-		$before . $sub_heading . $after . sprintf(
-			' (<time datetime="%s">%s</time>)',
+		sprintf(
+			'%s%s%s (<time datetime="%s">%s</time>)',
+			'<a class="link" href="' . esc_url( ( $sent_to_admin ) ? wcs_get_edit_post_link( $order->get_id() ) : $order->get_view_order_url() ) . '">',
+			$id_heading,
+			'</a>',
 			$order->get_date_created()->format( 'c' ),
 			wcs_format_datetime( $order->get_date_created() )
 		)
