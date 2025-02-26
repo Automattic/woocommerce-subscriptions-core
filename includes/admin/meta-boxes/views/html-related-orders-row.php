@@ -12,7 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Order number column
 // translators: placeholder is an order number.
 $order_number = '<a href="' . esc_url( $order->get_edit_order_url() ) . '" aria-label="' . esc_attr( sprintf( __( 'Edit order number %s', 'woocommerce-subscriptions' ), $order->get_order_number() ) ) . '">' .
-			sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ) . // translators: placeholder is an order number.
+			// translators: placeholder is an order number.
+			sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ) . 
 		'</a>';
 
 // Relationship column
@@ -50,16 +51,26 @@ if ( wcs_is_subscription( $order ) ) {
 	$status_name = wc_get_order_status_name( $order->get_status() );
 }
 
-$status = '<mark class="' . esc_attr( implode( ' ', $classes ) ) . '"><span>' . esc_html( $status_name ) . '</span></mark>';
+$status_html = '<mark class="' . esc_attr( implode( ' ', $classes ) ) . '"><span>' . esc_html( $status_name ) . '</span></mark>';
 
 // Total column
-$total = '<span class="amount">' . wp_kses( $order->get_formatted_order_total(), array( 'small' => array(), 'span' => array( 'class' => array() ), 'del' => array(), 'ins' => array() ) ) . '</span>';
+$total = '<span class="amount">' . wp_kses( 
+	$order->get_formatted_order_total(), 
+	array( 
+		'small' => array(), 
+		'span' => array( 
+			'class' => array() 
+		), 
+		'del' => array(), 
+		'ins' => array() 
+	) 
+) . '</span>';
 
 $columns = array(
 	$order_number,
 	$relationship,
 	$date_created,
-	$status,
+	$status_html,
 	$total,
 );
 
@@ -69,7 +80,7 @@ $columns = apply_filters( 'wcs_related_orders_table_row_columns', $columns );
 <tr>
 	<?php foreach ( $columns as $column ) { ?>
 		<td>
-			<?php echo $column; ?>
+			<?php echo wp_kses_post( $column ); ?>
 		</td>
 	<?php } ?>
 </tr>

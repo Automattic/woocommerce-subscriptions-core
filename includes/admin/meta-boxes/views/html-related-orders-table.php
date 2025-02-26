@@ -11,10 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $columns = array(
-	esc_html( 'Order Number', 'woocommerce-subscriptions' ),
-	esc_html( 'Relationship', 'woocommerce-subscriptions' ),
-	esc_html( 'Date', 'woocommerce-subscriptions' ),
-	esc_html( 'Status', 'woocommerce-subscriptions' ),
+	esc_html__( 'Order Number', 'woocommerce-subscriptions' ),
+	esc_html__( 'Relationship', 'woocommerce-subscriptions' ),
+	esc_html__( 'Date', 'woocommerce-subscriptions' ),
+	esc_html__( 'Status', 'woocommerce-subscriptions' ),
 	esc_html_x( 'Total', 'table heading', 'woocommerce-subscriptions' ),
 );
 
@@ -26,7 +26,7 @@ $columns = apply_filters( 'wcs_related_orders_table_header_columns', $columns );
 		<thead>
 			<tr>
 				<?php foreach ( $columns as $row ) { ?>
-					<th><?php echo $row ?></th>
+					<th><?php echo wp_kses_post( $row ); ?></th>
 				<?php } ?>	
 			</tr>
 		</thead>
