@@ -2,6 +2,7 @@
 
 = 8.1.0 - 2025-xx-xx =
 * Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
+* Update - Make it possible to dispatch the Cancelled Subscription email more than once (when initially set to pending-cancellation, and again when it reaches final cancellation).
 * Update - Reduced duplicate queries when fetching multiple subscription related orders types.
 * Update - Removed unnecessary get_time() calls to reduce redundant get_last_order() queries in the Subscriptions list table.
 * Update - Improved performance on the Orders list table when rendering the Subscription Relationship column.

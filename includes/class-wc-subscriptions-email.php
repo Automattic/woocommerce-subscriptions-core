@@ -117,15 +117,12 @@ class WC_Subscriptions_Email {
 	/**
 	 * Init the mailer and call for the cancelled email notification hook.
 	 *
-	 * @param $subscription WC Subscription
+	 * @param WC_Subscription $subscription The subscription being examined.
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function send_cancelled_email( $subscription ) {
 		WC()->mailer();
-
-		if ( $subscription->has_status( array( 'pending-cancel', 'cancelled' ) ) && 'true' !== $subscription->get_cancelled_email_sent() ) {
-			do_action( 'cancelled_subscription_notification', $subscription );
-		}
+		do_action( 'cancelled_subscription_notification', $subscription );
 	}
 
 	/**
