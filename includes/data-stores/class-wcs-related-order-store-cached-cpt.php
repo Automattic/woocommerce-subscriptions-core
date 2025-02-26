@@ -746,18 +746,19 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array An array of related order IDs for each relation type.
 	 */
 	public function get_related_order_ids_by_types( WC_Order $subscription, $related_order_types ) {
+		$subscription_id   = $subscription->get_id();
 		$related_order_ids = [];
 
 		// Declare batch processing mode for this subscription.
-		self::$batch_processing_related_orders[ $subscription->get_id() ] = true;
+		self::$batch_processing_related_orders[ $subscription_id ] = true;
 
 		foreach ( $related_order_types as $relation_type ) {
 			$related_order_ids[ $relation_type ] = $this->get_related_order_ids( $subscription, $relation_type );
 		}
 
 		// Unset the batch processing mode for this subscription.
-		unset( self::$batch_processing_related_orders[ $subscription->get_id() ] );
-		unset( self::$subscription_meta_cache[ $subscription->get_id() ] );
+		unset( self::$batch_processing_related_orders[ $subscription_id ] );
+		unset( self::$subscription_meta_cache[ $subscription_id ] );
 
 		return $related_order_ids;
 	}
