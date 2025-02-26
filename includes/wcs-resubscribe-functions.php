@@ -21,8 +21,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_order_contains_resubscribe( $order ) {
-	$related_subscription_ids = wcs_get_subscription_ids_for_order( $order, 'resubscribe' );
-	return apply_filters( 'woocommerce_subscriptions_is_resubscribe_order', ! empty( $related_subscription_ids ), $order );
+	$is_resubscribe_order = false;
+
+	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
+		$order = wc_get_order( $order );
+	}
+
+	if ( $order ) {
+		$related_subscription_ids = wcs_get_subscription_ids_for_order( $order, 'resubscribe' );
+		$is_resubscribe_order     = ! empty( $related_subscription_ids );
+	}
+
+	return apply_filters( 'woocommerce_subscriptions_is_resubscribe_order', $is_resubscribe_order, $order );
 }
 
 /**
