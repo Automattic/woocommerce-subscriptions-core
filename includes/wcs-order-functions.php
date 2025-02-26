@@ -83,7 +83,7 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
  * Get the subscription IDs for an order.
  *
  * @param WC_Order     $order       The order to get the subscription IDs for.
- * @param string|array $order_types The order types to get the subscription IDs for.
+ * @param string|array $order_types The order types to get the subscription IDs for. Defaults to 'any' which will return all subscription IDs linked to the order.
  *
  * @return array The subscription IDs.
  */
