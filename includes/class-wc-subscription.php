@@ -2151,7 +2151,7 @@ class WC_Subscription extends WC_Order {
 		}
 
 		if ( 'flat' === $return_type && ! empty( $related_order_ids ) ) {
-			// Flatten the array, remove duplicates and return in the [order_id] => order_id format.
+			// Flatten the grouped order IDs into a single array.
 			$related_order_ids = array_merge( ...array_values( $related_order_ids ) );
 		}
 
