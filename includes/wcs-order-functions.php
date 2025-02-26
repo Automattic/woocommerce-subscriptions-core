@@ -105,12 +105,11 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
 	$valid_order_types = array_intersect( WCS_Related_Order_Store::instance()->get_relation_types(), $order_types );
 
 	foreach ( $valid_order_types as $order_type ) {
-		$subscription_ids += WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $order_type );
+		$subscription_ids = array_merge( $subscription_ids, WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $order_type ) );
 	}
 
-	// An order cannot be both a renewal, switch or resubscribe as well as a parent order, so only fetch subscription IDs if we didn't find any in the related order store.
-	if ( empty( $subscription_ids ) && in_array( 'parent', $order_types, true ) ) {
-		$subscription_ids = wc_get_orders(
+	if ( in_array( 'parent', $order_types, true ) ) {
+		$subscription_ids_for_parent_order = wc_get_orders(
 			[
 				'parent'  => $order->get_id(),
 				'type'    => 'shop_subscription',
@@ -120,6 +119,10 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
 				'orderby' => 'ID',
 			]
 		);
+
+		if ( is_array( $subscription_ids_for_parent_order ) ) {
+			$subscription_ids = array_merge( $subscription_ids, $subscription_ids_for_parent_order );
+		}
 	}
 
 	return $subscription_ids;
