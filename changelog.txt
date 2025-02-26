@@ -2,6 +2,7 @@
 
 = 8.1.0 - 2025-xx-xx =
 * Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
+* Update - Improved performance on the Orders list table when rendering the Subscription Relationship column.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
 
 = 8.0.1 - 2025-02-13 =
@@ -35,7 +36,6 @@
 * Fix - Subscription totals not properly updating when customers remove items via the My Account > View Subscription page on some stores with caching enabled.
 * Fix - Resolved unexpected errors during the renewal process when a subscription contains metadata with key "id".
 * Update - Changed the link on the order thank-you page to take customers directly to their "My Account > Subscriptions" page.
-* Update - Improved performance when checking if an order is a subscription renewal, resubscribe or switch order.
 
 = 7.7.2 - 2024-11-26 =
 * Fix - Prevents notices being displayed on WordPress 6.7 due to loading translations too early.
