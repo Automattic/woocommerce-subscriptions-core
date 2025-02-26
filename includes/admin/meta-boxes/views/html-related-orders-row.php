@@ -54,16 +54,16 @@ if ( wcs_is_subscription( $order ) ) {
 $status_html = '<mark class="' . esc_attr( implode( ' ', $classes ) ) . '"><span>' . esc_html( $status_name ) . '</span></mark>';
 
 // Total column
-$total = '<span class="amount">' . wp_kses( 
-	$order->get_formatted_order_total(), 
-	array( 
-		'small' => array(), 
-		'span' => array( 
-			'class' => array() 
-		), 
-		'del' => array(), 
-		'ins' => array() 
-	) 
+$total = '<span class="amount">' . wp_kses(
+	$order->get_formatted_order_total(),
+	array(
+		'small' => array(),
+		'span' => array(
+			'class' => array()
+		),
+		'del' => array(),
+		'ins' => array()
+	)
 ) . '</span>';
 
 $columns = array(
