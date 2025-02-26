@@ -25,7 +25,7 @@ class WCS_Email_Cancelled_Subscription_Test extends WP_UnitTestCase {
 	 *
 	 * @var WCS_Email_Cancelled_Subscription
 	 */
-	private $sut;
+	private $email_cancelled_subscription_mock;
 
 	/**
 	 * Initialize WC_Emails (required by our subject-under-test), and setup our email watcher.
@@ -37,8 +37,8 @@ class WCS_Email_Cancelled_Subscription_Test extends WP_UnitTestCase {
 		$this->email_sent    = false;
 
 		new WC_Emails();
-		$this->sut          = new WCS_Email_Cancelled_Subscription();
-		$this->sut->enabled = 'yes';
+		$this->email_cancelled_subscription_mock          = new WCS_Email_Cancelled_Subscription();
+		$this->email_cancelled_subscription_mock->enabled = 'yes';
 		add_filter( 'woocommerce_mail_callback_params', [ $this, 'email_watcher' ] );
 
 		parent::set_up();
@@ -92,13 +92,13 @@ class WCS_Email_Cancelled_Subscription_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->sut->trigger( $subscription );
+		$this->email_cancelled_subscription_mock->trigger( $subscription );
 		$this->assertTrue( $this->email_sent, 'An email was sent in relation to a pending-cancellation subscription.' );
 		$this->assertStringContainsString( 'Subscription Cancelled', $this->email_subject, 'We are examining the Cancelled Subscription email.' );
 		$this->reset_email_watcher();
 
 		$subscription->update_status( 'cancelled' );
-		$this->sut->trigger( $subscription );
+		$this->email_cancelled_subscription_mock->trigger( $subscription );
 		$this->assertFalse( $this->email_sent, 'When a pending-cancellation subscription was updated to cancelled, a second cancellation email was not sent.' );
 	}
 
@@ -120,14 +120,14 @@ class WCS_Email_Cancelled_Subscription_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->sut->update_option( 'always_send', 'yes' );
-		$this->sut->trigger( $subscription );
+		$this->email_cancelled_subscription_mock->update_option( 'always_send', 'yes' );
+		$this->email_cancelled_subscription_mock->trigger( $subscription );
 		$this->assertTrue( $this->email_sent, 'An email was sent in relation to a pending-cancellation subscription.' );
 		$this->assertStringContainsString( 'Subscription Cancelled', $this->email_subject, 'We are examining the Cancelled Subscription email.' );
 		$this->reset_email_watcher();
 
 		$subscription->update_status( 'cancelled' );
-		$this->sut->trigger( $subscription );
+		$this->email_cancelled_subscription_mock->trigger( $subscription );
 		$this->assertTrue( $this->email_sent, 'When a pending-cancellation subscription was updated to cancelled, a second cancellation email will also be sent (if configured to do so).' );
 		$this->assertStringContainsString( 'Subscription Cancelled', $this->email_subject, 'We are examining the Cancelled Subscription email.' );
 	}
