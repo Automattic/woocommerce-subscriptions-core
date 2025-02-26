@@ -87,7 +87,7 @@ function wcs_get_subscriptions_for_order( $order, $args = array() ) {
  *
  * @return array The subscription IDs.
  */
-function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
+function wcs_get_subscription_ids_for_order( $order, $order_types = [ 'any' ] ) {
 	$subscription_ids = [];
 
 	if ( ! is_a( $order, 'WC_Abstract_Order' ) ) {
@@ -102,13 +102,15 @@ function wcs_get_subscription_ids_for_order( $order, $order_types = [] ) {
 		$order_types = [ $order_types ];
 	}
 
-	$valid_order_types = array_intersect( WCS_Related_Order_Store::instance()->get_relation_types(), $order_types );
+	$get_all           = in_array( 'any', $order_types, true );
+	$relation_types    = WCS_Related_Order_Store::instance()->get_relation_types();
+	$valid_order_types = $get_all ? $relation_types : array_intersect( $relation_types, $order_types );
 
 	foreach ( $valid_order_types as $order_type ) {
 		$subscription_ids = array_merge( $subscription_ids, WCS_Related_Order_Store::instance()->get_related_subscription_ids( $order, $order_type ) );
 	}
 
-	if ( in_array( 'parent', $order_types, true ) ) {
+	if ( $get_all || in_array( 'parent', $order_types, true ) ) {
 		$subscription_ids_for_parent_order = wc_get_orders(
 			[
 				'parent'  => $order->get_id(),
