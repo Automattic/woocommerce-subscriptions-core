@@ -422,7 +422,7 @@ function wcs_order_contains_subscription( $order, $order_type = array( 'parent',
 	} elseif ( ( in_array( 'switch', $order_type, true ) || $get_all ) && wcs_order_contains_switch( $order ) ) {
 		$contains_subscription = true;
 
-	} elseif ( ( in_array( 'parent', $order_type, true ) || $get_all ) && wcs_is_parent_order( $order ) ) {
+	} elseif ( ( in_array( 'parent', $order_type, true ) || $get_all ) && wcs_order_contains_parent( $order ) ) {
 		$contains_subscription = true;
 	}
 
@@ -1107,8 +1107,10 @@ function wcs_set_recurring_item_total( &$item ) {
  * Checks if an order is a Subscriptions parent/initial order.
  *
  * @param WC_Order|int $order The WC_Order object or ID of a WC_Order order.
+ *
+ * @return bool Whether the order contains a parent.
  */
-function wcs_is_parent_order( $order ) {
+function wcs_order_contains_parent( $order ) {
 	$order = ! is_object( $order ) ? wc_get_order( $order ) : $order;
 
 	if ( ! $order || ! wcs_is_order( $order ) ) {
@@ -1126,5 +1128,15 @@ function wcs_is_parent_order( $order ) {
 		]
 	);
 
+	/**
+	 * Allow third-parties to filter whether this order should be considered a parent order.
+	 *
+	 * @since 7.3.0
+	 *
+	 * @param bool     $is_parent_order True if parent meta was found on the order, otherwise false.
+	 * @param WC_Order $order           The WC_Order object.
+	 *
+	 * @return bool True if the order contains a parent, otherwise false.
+	 */
 	return apply_filters( 'woocommerce_subscriptions_is_parent_order', ! empty( $is_parent_order ), $order );
 }
