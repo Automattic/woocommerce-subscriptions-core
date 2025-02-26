@@ -441,9 +441,17 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( [], wcs_get_subscription_ids_for_order( $parent_order, 'switch' ) );
 		$this->assertEquals( [], wcs_get_subscription_ids_for_order( $parent_order, 'resubscribe' ) );
 
-		$renewal_order     = WCS_Helper_Subscription::create_renewal_order( $subscription );
-		$switch_order      = WCS_Helper_Subscription::create_switch_order( $subscription );
+		$renewal_order = WCS_Helper_Subscription::create_renewal_order( $subscription );
+		$switch_order  = WCS_Helper_Subscription::create_switch_order( $subscription );
+
+		// The resubscribe order is also a parent order to the new subscription.
 		$resubscribe_order = WCS_Helper_Subscription::create_related_order( $subscription, 'resubscribe' );
+		$subscription_2    = WCS_Helper_Subscription::create_subscription();
+
+		$subscription_2->set_parent_id( $resubscribe_order->get_id() );
+		$subscription_2->save();
+
+		$this->assertEquals( [ $subscription_2->get_id(), $subscription->get_id() ], wcs_get_subscription_ids_for_order( $resubscribe_order, [ 'any' ] ) );
 
 		$this->assertEquals( [ $subscription->get_id() ], wcs_get_subscription_ids_for_order( $renewal_order, 'renewal' ) );
 		$this->assertEquals( [ $subscription->get_id() ], wcs_get_subscription_ids_for_order( $switch_order, 'switch' ) );
@@ -452,10 +460,10 @@ class WCS_Order_Functions_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ $subscription->get_id() ], wcs_get_subscription_ids_for_order( $renewal_order, [ 'renewal', 'parent' ] ) );
 		$this->assertEquals( [ $subscription->get_id() ], wcs_get_subscription_ids_for_order( $parent_order, [ 'switch', 'parent' ] ) );
 
-		$subscription_2 = WCS_Helper_Subscription::create_subscription();
-		$subscription_2->set_parent_id( $parent_order->get_id() );
-		$subscription_2->save();
+		$subscription_3 = WCS_Helper_Subscription::create_subscription();
+		$subscription_3->set_parent_id( $parent_order->get_id() );
+		$subscription_3->save();
 
-		$this->assertEquals( [ $subscription_2->get_id(), $subscription->get_id() ], wcs_get_subscription_ids_for_order( $parent_order, 'parent' ) );
+		$this->assertEquals( [ $subscription_3->get_id(), $subscription->get_id() ], wcs_get_subscription_ids_for_order( $parent_order, 'parent' ) );
 	}
 }
