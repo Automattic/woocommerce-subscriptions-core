@@ -50,15 +50,6 @@ do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 				</tbody>
 			</table>
 
-			<?php
-			/**
-			 * Post WC 3.4 the woocommerce_before_add_to_cart_button hook is triggered by the callback @see woocommerce_single_variation_add_to_cart_button() hooked onto woocommerce_single_variation.
-			 */
-			if ( wcs_is_woocommerce_pre( '3.4' ) ) {
-				do_action( 'woocommerce_before_add_to_cart_button' );
-			}
-			?>
-
 			<div class="single_variation_wrap">
 				<?php
 				/**
@@ -81,15 +72,6 @@ do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 				do_action( 'woocommerce_after_single_variation' );
 				?>
 			</div>
-
-			<?php
-			/**
-			 * Post WC 3.4 the woocommerce_after_add_to_cart_button hook is triggered by the callback @see woocommerce_single_variation_add_to_cart_button() hooked onto woocommerce_single_variation.
-			 */
-			if ( wcs_is_woocommerce_pre( '3.4' ) ) {
-				do_action( 'woocommerce_after_add_to_cart_button' );
-			}
-			?>
 		<?php endif; ?>
 	<?php endif; ?>
 

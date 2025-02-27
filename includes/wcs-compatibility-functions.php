@@ -334,33 +334,28 @@ function wcs_product_deprecated_property_handler( $property, $product ) {
 function wcs_get_coupon_property( $coupon, $property ) {
 
 	$value = '';
+	// Some coupon properties don't map nicely to their corresponding getter function. This array contains those exceptions.
+	$property_to_getter_map = array(
+		'type'                       => 'get_discount_type',
+		'exclude_product_ids'        => 'get_excluded_product_ids',
+		'expiry_date'                => 'get_date_expires',
+		'exclude_product_categories' => 'get_excluded_product_categories',
+		'customer_email'             => 'get_email_restrictions',
+		'enable_free_shipping'       => 'get_free_shipping',
+		'coupon_amount'              => 'get_amount',
+	);
 
-	if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-		$value = $coupon->$property;
-	} else {
-		// Some coupon properties don't map nicely to their corresponding getter function. This array contains those exceptions.
-		$property_to_getter_map = array(
-			'type'                       => 'get_discount_type',
-			'exclude_product_ids'        => 'get_excluded_product_ids',
-			'expiry_date'                => 'get_date_expires',
-			'exclude_product_categories' => 'get_excluded_product_categories',
-			'customer_email'             => 'get_email_restrictions',
-			'enable_free_shipping'       => 'get_free_shipping',
-			'coupon_amount'              => 'get_amount',
-		);
-
-		switch ( true ) {
-			case 'exists' == $property:
-				$value = $coupon->get_id() > 0;
-				break;
-			case isset( $property_to_getter_map[ $property ] ) && is_callable( array( $coupon, $property_to_getter_map[ $property ] ) ):
-				$function = $property_to_getter_map[ $property ];
-				$value    = $coupon->$function();
-				break;
-			case is_callable( array( $coupon, 'get_' . $property ) ):
-				$value = $coupon->{ "get_$property" }();
-				break;
-		}
+	switch ( true ) {
+		case 'exists' == $property:
+			$value = $coupon->get_id() > 0;
+			break;
+		case isset( $property_to_getter_map[ $property ] ) && is_callable( array( $coupon, $property_to_getter_map[ $property ] ) ):
+			$function = $property_to_getter_map[ $property ];
+			$value    = $coupon->$function();
+			break;
+		case is_callable( array( $coupon, 'get_' . $property ) ):
+			$value = $coupon->{ "get_$property" }();
+			break;
 	}
 
 	return $value;
@@ -377,39 +372,34 @@ function wcs_get_coupon_property( $coupon, $property ) {
  * @since  1.0.0 - Migrated from WooCommerce Subscriptions v2.2
  */
 function wcs_set_coupon_property( &$coupon, $property, $value ) {
+	// Some coupon properties don't map nicely to their corresponding setter function. This array contains those exceptions.
+	$property_to_setter_map = array(
+		'type'                       => 'set_discount_type',
+		'exclude_product_ids'        => 'set_excluded_product_ids',
+		'expiry_date'                => 'set_date_expires',
+		'exclude_product_categories' => 'set_excluded_product_categories',
+		'customer_email'             => 'set_email_restrictions',
+		'enable_free_shipping'       => 'set_free_shipping',
+		'coupon_amount'              => 'set_amount',
+	);
 
-	if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-		$coupon->$property = $value;
-	} else {
-		// Some coupon properties don't map nicely to their corresponding setter function. This array contains those exceptions.
-		$property_to_setter_map = array(
-			'type'                       => 'set_discount_type',
-			'exclude_product_ids'        => 'set_excluded_product_ids',
-			'expiry_date'                => 'set_date_expires',
-			'exclude_product_categories' => 'set_excluded_product_categories',
-			'customer_email'             => 'set_email_restrictions',
-			'enable_free_shipping'       => 'set_free_shipping',
-			'coupon_amount'              => 'set_amount',
-		);
+	switch ( true ) {
+		case 'individual_use' == $property:
+			// set_individual_use expects a boolean, the individual_use property use to be either 'yes' or 'no' so we need to accept both types
+			if ( ! is_bool( $value ) ) {
+				$value = 'yes' === $value;
+			}
 
-		switch ( true ) {
-			case 'individual_use' == $property:
-				// set_individual_use expects a boolean, the individual_use property use to be either 'yes' or 'no' so we need to accept both types
-				if ( ! is_bool( $value ) ) {
-					$value = 'yes' === $value;
-				}
+			$coupon->set_individual_use( $value );
+			break;
+		case isset( $property_to_setter_map[ $property ] ) && is_callable( array( $coupon, $property_to_setter_map[ $property ] ) ):
+			$function = $property_to_setter_map[ $property ];
+			$coupon->$function( $value );
 
-				$coupon->set_individual_use( $value );
-				break;
-			case isset( $property_to_setter_map[ $property ] ) && is_callable( array( $coupon, $property_to_setter_map[ $property ] ) ):
-				$function = $property_to_setter_map[ $property ];
-				$coupon->$function( $value );
-
-				break;
-			case is_callable( array( $coupon, 'set_' . $property ) ):
-				$coupon->{ "set_$property" }( $value );
-				break;
-		}
+			break;
+		case is_callable( array( $coupon, 'set_' . $property ) ):
+			$coupon->{ "set_$property" }( $value );
+			break;
 	}
 }
 

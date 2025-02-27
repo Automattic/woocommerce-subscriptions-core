@@ -42,10 +42,6 @@ class WCS_Admin_Meta_Boxes {
 		add_action( 'woocommerce_order_action_wcs_create_pending_renewal', array( __CLASS__, 'create_pending_renewal_action_request' ), 10, 1 );
 		add_action( 'woocommerce_order_action_wcs_create_pending_parent', array( __CLASS__, 'create_pending_parent_action_request' ), 10, 1 );
 
-		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
-			add_filter( 'woocommerce_resend_order_emails_available', array( __CLASS__, 'remove_order_email_actions' ), 0, 1 );
-		}
-
 		add_action( 'woocommerce_order_action_wcs_retry_renewal_payment', array( __CLASS__, 'process_retry_renewal_payment_action_request' ), 10, 1 );
 
 		// Disable stock management while adding line items to a subscription via AJAX.
@@ -219,9 +215,7 @@ class WCS_Admin_Meta_Boxes {
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
-			if ( ! wcs_is_woocommerce_pre( '3.2' ) ) {
-				unset( $actions['send_order_details'], $actions['send_order_details_admin'] );
-			}
+			unset( $actions['send_order_details'], $actions['send_order_details_admin'] );
 
 			if ( ! $theorder->has_status( wcs_get_subscription_ended_statuses() ) ) {
 				if ( $theorder->payment_method_supports( 'subscription_date_changes' ) && $theorder->has_status( 'active' ) ) {

@@ -717,12 +717,7 @@ class WC_Subscriptions_Admin {
 		$_POST['variable_regular_price'] = isset( $_POST['variable_subscription_price'] ) ? $_POST['variable_subscription_price'] : 0;
 
 		// Sync the min variation price
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			$variable_subscription = wc_get_product( $post_id );
-			$variable_subscription->variable_product_sync();
-		} else {
-			WC_Product_Variable::sync( $post_id );
-		}
+		WC_Product_Variable::sync( $post_id );
 	}
 
 	/**
@@ -915,7 +910,7 @@ class WC_Subscriptions_Admin {
 
 			$script_params['ajaxLoaderImage'] = WC()->plugin_url() . '/assets/images/ajax-loader.gif';
 			$script_params['ajaxUrl']         = admin_url( 'admin-ajax.php' );
-			$script_params['isWCPre24']       = var_export( wcs_is_woocommerce_pre( '2.4' ), true );
+			$script_params['isWCPre24']       = false;
 
 			wp_enqueue_script( 'woocommerce_subscriptions_admin', WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory_url( 'assets/js/admin/admin.js' ), $dependencies, filemtime( WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'assets/js/admin/admin.js' ) ) );
 			wp_localize_script( 'woocommerce_subscriptions_admin', 'WCSubscriptions', apply_filters( 'woocommerce_subscriptions_admin_script_parameters', $script_params ) );
@@ -2014,10 +2009,9 @@ class WC_Subscriptions_Admin {
 	 * @param array $settings The list of settings
 	 */
 	public static function add_guest_checkout_setting_note( $settings ) {
-		$is_wc_pre_3_4_0 = wcs_is_woocommerce_pre( '3.4.0' );
 		$current_filter  = current_filter();
 
-		if ( ( $is_wc_pre_3_4_0 && 'woocommerce_payment_gateways_settings' !== $current_filter ) || ( ! $is_wc_pre_3_4_0 && 'woocommerce_account_settings' !== $current_filter ) ) {
+		if ( 'woocommerce_account_settings' !== $current_filter ) {
 			return $settings;
 		}
 

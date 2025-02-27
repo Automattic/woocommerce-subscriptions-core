@@ -51,7 +51,7 @@ class WCS_Select2 {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2
 	 */
 	protected function get_property_name( $property ) {
-		$data_properties = wcs_is_woocommerce_pre( '3.0' ) ? array( 'placeholder', 'selected', 'allow_clear' ) : array( 'placeholder', 'allow_clear' );
+		$data_properties = array( 'placeholder', 'allow_clear' );
 		return in_array( $property, $data_properties ) ? 'data-' . $property : $property;
 	}
 
@@ -106,30 +106,16 @@ class WCS_Select2 {
 	public function get_html() {
 		$html = "\n<!--select2 -->\n";
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			if ( isset( $this->attributes['class'] ) && $this->attributes['class'] === 'wc-enhanced-select' ) {
-				$html .= '<select ';
-				$html .= $this->attributes_to_html( $this->attributes );
-				$html .= '>';
-				$html .= '<option value=""></option>';
-				$html .= '</select>';
-			} else {
-				$html .= '<input ';
-				$html .= $this->attributes_to_html( $this->attributes );
-				$html .= '/>';
-			}
-		} else {
-			$attributes             = $this->attributes;
-			$selected_value         = isset( $attributes['selected'] ) ? $attributes['selected'] : '';
-			$attributes['selected'] = 'selected';
+		$attributes             = $this->attributes;
+		$selected_value         = isset( $attributes['selected'] ) ? $attributes['selected'] : '';
+		$attributes['selected'] = 'selected';
 
-			$option_attributes = array_intersect_key( $attributes, array_flip( array( 'value', 'selected' ) ) );
-			$select_attributes = array_diff_key( $attributes, $option_attributes );
+		$option_attributes = array_intersect_key( $attributes, array_flip( array( 'value', 'selected' ) ) );
+		$select_attributes = array_diff_key( $attributes, $option_attributes );
 
-			$html .= '<select ' . $this->attributes_to_html( $select_attributes ) . '>';
-			$html .= '<option ' . $this->attributes_to_html( $option_attributes ) . '>' . $selected_value . '</option>';
-			$html .= '</select>';
-		}
+		$html .= '<select ' . $this->attributes_to_html( $select_attributes ) . '>';
+		$html .= '<option ' . $this->attributes_to_html( $option_attributes ) . '>' . $selected_value . '</option>';
+		$html .= '</select>';
 
 		$html .= "\n<!--/select2 -->\n";
 

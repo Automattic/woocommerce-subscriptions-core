@@ -632,9 +632,7 @@ function wcs_update_order_item_type( $item_id, $new_type, $order_or_subscription
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
 function wcs_get_order_item_meta( $item, $product = null ) {
-	if ( false === wcs_is_woocommerce_pre( '3.0' ) ) {
-		wcs_deprecated_function( __FUNCTION__, '3.1 of WooCommerce and 2.2.9 of Subscriptions', 'WC_Order_Item_Product->get_formatted_meta_data() or wc_display_item_meta()' );
-	}
+	wcs_deprecated_function( __FUNCTION__, '3.1 of WooCommerce and 2.2.9 of Subscriptions', 'WC_Order_Item_Product->get_formatted_meta_data() or wc_display_item_meta()' );
 	return new WC_Order_Item_Meta( $item, $product );
 }
 
@@ -658,7 +656,7 @@ function wcs_get_order_item_name( $order_item, $include = array() ) {
 
 		foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
 
-			$meta_value = wcs_is_woocommerce_pre( 3.0 ) ? $meta_value[0] : $meta_value;
+			$meta_value = $meta_value;
 
 			// Skip hidden core fields
 			if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
@@ -710,9 +708,6 @@ function wcs_get_line_item_name( $line_item ) {
 	$item_meta_strings = array();
 
 	foreach ( $line_item['item_meta'] as $meta_key => $meta_value ) {
-
-		$meta_value = wcs_is_woocommerce_pre( 3.0 ) ? $meta_value[0] : $meta_value;
-
 		// Skip hidden core fields
 		if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
 			'_qty',
@@ -796,12 +791,6 @@ function wcs_display_item_downloads( $item, $order ) {
  * @param  WC_Order_Item $to_item The order item to copy data to
  */
 function wcs_copy_order_item( $from_item, &$to_item ) {
-
-	if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-		wcs_doing_it_wrong( __FUNCTION__, 'This function uses data structures introduced in WC 3.0. To copy line item meta use $from_item[\'item_meta\'] and wc_add_order_item_meta().', '2.2' );
-		return;
-	}
-
 	foreach ( $from_item->get_meta_data() as $meta_data ) {
 		if ( '_reduced_stock' === $meta_data->key ) {
 			continue;
@@ -831,10 +820,7 @@ function wcs_copy_order_item( $from_item, &$to_item ) {
 				'taxes'     => $from_item->get_taxes(),
 			) );
 
-			// Post WC 3.4 the instance ID is stored separately.
-			if ( ! wcs_is_woocommerce_pre( '3.4' ) ) {
-				$to_item->set_instance_id( $from_item->get_instance_id() );
-			}
+			$to_item->set_instance_id( $from_item->get_instance_id() );
 
 			break;
 		case 'tax':

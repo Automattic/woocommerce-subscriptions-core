@@ -438,11 +438,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_regular_price( $product, $context = 'view' ) {
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			$regular_price = $product->regular_price;
-		} else {
-			$regular_price = $product->get_regular_price( $context );
-		}
+		$regular_price = $product->get_regular_price( $context );
 
 		return apply_filters( 'woocommerce_subscriptions_product_regular_price', $regular_price, $product );
 	}
@@ -456,11 +452,7 @@ class WC_Subscriptions_Product {
 	 */
 	public static function get_sale_price( $product, $context = 'view' ) {
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			$sale_price = $product->sale_price;
-		} else {
-			$sale_price = $product->get_sale_price( $context );
-		}
+		$sale_price = $product->get_sale_price( $context );
 
 		return apply_filters( 'woocommerce_subscriptions_product_sale_price', $sale_price, $product );
 	}
@@ -1154,16 +1146,12 @@ class WC_Subscriptions_Product {
 		global $wpdb;
 		$parent_product_ids = array();
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) && isset( $product->post->post_parent ) ) {
-			$parent_product_ids[] = $product->get_parent();
-		} else {
-			$parent_product_ids = $wpdb->get_col( $wpdb->prepare(
-				"SELECT post_id
-				FROM {$wpdb->prefix}postmeta
-				WHERE meta_key = '_children' AND meta_value LIKE '%%i:%d;%%'",
-				$product->get_id()
-			) );
-		}
+		$parent_product_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT post_id
+			FROM {$wpdb->prefix}postmeta
+			WHERE meta_key = '_children' AND meta_value LIKE '%%i:%d;%%'",
+			$product->get_id()
+		) );
 
 		return $parent_product_ids;
 	}

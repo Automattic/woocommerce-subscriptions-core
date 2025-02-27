@@ -98,13 +98,8 @@ class WC_Subscriptions_Synchroniser {
 		// When adding an item to a subscription, check if it is for a synced product to make sure the sync meta is set on the subscription. We can't attach to just the 'woocommerce_new_order_item' here because the '_product_id' and '_variation_id' meta are not set before it fires
 		add_action( 'woocommerce_ajax_add_order_item_meta', __CLASS__ . '::ajax_maybe_add_meta_for_item', 10, 2 );
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			add_action( 'woocommerce_order_add_product', __CLASS__ . '::maybe_add_meta_for_new_product', 10, 3 );
-			add_action( 'woocommerce_add_order_item_meta', array( __CLASS__, 'maybe_add_order_item_meta' ), 10, 2 );
-		} else {
-			add_action( 'woocommerce_new_order_item', __CLASS__ . '::maybe_add_meta_for_new_line_item', 10, 3 );
-			add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_line_item_meta' ), 10, 3 );
-		}
+		add_action( 'woocommerce_new_order_item', __CLASS__ . '::maybe_add_meta_for_new_line_item', 10, 3 );
+		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'maybe_add_line_item_meta' ), 10, 3 );
 
 		// Make sure the sign-up fee for a synchronised subscription is correct
 		add_filter( 'woocommerce_subscriptions_sign_up_fee', __CLASS__ . '::get_synced_sign_up_fee', 1, 3 );

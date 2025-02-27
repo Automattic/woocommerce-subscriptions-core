@@ -47,21 +47,9 @@ class WCS_Upgrade_Logger {
 	 * Clear entries from the upgrade log.
 	 */
 	public static function clear() {
+		$handler = new WC_Log_Handler_File();
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-
-			if ( empty( self::$log ) ) {
-				self::$log = new WC_Logger();
-			}
-
-			self::$log->clear( self::$handle );
-
-		} else {
-
-			$handler = new WC_Log_Handler_File();
-
-			$handler->clear( self::$handle );
-		}
+		$handler->clear( self::$handle );
 	}
 
 	/**

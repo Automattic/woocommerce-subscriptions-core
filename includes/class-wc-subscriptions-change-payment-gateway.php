@@ -164,11 +164,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 			// Re-add all the notices that would have been displayed but have now been cleared from the output.
 			foreach ( self::$notices as $notice_type => $notices ) {
 				foreach ( $notices as $notice ) {
-					if ( wcs_is_woocommerce_pre( '3.9' ) ) {
-						wc_add_notice( $notice, $notice_type );
-					} else {
-						wc_add_notice( $notice['notice'], $notice_type, $notice['data'] );
-					}
+					wc_add_notice( $notice['notice'], $notice_type, $notice['data'] );
 				}
 			}
 
@@ -916,12 +912,7 @@ class WC_Subscriptions_Change_Payment_Gateway {
 	public static function attach_dependant_hooks() {
 		_deprecated_function( __METHOD__, '1.6.4' );
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
-			add_filter( 'woocommerce_order_amount_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
-		} else {
-			// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
-			add_filter( 'woocommerce_subscription_get_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
-		}
+		// If we're changing the payment method, we want to make sure a number of totals return $0 (to prevent payments being processed now)
+		add_filter( 'woocommerce_subscription_get_total', __CLASS__ . '::maybe_zero_total', 11, 2 );
 	}
 }

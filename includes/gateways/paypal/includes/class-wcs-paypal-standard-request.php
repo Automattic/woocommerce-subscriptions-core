@@ -37,11 +37,7 @@ class WCS_PayPal_Standard_Request {
 			$order        = $subscription->get_parent();
 
 			// We need the subscription's total
-			if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-				remove_filter( 'woocommerce_order_amount_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11 );
-			} else {
-				remove_filter( 'woocommerce_subscription_get_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11 );
-			}
+			remove_filter( 'woocommerce_subscription_get_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11 );
 		} else {
 
 			// Otherwise the order is the $order
@@ -300,11 +296,7 @@ class WCS_PayPal_Standard_Request {
 
 			// Reattach the filter we removed earlier
 			if ( $is_payment_change ) {
-				if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-					add_filter( 'woocommerce_order_amount_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11, 2 );
-				} else {
-					add_filter( 'woocommerce_subscription_get_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11, 2 );
-				}
+				add_filter( 'woocommerce_subscription_get_total', 'WC_Subscriptions_Change_Payment_Gateway::maybe_zero_total', 11, 2 );
 			}
 		}
 

@@ -75,32 +75,21 @@ class WCS_Cart_Renewal {
 	 */
 	public function attach_dependant_hooks() {
 
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
+		// For order items created as part of a renewal, keep a record of the cart item key so that we can match it later once the order item has been saved and has an ID
+		add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_line_item_meta' ), 10, 3 );
 
-			// When a renewal order's line items are being updated, update the line item IDs stored in cart data.
-			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'update_line_item_cart_data' ), 10, 3 );
+		// After order meta is saved, get the order line item ID for the renewal so we can update it later
+		add_action( 'woocommerce_checkout_update_order_meta', array( &$this, 'set_order_item_id' ), 10, 2 );
 
-			add_filter( 'woocommerce_checkout_update_customer_data', array( &$this, 'maybe_update_subscription_customer_data' ), 10, 2 );
+		// After order meta is saved, get the order line item ID for the renewal so we can update it later
+		add_action( 'woocommerce_store_api_checkout_update_order_meta', array( &$this, 'set_order_item_id' ) );
 
-		} else {
+		// Don't display cart item key meta stored above on the Edit Order screen
+		add_action( 'woocommerce_hidden_order_itemmeta', array( &$this, 'hidden_order_itemmeta' ), 10 );
 
-			// For order items created as part of a renewal, keep a record of the cart item key so that we can match it later once the order item has been saved and has an ID
-			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_line_item_meta' ), 10, 3 );
-
-			// After order meta is saved, get the order line item ID for the renewal so we can update it later
-			add_action( 'woocommerce_checkout_update_order_meta', array( &$this, 'set_order_item_id' ), 10, 2 );
-
-			// After order meta is saved, get the order line item ID for the renewal so we can update it later
-			add_action( 'woocommerce_store_api_checkout_update_order_meta', array( &$this, 'set_order_item_id' ) );
-
-			// Don't display cart item key meta stored above on the Edit Order screen
-			add_action( 'woocommerce_hidden_order_itemmeta', array( &$this, 'hidden_order_itemmeta' ), 10 );
-
-			// Update customer's address on the subscription if it is changed during renewal
-			add_filter( 'woocommerce_checkout_update_user_meta', array( &$this, 'maybe_update_subscription_address_data' ), 10, 2 );
-			add_filter( 'woocommerce_store_api_checkout_update_customer_from_request', array( &$this, 'maybe_update_subscription_address_data_from_store_api' ), 10, 2 );
-
-		}
+		// Update customer's address on the subscription if it is changed during renewal
+		add_filter( 'woocommerce_checkout_update_user_meta', array( &$this, 'maybe_update_subscription_address_data' ), 10, 2 );
+		add_filter( 'woocommerce_store_api_checkout_update_customer_from_request', array( &$this, 'maybe_update_subscription_address_data_from_store_api' ), 10, 2 );
 	}
 
 	/**
@@ -156,13 +145,7 @@ class WCS_Cart_Renewal {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function attach_dependant_callbacks() {
-
-		if ( wcs_is_woocommerce_pre( '3.0' ) ) {
-			add_action( 'woocommerce_add_order_item_meta', array( &$this, 'add_order_item_meta' ), 10, 2 );
-			add_action( 'woocommerce_add_subscription_item_meta', array( &$this, 'add_order_item_meta' ), 10, 2 );
-		} else {
-			add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_order_line_item_meta' ), 10, 3 );
-		}
+		add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_order_line_item_meta' ), 10, 3 );
 	}
 
 	/**
@@ -844,18 +827,17 @@ class WCS_Cart_Renewal {
 	protected function store_coupon( $order_id, $coupon ) {
 		if ( ! empty( $order_id ) && ! empty( $coupon ) ) {
 			$renewal_coupons   = WC()->session->get( 'wcs_renewal_coupons', array() );
-			$use_bools         = wcs_is_woocommerce_pre( '3.0' ); // Some coupon properties have changed from accepting 'no' and 'yes' to true and false args.
 			$coupon_properties = array();
 			$property_defaults = array(
 				'discount_type'               => '',
 				'amount'                      => 0,
-				'individual_use'              => ( $use_bools ) ? false : 'no',
+				'individual_use'              => 'no',
 				'product_ids'                 => array(),
 				'excluded_product_ids'        => array(),
-				'free_shipping'               => ( $use_bools ) ? false : 'no',
+				'free_shipping'               => 'no',
 				'product_categories'          => array(),
 				'excluded_product_categories' => array(),
-				'exclude_sale_items'          => ( $use_bools ) ? false : 'no',
+				'exclude_sale_items'          => 'no',
 				'minimum_amount'              => '',
 				'maximum_amount'              => '',
 				'email_restrictions'          => array(),
@@ -1736,10 +1718,7 @@ class WCS_Cart_Renewal {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.1.3
 	 */
 	public function update_line_item_cart_data( $item_id, $cart_item_data, $cart_item_key ) {
-
-		if ( false === wcs_is_woocommerce_pre( '3.0' ) ) {
-			_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
-		}
+		_deprecated_function( __METHOD__, '2.2.0 and WooCommerce 3.0', __CLASS__ . '::add_line_item_meta( $order_item, $cart_item_key, $cart_item )' );
 
 		if ( isset( $cart_item_data[ $this->cart_item_key ] ) ) {
 			// Update the line_item_id to the new corresponding item_id

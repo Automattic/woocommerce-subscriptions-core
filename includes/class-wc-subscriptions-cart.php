@@ -136,11 +136,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function attach_dependant_hooks() {
 		// WooCommerce determines if free shipping is available using the WC->cart total and coupons, we need to recalculate its availability when obtaining shipping methods for a recurring cart
-		if ( wcs_is_woocommerce_pre( '3.2' ) ) {
-			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'maybe_recalculate_shipping_method_availability' ), 10, 2 );
-		} else {
-			add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'recalculate_shipping_method_availability' ), 10, 3 );
-		}
+		add_filter( 'woocommerce_shipping_free_shipping_is_available', array( __CLASS__, 'recalculate_shipping_method_availability' ), 10, 3 );
 	}
 
 	/**
@@ -406,20 +402,13 @@ class WC_Subscriptions_Cart {
 		if ( apply_filters( 'wcs_remove_fees_from_initial_cart', $remove_fees_from_cart, $cart, $recurring_carts ) ) {
 			$cart_fees = WC()->cart->get_fees();
 
-			if ( wcs_is_woocommerce_pre( '3.2' ) ) {
-				foreach ( $cart_fees as $fee_index => $fee ) {
-					WC()->cart->fees[ $fee_index ]->amount = 0;
-					WC()->cart->fees[ $fee_index ]->tax    = 0;
-				}
-			} else {
-				foreach ( $cart_fees as $fee ) {
+			foreach ( $cart_fees as $fee ) {
 					$fee->amount = 0;
 					$fee->tax    = 0;
 					$fee->total  = 0;
 				}
 
-				WC()->cart->fees_api()->set_fees( $cart_fees );
-			}
+			WC()->cart->fees_api()->set_fees( $cart_fees );
 			WC()->cart->fee_total = 0;
 		}
 
@@ -762,7 +751,7 @@ class WC_Subscriptions_Cart {
 				array(
 					'price'           => $product_subtotal,
 					'sign_up_fee'     => $sign_up_fee_string,
-					'tax_calculation' => wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode(),
+					'tax_calculation' => WC()->cart->get_tax_price_display_mode(),
 				)
 			);
 
@@ -1191,9 +1180,7 @@ class WC_Subscriptions_Cart {
 			return $is_available;
 		}
 
-		if ( ! wcs_is_woocommerce_pre( '3.2' ) ) {
-			wcs_doing_it_wrong( __METHOD__, 'This method should no longer be used on WC 3.2.0 and newer. Use WC_Subscriptions_Cart::recalculate_shipping_method_availability() and pass the specific shipping method as the third parameter instead.', '2.5.6' );
-		}
+		wcs_doing_it_wrong( __METHOD__, 'This method should no longer be used on WC 3.2.0 and newer. Use WC_Subscriptions_Cart::recalculate_shipping_method_availability() and pass the specific shipping method as the third parameter instead.', '2.5.6' );
 
 		// Take a copy of the WC global cart object so we can temporarily set it to base shipping method availability on the cached recurring cart
 		$global_cart      = WC()->cart;

@@ -253,17 +253,14 @@ class WCS_Download_Handler {
 
 			foreach ( $subscriptions as $subscription_id ) {
 
-				// Grant permissions to subscriptions which have no permissions for this product, pre WC3.0, or all subscriptions, post WC3.0, as WC doesn't grant them retrospectively anymore.
-				if ( ! in_array( $subscription_id, array_keys( $permissions_by_order_id ) ) || false === wcs_is_woocommerce_pre( '3.0' ) ) {
-					$subscription = wcs_get_subscription( $subscription_id );
+				$subscription = wcs_get_subscription( $subscription_id );
 
-					foreach ( $new_download_ids as $download_id ) {
+				foreach ( $new_download_ids as $download_id ) {
 
-						$has_permission = isset( $permissions_by_order_id[ $subscription_id ] ) && in_array( $download_id, $permissions_by_order_id[ $subscription_id ] );
+					$has_permission = isset( $permissions_by_order_id[ $subscription_id ] ) && in_array( $download_id, $permissions_by_order_id[ $subscription_id ] );
 
-						if ( $subscription && ! $has_permission && apply_filters( 'woocommerce_process_product_file_download_paths_grant_access_to_new_file', true, $download_id, $product_id, $subscription ) ) {
-							wc_downloadable_file_permission( $download_id, $product_id, $subscription );
-						}
+					if ( $subscription && ! $has_permission && apply_filters( 'woocommerce_process_product_file_download_paths_grant_access_to_new_file', true, $download_id, $product_id, $subscription ) ) {
+						wc_downloadable_file_permission( $download_id, $product_id, $subscription );
 					}
 				}
 			}

@@ -30,11 +30,6 @@ class WCS_Product_Legacy {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 */
 	public static function set_product_class( $classname, $product_type, $post_type, $product_id ) {
-
-		if ( wcs_is_woocommerce_pre( '3.0' ) && in_array( $classname, array( 'WC_Product_Subscription', 'WC_Product_Variable_Subscription', 'WC_Product_Subscription_Variation' ) ) ) {
-			$classname .= '_Legacy';
-		}
-
 		return $classname;
 	}
 

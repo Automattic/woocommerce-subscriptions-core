@@ -55,12 +55,7 @@ class WC_Subscriptions_Checkout {
 	 */
 	public static function attach_dependant_hooks() {
 		// Make sure guest checkout is not enabled in option param passed to WC JS
-		if ( wcs_is_woocommerce_pre( '3.3' ) ) {
-			add_filter( 'woocommerce_params', array( __CLASS__, 'filter_woocommerce_script_parameters' ), 10, 1 );
-			add_filter( 'wc_checkout_params', array( __CLASS__, 'filter_woocommerce_script_parameters' ), 10, 1 );
-		} else {
-			add_filter( 'woocommerce_get_script_data', array( __CLASS__, 'filter_woocommerce_script_parameters' ), 10, 2 );
-		}
+		add_filter( 'woocommerce_get_script_data', array( __CLASS__, 'filter_woocommerce_script_parameters' ), 10, 2 );
 	}
 
 	/**
@@ -307,12 +302,8 @@ class WC_Subscriptions_Checkout {
 					);
 
 					// Backwards compatibility for sites running WC pre 3.4 which stored shipping method and instance ID in a single meta row.
-					if ( wcs_is_woocommerce_pre( '3.4' ) ) {
-						$item->set_method_id( $shipping_rate->id );
-					} else {
-						$item->set_method_id( $shipping_rate->method_id );
-						$item->set_instance_id( $shipping_rate->instance_id );
-					}
+					$item->set_method_id( $shipping_rate->method_id );
+					$item->set_instance_id( $shipping_rate->instance_id );
 
 					foreach ( $shipping_rate->get_meta_data() as $key => $value ) {
 						$item->add_meta_data( $key, $value, true );
