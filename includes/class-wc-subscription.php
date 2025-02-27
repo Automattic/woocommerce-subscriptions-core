@@ -2531,7 +2531,7 @@ class WC_Subscription extends WC_Order {
 			}
 		}
 
-		// Calculate when the next payment would be after the start date
+		// Calculate when the next payment would be after the subscription's effective start date.
 		$next_payment_timestamp = wcs_add_time( $this->get_billing_interval(), $this->get_billing_period(), $from_timestamp );
 
 		// If the next payment after the subscription's effective start date would be after the end date (with 1 day grace period),
