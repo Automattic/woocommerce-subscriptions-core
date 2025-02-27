@@ -2287,9 +2287,11 @@ class WC_Subscriptions_Cart {
 	 * WC()->shipping->reset() on it, which will wipe the preferences saved. That can cause the chosen shipping method for the one
 	 * time shipping feature to be lost, and the first default to be applied instead. To counter that, we save the chosen shipping
 	 * method to a key that's not going to get wiped by WC's method, and then later restore it.
+	 *
+	 * @deprecated 7.3.0  - no longer in use internally
 	 */
 	public static function maybe_restore_chosen_shipping_method() {
-		wcs_deprecated_function( __METHOD__, 'subscriptions-core 8.1.0', 'The use of this function is no longer recommended and will be removed in a future version.' );
+		wcs_deprecated_function( __METHOD__, '7.3.0', 'The use of this function is no longer recommended and will be removed in a future version.' );
 		$chosen_shipping_method_cache = WC()->session->get( 'wcs_shipping_methods', false );
 
 		if ( false !== $chosen_shipping_method_cache ) {
