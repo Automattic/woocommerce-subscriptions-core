@@ -2497,32 +2497,47 @@ class WC_Subscription extends WC_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0.17
 	 */
 	public function is_one_payment() {
-
 		$is_one_payment = false;
+		$end_time       = $this->get_time( 'end' );
 
-		if ( 0 != ( $end_time = $this->get_time( 'end' ) ) ) {
+		// If the subscription has no end date, it cannot be a 1 payment subscription.
+		if ( 0 === $end_time ) {
+			return apply_filters( 'woocommerce_subscription_is_one_payment', $is_one_payment, $this );
+		}
 
-			$from_timestamp = $this->get_time( 'start' );
+		// To determine if the subscription will only contain one payment, we add a billing period to the subscription's start date and check if that is after the end date.
+		$from_timestamp = $this->get_time( 'start' );
+		$trial_end_time = $this->get_time( 'trial_end' );
+		$has_trial      = 0 !== $trial_end_time;
 
-			if ( 0 != $this->get_time( 'trial_end' ) || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
+		// If the subscription has a free trial, and the trial has not ended, the subscription effectively starts at the next payment date.
+		if ( $has_trial && $trial_end_time < time() ) {
+			$from_timestamp = $this->get_time( 'next_payment' );
+		} elseif ( $has_trial || WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $this ) ) {
+			// If the subscription had a free trial, or contains a synced product, we need to check if there have been any renewal orders.
+			$related_orders           = $this->get_related_orders( 'ids', 'renewal' );
+			$subscription_order_count = count( $related_orders );
 
-				$subscription_order_count = count( $this->get_related_orders() );
-
-				// when we have a sync'd subscription before its 1st payment, we need to base the calculations for the next payment on the first/next payment timestamp.
-				if ( $subscription_order_count < 2 && 0 != ( $next_payment_timestamp = $this->get_time( 'next_payment' ) ) ) {
-					$from_timestamp = $next_payment_timestamp;
-
-				// when we have a sync'd subscription after its 1st payment, we need to base the calculations for the next payment on the last payment timestamp.
-				} else if ( ! ( $subscription_order_count > 2 ) && 0 != ( $last_payment_timestamp = $this->get_time( 'last_order_date_created' ) ) ) {
-					$from_timestamp = $last_payment_timestamp;
-				}
+			// If the subscription has no renewal orders, we use the next payment date as the start date.
+			// This scenario occurs for synced subscriptions. After the trial ends, but before the first synced renewal payment.
+			if ( 0 === $subscription_order_count ) {
+				$from_timestamp = $this->get_time( 'next_payment' );
+			} elseif ( 0 === $this->get_time( 'next_payment' ) ) {
+				// If the subscription has no next payment date, it is a one-payment subscription if there is only one renewal order.
+				return apply_filters( 'woocommerce_subscription_is_one_payment', 1 === $subscription_order_count, $this );
+			} else {
+				// If the subscription has at least 1 renewal and a scheduled next payment date, it is not a one-payment subscription.
+				return apply_filters( 'woocommerce_subscription_is_one_payment', $is_one_payment, $this );
 			}
+		}
 
-			$next_payment_timestamp = wcs_add_time( $this->get_billing_interval(), $this->get_billing_period(), $from_timestamp );
+		// Calculate when the next payment would be after the start date
+		$next_payment_timestamp = wcs_add_time( $this->get_billing_interval(), $this->get_billing_period(), $from_timestamp );
 
-			if ( ( $next_payment_timestamp + DAY_IN_SECONDS - 1 ) > $end_time ) {
-				$is_one_payment = true;
-			}
+		// If the next payment after the subscription's effective start date would be after the end date (with 1 day grace period),
+		// then this is a one-time payment subscription.
+		if ( ( $next_payment_timestamp + DAY_IN_SECONDS - 1 ) > $end_time ) {
+			$is_one_payment = true;
 		}
 
 		return apply_filters( 'woocommerce_subscription_is_one_payment', $is_one_payment, $this );
