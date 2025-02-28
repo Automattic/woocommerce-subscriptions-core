@@ -555,7 +555,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$ids   = wcs_get_orders_with_meta_query(
 				[
 					'limit'      => $limit,
-					'fields'     => 'ids',
+					'return'     => 'ids',
 					'orderby'    => 'ID',
 					'order'      => 'ASC',
 					'type'       => 'shop_subscription',
