@@ -633,12 +633,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	public function update_items_cache( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( $subscription ) {
-			foreach ( $this->get_relation_types() as $relation_type ) {
-				// Getting the related IDs also sets the cache when it's not already set
-				$this->get_related_order_ids( $subscription, $relation_type );
-			}
+		if ( ! $subscription ) {
+			return;
 		}
+
+		$this->get_related_order_ids_by_types( $subscription, $this->get_relation_types() );
 	}
 
 	/**
