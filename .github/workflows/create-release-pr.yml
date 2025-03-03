@@ -27,13 +27,13 @@ jobs:
           path: woorelease
 
       - name: Enable composer dependencies caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key: ${{ runner.os }}-composer-${{ hashFiles('woorelease/composer.lock') }}
 
       - name: Enable npm dependencies caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.npm/
           key: ${{ runner.os }}-npm-${{ hashFiles('main/package-lock.json') }}
