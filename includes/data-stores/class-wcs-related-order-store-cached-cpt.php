@@ -703,13 +703,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @return array The subscription's meta data.
 	 */
 	private function get_subscription_meta( WC_Subscription $subscription, $data_store ) {
-		$subscription_id = $subscription->get_id();
-
-		// Generate a unique key for the subscription and data store combination.
+		$subscription_id     = $subscription->get_id();
 		$cache_key           = $this->get_batch_processing_cache_key( $subscription_id, $data_store );
 		$is_batch_processing = $this->is_batch_processing( $cache_key );
 
-		// If we are in batch processing mode, return the cached meta data.
+		// If we are in batch processing mode, and there are cached results return the cached meta data.
 		if ( $is_batch_processing && isset( self::$subscription_meta_cache[ $cache_key ] ) ) {
 			return self::$subscription_meta_cache[ $cache_key ];
 		}
@@ -811,6 +809,6 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	private function get_batch_processing_cache_key( $subscription_id, $data_store = false ) {
 		$data_store = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
-		return $subscription_id . get_class( $data_store );
+		return get_class( $data_store ) . '-' . $subscription_id;
 	}
 }
