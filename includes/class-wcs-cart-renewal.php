@@ -1661,9 +1661,10 @@ class WCS_Cart_Renewal {
 	 * Restores the order awaiting payment session args if the cart contains a subscription-related order.
 	 *
 	 * It's possible the that order_awaiting_payment and store_api_draft_order session args are not set if those session args are lost due
-	 * to session destruction. This function checks the cart that is being loaded from the session and if the cart contains a
-	 * subscription-related order and if the current user has permission to pay for it. If so, it restores the order awaiting payment
-	 * session args.
+	 * to session destruction.
+	 *
+	 * This function checks the cart that is being loaded from the session and if the cart contains a subscription-related order and if the
+	 * current user has permission to pay for it. If so, it restores the order awaiting payment session args.
 	 *
 	 * @param WC_Cart $cart The cart object.
 	 */
@@ -1672,8 +1673,12 @@ class WCS_Cart_Renewal {
 		foreach ( $cart->get_cart() as $cart_item ) {
 			$order = $this->get_order( $cart_item );
 
-			if ( $order && $this->validate_current_user( $order ) ) {
-				$this->set_order_awaiting_payment( $order );
+			if ( $order ) {
+				if ( $this->validate_current_user( $order ) ) {
+					$this->set_order_awaiting_payment( $order );
+				}
+
+				// Once we found an order, exit even if the user doesn't have permission to pay for it.
 				return;
 			}
 		}
