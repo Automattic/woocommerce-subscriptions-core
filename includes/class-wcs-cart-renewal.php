@@ -1672,17 +1672,22 @@ class WCS_Cart_Renewal {
 		if ( ! is_a( $cart, WC_Cart::class ) ) {
 			return;
 		}
+
 		foreach ( $cart->get_cart() as $cart_item ) {
 			$order = $this->get_order( $cart_item );
 
-			if ( $order ) {
-				if ( $this->validate_current_user( $order ) ) {
-					$this->set_order_awaiting_payment( $order );
-				}
-
-				// Once we found an order, exit even if the user doesn't have permission to pay for it.
-				return;
+			if ( ! $order ) {
+				continue;
 			}
+
+			// If the current user has permission to pay for the order, restore the order awaiting payment session arg.
+			if ( $this->validate_current_user( $order ) ) {
+				$this->set_order_awaiting_payment( $order );
+			}
+
+			// Once we found an order, exit even if the user doesn't have permission to pay for it.
+			return;
+
 		}
 	}
 
