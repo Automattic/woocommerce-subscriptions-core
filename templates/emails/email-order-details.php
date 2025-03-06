@@ -69,9 +69,7 @@ if ( 'cancelled_subscription' !== $email->id ) {
 		</thead>
 		<?php } ?>
 		<tbody>
-			<?php
-			echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $order, $order_items_table_args ) );
-			?>
+			<?php echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $order, $order_items_table_args ) ); ?>
 		</tbody>
 		<tfoot>
 			<?php
