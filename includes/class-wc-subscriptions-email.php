@@ -273,7 +273,7 @@ class WC_Subscriptions_Email {
 	 */
 	public static function order_details( $order, $sent_to_admin = false, $plain_text = false, $email = '' ) {
 		$email_improvements_enabled = wcs_is_wc_feature_enabled( 'email_improvements' );
-		$image_size                 = $email_improvements_enabled ? 48 : 32;
+		$image_size                 = $email_improvements_enabled ? 48 : 32; // These image sizes are defaults for WC core emails. @see wc_get_email_order_items().
 		$order_items_table_args     = array(
 			'show_download_links' => ( $sent_to_admin ) ? false : $order->is_download_permitted(),
 			'show_sku'            => $sent_to_admin,
