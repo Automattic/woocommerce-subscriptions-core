@@ -113,7 +113,7 @@ class WCS_Cart_Renewal {
 		// Make sure renewal meta data persists between sessions
 		add_filter( 'woocommerce_get_cart_item_from_session', array( &$this, 'get_cart_item_from_session' ), 10, 3 );
 		add_action( 'woocommerce_cart_loaded_from_session', array( &$this, 'cart_items_loaded_from_session' ), 10 );
-		add_action( 'woocommerce_cart_loaded_from_session', array( &$this, 'restore_order_awaiting_payment' ), 10, 1 );
+		add_action( 'woocommerce_cart_loaded_from_session', array( $this, 'restore_order_awaiting_payment' ), 10 );
 
 		// Make sure fees are added to the cart
 		add_action( 'woocommerce_cart_calculate_fees', array( &$this, 'maybe_add_fees' ), 10, 1 );
