@@ -249,16 +249,17 @@ class WCS_Cart_Renewal {
 	 * @internal Core checkout uses order_awaiting_payment, Blocks checkout uses store_api_draft_order. Both validate the
 	 * cart hash to ensure the order matches the cart.
 	 *
-	 * @param int|WC_Order $order The order that is awaiting payment, or 0 to unset it.
+	 * @param int|WC_Order $order_id The order that is awaiting payment, or 0 to unset it.
 	 */
-	protected function set_order_awaiting_payment( $order ) {
-		$order_id = is_object( $order ) ? $order->get_id() : $order;
+	protected function set_order_awaiting_payment( $order_id ) {
+		$order_id = is_a( $order_id, 'WC_Abstract_Order' ) ? $order_id->get_id() : $order_id;
 
 		WC()->session->set( 'order_awaiting_payment', $order_id );
 		WC()->session->set( 'store_api_draft_order', $order_id );
 
-		if ( $order ) {
-			$this->set_cart_hash( $order );
+		// Update the cart hash to ensure the order matches the cart.
+		if ( $order_id ) {
+			$this->set_cart_hash( $order_id );
 		}
 	}
 
