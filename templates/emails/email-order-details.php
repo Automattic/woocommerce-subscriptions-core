@@ -2,8 +2,10 @@
 /**
  * Order/Subscription details table shown in emails.
  *
+ * Based on the WooCommerce core email-order-details.php template.
+ *
  * @package WooCommerce_Subscriptions/Templates/Emails
- * @version 1.0.0 - Migrated from WooCommerce Subscriptions v3.0.0
+ * @version 7.3.0
  */
 
 defined( 'ABSPATH' ) || exit;
