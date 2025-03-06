@@ -1669,7 +1669,9 @@ class WCS_Cart_Renewal {
 	 * @param WC_Cart $cart The cart object.
 	 */
 	public function restore_order_awaiting_payment( $cart ) {
-
+		if ( ! is_a( $cart, WC_Cart::class ) ) {
+			return;
+		}
 		foreach ( $cart->get_cart() as $cart_item ) {
 			$order = $this->get_order( $cart_item );
 
