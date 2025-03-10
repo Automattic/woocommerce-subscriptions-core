@@ -5,12 +5,14 @@
  * @package WooCommerce_Subscriptions/Templates/Emails
  * @version 7.3.0 Provide additional context about the subscription status (if it is pending cancellation, or fully cancelled).
  */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+
+defined( 'ABSPATH' ) || exit;
+
+$email_improvements_enabled = wcs_is_wc_feature_enabled( 'email_improvements' );
 
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
+<?php echo $email_improvements_enabled ? '<div class="email-introduction">' : ''; ?>
 <p>
 	<?php
 	if ( 'pending-cancel' === $subscription->get_status() ) {
@@ -29,6 +31,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	}
 	?>
 </p>
+<?php echo $email_improvements_enabled ? '</div>' : ''; ?>
 
 <table class="td" cellspacing="0" cellpadding="6" style="width: 100%; font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;" border="1">
 	<thead>
@@ -74,7 +77,9 @@ do_action( 'woocommerce_email_customer_details', $subscription, $sent_to_admin, 
  * Show user-defined additional content - this is set in each email's settings.
  */
 if ( $additional_content ) {
+	echo $email_improvements_enabled ? '<div class="email-additional-content">' : '';
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
+	echo $email_improvements_enabled ? '</div>' : '';
 }
 
 do_action( 'woocommerce_email_footer', $email );
