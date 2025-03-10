@@ -5,9 +5,10 @@
  * @package WooCommerce_Subscriptions/Templates/Emails
  * @version 7.2.0
  */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+
+defined( 'ABSPATH' ) || exit;
+
+$email_improvements_enabled = wcs_is_wc_feature_enabled( 'email_improvements' );
 
 /**
  * @hooked WC_Emails::email_header() Output the email header.
@@ -16,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
+<?php echo $email_improvements_enabled ? '<div class="email-introduction">' : ''; ?>
 	<p>
 		<?php
 		echo esc_html(
@@ -46,6 +48,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		?>
 	</p>
 <?php
+echo $email_improvements_enabled ? '</div>' : '';
 
 // Show subscription details.
 \WC_Subscriptions_Email::subscription_details( $subscription, $order, $sent_to_admin, $plain_text, true );
