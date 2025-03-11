@@ -56,7 +56,9 @@ do_action( 'woocommerce_subscriptions_email_order_details', $subscription, $sent
  * Show user-defined additional content - this is set in each email's settings.
  */
 if ( $additional_content ) {
+	echo $email_improvements_enabled ? '<div class="email-additional-content">' : '';
 	echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) );
+	echo $email_improvements_enabled ? '</div>' : '';
 }
 
 /**
