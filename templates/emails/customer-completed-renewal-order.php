@@ -5,7 +5,7 @@
  * Based on the WooCommerce core customer-completed-order.php template.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails
- * @version 7.3.0
+ * @version 7.3.0 - Updated for WC core email improvements.
  */
 
 defined( 'ABSPATH' ) || exit;

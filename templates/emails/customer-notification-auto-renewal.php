@@ -3,7 +3,7 @@
  * Customer Notification: Notify the customer that an automated renewal their subscription is about to happen.
  *
  * @package WooCommerce_Subscriptions/Templates/Emails
- * @version 7.2.0
+ * @version 7.3.0 - Updated for WC core email improvements.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -29,8 +29,6 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 		);
 		?>
 	</p>
-
-
 	<p>
 		<?php
 		echo wp_kses(
