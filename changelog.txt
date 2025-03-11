@@ -8,6 +8,7 @@
 * Update - Improved performance on the Orders list table when rendering the Subscription Relationship column.
 * Fix - Updated subscription email item table template to align with WooCommerce 9.7 email improvements.
 * Fix - Prevent PHP warning on cart page shipping method updates by removing unused method: maybe_restore_shipping_methods.
+* Fix - Ensure the order_awaiting_payment session arg is restored when loading a renewal cart from the session to prevent duplicate orders.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
 
 = 8.0.1 - 2025-02-13 =
