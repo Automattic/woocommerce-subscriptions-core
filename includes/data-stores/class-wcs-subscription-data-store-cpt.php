@@ -715,7 +715,10 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function set_renewal_order_ids_cache( $subscription, $renewal_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'renewal' );
-		update_post_meta( $subscription->get_id(), '_subscription_renewal_order_ids_cache', $renewal_order_ids );
+
+		if ( '' !== $renewal_order_ids ) {
+			update_post_meta( $subscription->get_id(), '_subscription_renewal_order_ids_cache', $renewal_order_ids );
+		}
 	}
 
 	/**
@@ -729,7 +732,10 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function set_resubscribe_order_ids_cache( $subscription, $resubscribe_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'resubscribe' );
-		update_post_meta( $subscription->get_id(), '_subscription_resubscribe_order_ids_cache', $resubscribe_order_ids );
+
+		if ( '' !== $resubscribe_order_ids ) {
+			update_post_meta( $subscription->get_id(), '_subscription_resubscribe_order_ids_cache', $resubscribe_order_ids );
+		}
 	}
 
 	/**
@@ -743,7 +749,10 @@ class WCS_Subscription_Data_Store_CPT extends WC_Order_Data_Store_CPT implements
 	 */
 	public function set_switch_order_ids_cache( $subscription, $switch_order_ids ) {
 		$this->cleanup_backfill_related_order_cache_duplicates( $subscription, 'switch' );
-		update_post_meta( $subscription->get_id(), '_subscription_switch_order_ids_cache', $switch_order_ids );
+
+		if ( '' !== $switch_order_ids ) {
+			update_post_meta( $subscription->get_id(), '_subscription_switch_order_ids_cache', $switch_order_ids );
+		}
 	}
 
 	/**
