@@ -318,9 +318,6 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$this->update_modified_date_for_related_order_cache( $subscription, $related_order_ids, $current_metadata );
 		}
 
-		// Check if HPOS and data syncing is enabled then manually backfill the related orders cache values to WP Posts table.
-		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
-
 		// If there is metadata for this key, update it, otherwise add it.
 		if ( $current_metadata ) {
 			$new_metadata['id'] = $current_metadata->meta_id;
@@ -344,8 +341,12 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param WC_Subscription $subscription  The subscription object to backfill.
 	 * @param string          $relation_type The related order relationship type. Can be 'renewal', 'switch' or 'resubscribe'.
 	 * @param array           $metadata      The metadata to set update/add in the CPT data store. Should be an array with 'key' and 'value' keys.
+	 *
+	 * @deprecated 7.3.0 - Backfilling is already handled by the Order/Subscriptions Data Store.
 	 */
 	protected function maybe_backfill_related_order_cache( $subscription, $relation_type, $metadata ) {
+		wcs_deprecated_function( __METHOD__, '7.3.0' );
+
 		if ( ! wcs_is_custom_order_tables_usage_enabled() || ! wcs_is_custom_order_tables_data_sync_enabled() || empty( $metadata['key'] ) ) {
 			return;
 		}
