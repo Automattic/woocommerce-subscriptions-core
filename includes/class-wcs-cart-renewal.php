@@ -1682,7 +1682,7 @@ class WCS_Cart_Renewal {
 		foreach ( $cart->get_cart() as $cart_item ) {
 			$order = $this->get_order( $cart_item );
 
-			if ( ! $order ) {
+			if ( ! wcs_is_order( $order ) ) {
 				continue;
 			}
 
