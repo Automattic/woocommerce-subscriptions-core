@@ -171,23 +171,18 @@ class WC_Subscriptions_Email_Preview {
 	/**
 	 * Check if the email being previewed is a subscription email.
 	 *
-	 * @return bool
+	 * Subscription emails include:
+	 * - WC_Subscriptions_Email::$email_classes - core subscription emails.
+	 * - WC_Subscriptions_Email_Notifications::$email_classes - subscription notification emails (pre-renewal emails).
+	 * - WCS_Email_Customer_Payment_Retry - customer payment retry emails.
+	 * - WCS_Email_Payment_Retry - admin payment retry emails.
+	 *
+	 * @return bool Whether the email being previewed is a subscription email.
 	 */
 	private function is_subscription_email() {
-
-		if ( isset( WC_Subscriptions_Email::$email_classes[ $this->email_type ] ) ) {
-			return true;
-		}
-
-		if ( isset( WC_Subscriptions_Email_Notifications::$email_classes[ $this->email_type ] ) ) {
-			return true;
-		}
-
-		if ( in_array( $this->email_type, [ 'WCS_Email_Customer_Payment_Retry', 'WCS_Email_Payment_Retry' ], true ) ) {
-			return true;
-		}
-
-		return false;
+		return isset( WC_Subscriptions_Email::$email_classes[ $this->email_type ] )
+			|| isset( WC_Subscriptions_Email_Notifications::$email_classes[ $this->email_type ] )
+			|| in_array( $this->email_type, [ 'WCS_Email_Customer_Payment_Retry', 'WCS_Email_Payment_Retry' ], true );
 	}
 
 	/**
