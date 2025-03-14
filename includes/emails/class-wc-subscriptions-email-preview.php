@@ -257,11 +257,12 @@ class WC_Subscriptions_Email_Preview {
 		$placeholders = [];
 
 		switch ( $this->email_type ) {
+			case 'WCS_Email_Customer_Notification_Subscription_Expiration':
 			case 'WCS_Email_Customer_Notification_Manual_Trial_Expiration':
 			case 'WCS_Email_Customer_Notification_Auto_Trial_Expiration':
 			case 'WCS_Email_Customer_Notification_Manual_Renewal':
 			case 'WCS_Email_Customer_Notification_Auto_Renewal':
-			case 'WCS_Email_Customer_Notification_Subscription_Expiration':
+				// Pull the real values from the email object (Order or Subscription) if available.
 				if ( is_a( $email->object, 'WC_Subscription' ) ) {
 					$time_until_renewal  = $email->get_time_until_date( $email->object, 'next_payment' );
 					$customer_first_name = $email->object->get_billing_first_name();
