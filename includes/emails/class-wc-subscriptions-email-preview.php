@@ -254,20 +254,36 @@ class WC_Subscriptions_Email_Preview {
 			return;
 		}
 
-		$placeholders = [
-			'{time_until_renewal}'   => human_time_diff( time(), time() + WEEK_IN_SECONDS ),
-			'{customers_first_name}' => 'John',
-		];
+		$placeholders = [];
 
-		// Pull the real values from the email object (Order or Subscription) if available.
-		if ( is_a( $email->object, 'WC_Subscription' ) ) {
-			$placeholders['{time_until_renewal}'] = human_time_diff( time(), $email->object->get_time( 'next_payment' ) );
+		switch ( $this->email_type ) {
+			case 'WCS_Email_Customer_Notification_Manual_Trial_Expiration':
+			case 'WCS_Email_Customer_Notification_Auto_Trial_Expiration':
+			case 'WCS_Email_Customer_Notification_Manual_Renewal':
+			case 'WCS_Email_Customer_Notification_Auto_Renewal':
+			case 'WCS_Email_Customer_Notification_Subscription_Expiration':
+				if ( is_a( $email->object, 'WC_Subscription' ) ) {
+					$time_until_renewal  = $email->get_time_until_date( $email->object, 'next_payment' );
+					$customer_first_name = $email->object->get_billing_first_name();
+				} else {
+					$time_until_renewal  = human_time_diff( time(), time() + WEEK_IN_SECONDS );
+					$customer_first_name = 'John';
+				}
+
+				$placeholders['{time_until_renewal}']   = $time_until_renewal;
+				$placeholders['{customers_first_name}'] = $customer_first_name;
+				break;
+			case 'WCS_Email_Customer_Payment_Retry':
+			case 'WCS_Email_Payment_Retry':
+				$retry_time = is_a( $email->retry, 'WCS_Retry' )
+					? $email->retry->get_time()
+					: time() + ( 12 * HOUR_IN_SECONDS );
+
+				$placeholders['{retry_time}'] = wcs_get_human_time_diff( $retry_time );
+				break;
 		}
 
-		if ( is_a( $email->object, 'WC_Abstract_Order' ) ) {
-			$placeholders['{customers_first_name}'] = $email->object->get_billing_first_name();
-		}
-
+		// Merge placeholders without overriding existing ones, and only adding those in the email.
 		$email->placeholders = wp_parse_args(
 			$placeholders,
 			$email->placeholders
