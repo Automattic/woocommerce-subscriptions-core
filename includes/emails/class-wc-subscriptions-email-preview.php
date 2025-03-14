@@ -153,7 +153,7 @@ class WC_Subscriptions_Email_Preview {
 	 */
 	private function get_dummy_retry( $order ) {
 
-		if ( ! class_exists( 'WCS_Retry_Manager' ) ) {
+		if ( ! class_exists( 'WCS_Retry_Manager' ) || ! is_a( $order, 'WC_Order' ) ) {
 			return null;
 		}
 
