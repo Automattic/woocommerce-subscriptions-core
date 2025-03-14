@@ -49,6 +49,10 @@ class WC_Subscriptions_Email_Preview {
 			case 'WCS_Email_Customer_Notification_Auto_Renewal':
 				$email->set_object( $this->get_dummy_subscription() );
 				break;
+			case 'WCS_Email_Customer_Payment_Retry':
+			case 'WCS_Email_Payment_Retry':
+				$email->retry = $this->get_dummy_retry( $email->object );
+				break;
 		}
 
 		add_filter( 'woocommerce_mail_content', [ $this, 'clean_up_filters' ] );
@@ -140,12 +144,50 @@ class WC_Subscriptions_Email_Preview {
 	}
 
 	/**
+	 * Creates a dummy retry for use when previewing failed subscription payment retry emails.
+	 *
+	 * @param WC_Order $order The order object to create a dummy retry for.
+	 * @return WCS_Retry The dummy retry object.
+	 */
+	private function get_dummy_retry( $order ) {
+
+		if ( ! class_exists( 'WCS_Retry_Manager' ) ) {
+			return null;
+		}
+
+		$retry_number = 1;
+		$retry_rule   = WCS_Retry_Manager::rules()->get_rule( $retry_number, $order->get_id() );
+
+		return new WCS_Retry(
+			[
+				'status'   => 'pending',
+				'order_id' => $order->get_id(),
+				'date_gmt' => gmdate( 'Y-m-d H:i:s', time() + $retry_rule->get_retry_interval() ),
+				'rule_raw' => $retry_rule->get_raw_data(),
+			]
+		);
+	}
+
+	/**
 	 * Check if the email being previewed is a subscription email.
 	 *
 	 * @return bool
 	 */
 	private function is_subscription_email() {
-		return isset( WC_Subscriptions_Email::$email_classes[ $this->email_type ] ) || isset( WC_Subscriptions_Email_Notifications::$email_classes[ $this->email_type ] );
+
+		if ( isset( WC_Subscriptions_Email::$email_classes[ $this->email_type ] ) ) {
+			return true;
+		}
+
+		if ( isset( WC_Subscriptions_Email_Notifications::$email_classes[ $this->email_type ] ) ) {
+			return true;
+		}
+
+		if ( in_array( $this->email_type, [ 'WCS_Email_Customer_Payment_Retry', 'WCS_Email_Payment_Retry' ], true ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
