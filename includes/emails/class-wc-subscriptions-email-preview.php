@@ -55,6 +55,8 @@ class WC_Subscriptions_Email_Preview {
 				break;
 		}
 
+		$this->add_placeholders( $email );
+
 		add_filter( 'woocommerce_mail_content', [ $this, 'clean_up_filters' ] );
 
 		return $email;
@@ -241,4 +243,35 @@ class WC_Subscriptions_Email_Preview {
 
 		return $can_renew_early;
 	}
+
+	/**
+	 * Adds custom placeholders for subscription emails.
+	 *
+	 * @param WC_Email $email The email object.
+	 */
+	private function add_placeholders( $email ) {
+		if ( ! isset( $email->placeholders ) ) {
+			return;
+		}
+
+		$placeholders = [
+			'{time_until_renewal}'   => human_time_diff( time(), time() + WEEK_IN_SECONDS ),
+			'{customers_first_name}' => 'John',
+		];
+
+		// Pull the real values from the email object (Order or Subscription) if available.
+		if ( is_a( $email->object, 'WC_Subscription' ) ) {
+			$placeholders['{time_until_renewal}'] = human_time_diff( time(), $email->object->get_time( 'next_payment' ) );
+		}
+
+		if ( is_a( $email->object, 'WC_Abstract_Order' ) ) {
+			$placeholders['{customers_first_name}'] = $email->object->get_billing_first_name();
+		}
+
+		$email->placeholders = wp_parse_args(
+			$placeholders,
+			$email->placeholders
+		);
+	}
 }
+
