@@ -153,19 +153,28 @@ class WC_Subscriptions_Email_Preview {
 	 */
 	private function get_dummy_retry( $order ) {
 
-		if ( ! class_exists( 'WCS_Retry_Manager' ) || ! is_a( $order, 'WC_Order' ) ) {
+		if ( ! class_exists( 'WCS_Retry_Manager' ) ) {
 			return null;
 		}
 
-		$retry_number = 1;
-		$retry_rule   = WCS_Retry_Manager::rules()->get_rule( $retry_number, $order->get_id() );
+		$order_id   = is_a( $order, 'WC_Order' ) ? $order->get_id() : 12345;
+		$retry_rule = WCS_Retry_Manager::rules()->get_rule( 1, $order_id );
+
+		if ( is_a( $retry_rule, 'WCS_Retry_Rule' ) ) {
+			$interval       = $retry_rule->get_retry_interval();
+			$raw_retry_rule = $retry_rule->get_raw_data();
+		} else {
+			// If the retry rule is not found, use a default interval of 12 hours and an empty raw rule.
+			$interval       = 12 * HOUR_IN_SECONDS;
+			$raw_retry_rule = [];
+		}
 
 		return new WCS_Retry(
 			[
 				'status'   => 'pending',
-				'order_id' => $order->get_id(),
-				'date_gmt' => gmdate( 'Y-m-d H:i:s', time() + $retry_rule->get_retry_interval() ),
-				'rule_raw' => $retry_rule->get_raw_data(),
+				'order_id' => $order_id,
+				'date_gmt' => gmdate( 'Y-m-d H:i:s', time() + $interval ),
+				'rule_raw' => $raw_retry_rule,
 			]
 		);
 	}
