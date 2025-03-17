@@ -6,7 +6,7 @@
 * Update - Reduced duplicate queries when fetching multiple subscription related orders types.
 * Update - Removed unnecessary get_time() calls to reduce redundant get_last_order() queries in the Subscriptions list table.
 * Update - Improved performance on the Orders list table when rendering the Subscription Relationship column.
-* Update - Improved performance of the Create Related Orders Cache tool found under WooCommerce > Status > Tools.
+* Update - Improved performance of the Generate Related Order Cache tool found under WooCommerce > Status > Tools.
 * Fix - Updated subscription email item table template to align with WooCommerce 9.7 email improvements.
 * Fix - Prevent PHP warning on cart page shipping method updates by removing unused method: maybe_restore_shipping_methods.
 * Fix - Ensure the order_awaiting_payment session arg is restored when loading a renewal cart from the session to prevent duplicate orders.
