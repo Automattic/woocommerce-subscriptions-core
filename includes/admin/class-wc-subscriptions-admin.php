@@ -318,7 +318,7 @@ class WC_Subscriptions_Admin {
 			<span class="wrap">
 				<input type="text" id="_subscription_price" name="_subscription_price" class="wc_input_price wc_input_subscription_price" placeholder="<?php
 				  // translators: %s the formatted example price value.
-				  echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), str_replace( get_woocommerce_currency_symbol(), '', strip_tags( wc_price( 5.90 ) ) ) );
+				  echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '5.90' ) );
 				?>" step="any" min="0" value="<?php echo esc_attr( wc_format_localized_price( $chosen_price ) ); ?>" />
 				<label for="_subscription_period_interval" class="wcs_hidden_label"><?php esc_html_e( 'Subscription interval', 'woocommerce-subscriptions' ); ?></label>
 				<select id="_subscription_period_interval" name="_subscription_period_interval" class="wc_input_subscription_period_interval wc-enhanced-select">
@@ -358,7 +358,7 @@ class WC_Subscriptions_Admin {
 					// translators: %s is a currency symbol / code
 					'label'             => sprintf( __( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), get_woocommerce_currency_symbol() ),
 					'placeholder'       => // translators: %s the formatted example price value.
-						sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), str_replace( get_woocommerce_currency_symbol(), '', strip_tags( wc_price( 9.90 ) ) ) ),
+						sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '9.90' ) ),
 					'description'       => __( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions' ),
 					'desc_tip'          => true,
 					'type'              => 'text',

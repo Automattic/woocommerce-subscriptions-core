@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<span class="wrap">
 			<input type="text" class="wc_input_price wc_input_subscription_price" name="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_regular_price( $variation_product ) ) ); ?>" placeholder="<?php
 				// translators: %s the formatted example price value.
-				echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), str_replace( get_woocommerce_currency_symbol(), '', strip_tags( wc_price( 9.90 ) ) ) );
+				echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '9.90' ) );
 			?>">
 
 			<label for="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wcs_hidden_label"><?php esc_html_e( 'Billing interval:', 'woocommerce-subscriptions' ); ?></label>
@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</label>
 		<input type="text" class="wc_input_price wc_input_subscription_intial_price wc_input_subscription_initial_price" name="variable_subscription_sign_up_fee[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_sign_up_fee( $variation_product ) ) ); ?>" placeholder="<?php
 			// translators: %s the formatted example price value.
-			echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), str_replace( get_woocommerce_currency_symbol(), '', strip_tags( wc_price( 9.90 ) ) ) );
+			echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '9.90' ) );
 		?>">
 	</p>
 	<p class="form-row dimensions_field form-row-last show_if_variable-subscription">
