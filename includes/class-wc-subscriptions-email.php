@@ -365,7 +365,11 @@ class WC_Subscriptions_Email {
 			$hook = current_filter();
 		}
 
-		add_action( $hook, array( 'WC_Emails', 'send_transactional_email' ), $priority, $accepted_args );
+		if ( apply_filters( 'woocommerce_defer_transactional_emails', false ) ) {
+			add_action( $hook, array( 'WC_Emails', 'queue_transactional_email' ), $priority, $accepted_args );
+		} else {
+			add_action( $hook, array( 'WC_Emails', 'send_transactional_email' ), $priority, $accepted_args );
+		}
 	}
 
 	/**
