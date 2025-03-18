@@ -465,6 +465,11 @@ a.close-subscriptions-search {
 	.wc_input_subscription_payment_sync_month {
 	max-width: 86%;
 }
+#variable_product_options
+	.variable_subscription_pricing_2_3 .multiple_fields .wrap {
+		display: flex;
+		gap: 12px;
+}
 @media screen and ( max-width: 1190px ) {
 	#variable_product_options
 		.variable_subscription_pricing_2_3

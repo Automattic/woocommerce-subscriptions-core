@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 ?>
 <div class="variable_subscription_pricing variable_subscription_pricing_2_3 show_if_variable-subscription" style="display: none">
-	<p class="form-row dimensions_field form-row-first form-field show_if_variable-subscription _subscription_price_field">
+	<p class="form-row multiple_fields form-row-first form-field show_if_variable-subscription _subscription_price_field">
 		<label for="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]">
 			<?php
 			// translators: placeholder is a currency symbol / code
@@ -70,7 +70,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '9.90' ) );
 		?>">
 	</p>
-	<p class="form-row dimensions_field form-row-last show_if_variable-subscription">
+	<p class="form-row multiple_fields form-row-last show_if_variable-subscription">
 		<label for="variable_subscription_trial_length[<?php echo esc_attr( $loop ); ?>]">
 		<?php esc_html_e( 'Free trial', 'woocommerce-subscriptions' ); ?>
 			<?php // translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks") ?>
