@@ -45,7 +45,7 @@ class WCS_Query extends WC_Query {
 		$this->query_vars = array(
 			'view-subscription' => $this->get_view_subscription_endpoint(),
 		);
-		
+
 		$this->query_vars['subscriptions']               = get_option( 'woocommerce_myaccount_subscriptions_endpoint', 'subscriptions' );
 		$this->query_vars['subscription-payment-method'] = get_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
 	}

@@ -2009,7 +2009,7 @@ class WC_Subscriptions_Admin {
 	 * @param array $settings The list of settings
 	 */
 	public static function add_guest_checkout_setting_note( $settings ) {
-		$current_filter  = current_filter();
+		$current_filter = current_filter();
 
 		if ( 'woocommerce_account_settings' !== $current_filter ) {
 			return $settings;

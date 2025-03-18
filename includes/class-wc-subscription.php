@@ -150,7 +150,7 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function __isset( $key ) {
 
-		if ( in_array( $key, $this->deprecated_properties ) ) {
+		if ( in_array( $key, $this->deprecated_properties, true ) ) {
 
 			$is_set = true;
 
@@ -466,7 +466,7 @@ class WC_Subscription extends WC_Order {
 						$end_date = $this->calculate_date( 'end_of_prepaid_term' );
 
 						// If there is no future payment and no expiration date set, or the end date is before now, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment), so set the end date and cancellation date to now
-						if ( 0 == $end_date || wcs_date_to_time( $end_date ) < time() ) {
+						if ( 0 === $end_date || wcs_date_to_time( $end_date ) < time() ) {
 							$cancelled_date = $end_date = current_time( 'mysql', true );
 						} else {
 							// the cancellation date is now, and the end date is the end of prepaid term date
@@ -1553,7 +1553,7 @@ class WC_Subscription extends WC_Order {
 				if ( $this->get_time( 'next_payment' ) >= time() ) {
 					$date = $this->get_date( 'next_payment' );
 					// If there is no future payment and no expiration date set, the customer has no prepaid term (this shouldn't be possible as only active subscriptions can be set to pending cancellation and an active subscription always has either an end date or next payment)
-				} elseif ( 0 == $next_payment_time || $end_time <= time() ) {
+				} elseif ( 0 === $next_payment_time || $end_time <= time() ) {
 					$date = current_time( 'mysql', true );
 				} else {
 					$date = $this->get_date( 'end' );

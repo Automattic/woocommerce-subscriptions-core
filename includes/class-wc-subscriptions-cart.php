@@ -2448,7 +2448,6 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function add_shipping_method_post_data() {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
-		return;
 	}
 
 	/**
