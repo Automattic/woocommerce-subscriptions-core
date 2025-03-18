@@ -1443,4 +1443,95 @@ jQuery( function ( $ ) {
 	$( '.woo_subscriptions_empty_state__button_container a' ).on( 'click', function ( e ) {
 		$( this ).addClass( 'is-busy' );
 	} );
+
+	/**
+	 * Handles heartbeat integration of subscriptions locking when HPOS is enabled.
+	 *
+	 * See similar implementation in woocommerce/assets/js/admin/woocommerce_admin.js
+	 */
+	var wc_subscriptions_lock = {
+		init: function() {
+			// Edit Subscription screen.
+			this.$lock_dialog = $( '.woocommerce_page_wc-orders--shop_subscription #post-lock-dialog.order-lock-dialog' );
+			if ( 0 !== this.$lock_dialog.length && 'undefined' !== typeof woocommerce_admin_meta_boxes ) {
+				// We do not want WP's lock to interfere.
+				$( document ).off( 'heartbeat-send.refresh-lock' );
+				$( document ).off( 'heartbeat-tick.refresh-lock' );
+
+				$( document ).on( 'heartbeat-send', this.refresh_subscription_lock );
+				$( document ).on( 'heartbeat-tick', this.check_subscription_lock );
+			}
+
+			// Subscriptions list table.
+			this.$list_table = $( '.woocommerce_page_wc-orders--shop_subscription table.wc-orders-list-table' );
+			if ( 0 !== this.$list_table.length ) {
+				$( document ).on( 'heartbeat-send', this.send_subscriptions_in_list );
+				$( document ).on( 'heartbeat-tick', this.check_subscriptions_in_list );
+			}
+		},
+
+		refresh_subscription_lock: function( e, data ) {
+			delete data['wp-refresh-post-lock'];
+			data['wc-refresh-order-lock'] = woocommerce_admin_meta_boxes.post_id;
+		},
+
+		check_subscription_lock: function( e, data ) {
+			var lock_data = data['wc-refresh-order-lock'];
+
+			if ( ! lock_data || ! lock_data.error ) {
+				// No lock request in heartbeat or lock refreshed ok.
+				return;
+			}
+
+			if ( wc_subscriptions_lock.$lock_dialog.is( ':visible' ) ) {
+				return;
+			}
+
+			if ( lock_data.error.user_avatar_src ) {
+				wc_subscriptions_lock.$lock_dialog.find( '.post-locked-avatar' ).empty().append(
+					$(
+						'<img />',
+						{
+							'class': 'avatar avatar-64 photo',
+							width: 64,
+							height: 64,
+							alt: '',
+							src: lock_data.error.user_avatar_src,
+							srcset: lock_data.error.user_avatar_src_2x ? lock_data.error.user_avatar_src_2x + ' 2x' : undefined
+						}
+					)
+				);
+			}
+
+			wc_subscriptions_lock.$lock_dialog.find( '.currently-editing' ).text( lock_data.error.message );
+			wc_subscriptions_lock.$lock_dialog.show();
+			wc_subscriptions_lock.$lock_dialog.find( '.wp-tab-first' ).trigger( 'focus' );
+		},
+
+		send_subscriptions_in_list: function( e, data ) {
+			data['wc-check-locked-orders'] = wc_subscriptions_lock.$list_table.find( 'tr input[name="id[]"]' ).map(
+				function() { return this.value; }
+			).get();
+		},
+
+		check_subscriptions_in_list: function( e, data ) {
+			var locked_subscriptions = data['wc-check-locked-orders'] || {};
+
+			wc_subscriptions_lock.$list_table.find( 'tr' ).each( function( i, tr ) {
+				var $tr             = $( tr );
+				var subscription_id = $tr.find( 'input[name="id[]"]' ).val();
+
+				if ( locked_subscriptions[ subscription_id ] ) {
+					if ( ! $tr.hasClass( 'wp-locked' ) ) {
+						$tr.find( '.check-column checkbox' ).prop( 'checked', false );
+						$tr.addClass( 'wp-locked' );
+					}
+				} else {
+					$tr.removeClass( 'wp-locked' ).find( '.locked-info span' ).empty();
+				}
+			} );
+		}
+	};
+
+	wc_subscriptions_lock.init();
 } );
