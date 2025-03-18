@@ -126,7 +126,7 @@ class WCS_PayPal {
 	public static function get_option( $setting_key ) {
 
 		// When requesting the API keys make sure we return the active keys - live or sandbox depending on the mode.
-		if ( in_array( $setting_key, array( 'api_username', 'api_password', 'api_signature' ) ) && 'yes' === self::get_option( 'testmode' ) ) {
+		if ( in_array( $setting_key, array( 'api_username', 'api_password', 'api_signature' ), true ) && 'yes' === self::get_option( 'testmode' ) ) {
 			$setting_key = 'sandbox_' . $setting_key;
 		}
 
