@@ -94,7 +94,6 @@ class WC_Subscriptions_Cart {
 
 		// Remove recurring shipping methods stored in the session whenever a subscription product is removed from the cart
 		add_action( 'woocommerce_remove_cart_item', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ) );
-		wcs_add_woocommerce_dependent_action( 'woocommerce_before_cart_item_quantity_zero', array( __CLASS__, 'maybe_reset_chosen_shipping_methods' ), '3.7.0', '<' );
 
 		// Make sure we use our recurring shipping method for recurring shipping calculations not the default method
 		add_filter( 'woocommerce_shipping_chosen_method', array( __CLASS__, 'set_chosen_shipping_method' ), 10, 2 );

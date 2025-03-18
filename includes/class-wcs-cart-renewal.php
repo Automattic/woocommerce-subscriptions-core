@@ -113,7 +113,6 @@ class WCS_Cart_Renewal {
 		add_filter( 'woocommerce_get_shop_coupon_data', array( &$this, 'renewal_coupon_data' ), 10, 2 );
 
 		add_action( 'woocommerce_remove_cart_item', array( &$this, 'maybe_remove_items' ), 10, 1 );
-		wcs_add_woocommerce_dependent_action( 'woocommerce_before_cart_item_quantity_zero', array( &$this, 'maybe_remove_items' ), '3.7.0', '<' );
 
 		add_action( 'woocommerce_cart_emptied', array( &$this, 'clear_coupons' ), 10 );
 
