@@ -13,6 +13,7 @@
 * Fix - Ensure custom placeholders (time_until_renewal, customers_first_name) are included in customer notification email previews.
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
+* Dev - Removed support for WC version <= 4.4.
 
 = 8.0.1 - 2025-02-13 =
 * Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
