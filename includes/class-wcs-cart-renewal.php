@@ -775,7 +775,7 @@ class WCS_Cart_Renewal {
 
 				// Tweak the coupon data for renewal coupons
 				if ( $coupon_code == $code ) {
-					$expiry_date_property = wcs_is_woocommerce_pre( '3.0' ) ? 'expiry_date' : 'date_expires';
+					$expiry_date_property = 'date_expires';
 
 					// Some coupon properties are overridden specifically for renewals
 					$renewal_coupon_overrides = array(

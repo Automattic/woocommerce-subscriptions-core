@@ -406,7 +406,7 @@ class WC_Subscriptions_Cart {
 					$fee->amount = 0;
 					$fee->tax    = 0;
 					$fee->total  = 0;
-				}
+			}
 
 			WC()->cart->fees_api()->set_fees( $cart_fees );
 			WC()->cart->fee_total = 0;
@@ -947,7 +947,7 @@ class WC_Subscriptions_Cart {
 	public static function cart_product_price( $price, $product ) {
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-			$tax_price_display_mode = wcs_is_woocommerce_pre( '4.4' ) ? WC()->cart->tax_display_cart : WC()->cart->get_tax_price_display_mode();
+			$tax_price_display_mode = WC()->cart->get_tax_price_display_mode();
 			$price                  = WC_Subscriptions_Product::get_price_string(
 				$product,
 				array(
@@ -1363,7 +1363,7 @@ class WC_Subscriptions_Cart {
 		if ( 'none' !== self::$recurring_cart_key && isset( $chosen_methods[ $recurring_cart_package_key ], $available_methods[ $chosen_methods[ $recurring_cart_package_key ] ] ) ) {
 			$default_method = $chosen_methods[ $recurring_cart_package_key ];
 
-		// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
+			// Set the chosen shipping method (if available) to workaround WC_Shipping::get_default_method() setting the default shipping method whenever method count changes
 		} elseif ( isset( $chosen_methods[ $package_index ], $available_methods[ $chosen_methods[ $package_index ] ] ) && $default_method !== $chosen_methods[ $package_index ] ) {
 			$default_method = $chosen_methods[ $package_index ];
 		}
@@ -2334,7 +2334,7 @@ class WC_Subscriptions_Cart {
 					return sprintf(
 						// translators: 1$: period, 2$: day of the week (e.g. "every 2nd week on Wednesday").
 						__( 'every %1$s on %2$s', 'woocommerce-subscriptions' ),
-						wcs_get_subscription_period_strings( $interval,$period ),
+						wcs_get_subscription_period_strings( $interval, $period ),
 						$payment_day_of_week
 					);
 				}
@@ -2448,27 +2448,7 @@ class WC_Subscriptions_Cart {
 	 */
 	public static function add_shipping_method_post_data() {
 		wcs_deprecated_function( __METHOD__, '3.1.0' );
-		if ( ! wcs_is_woocommerce_pre( '2.6' ) ) {
-			return;
-		}
-
-		check_ajax_referer( 'update-order-review', 'security' );
-
-		parse_str( $_POST['post_data'], $form_data );
-
-		// In case we have only free trials/sync'd products in the cart and shipping methods aren't being displayed
-		if ( ! isset( $_POST['shipping_method'] ) ) {
-			$_POST['shipping_method'] = array();
-		}
-		if ( ! isset( $form_data['shipping_method'] ) ) {
-			$form_data['shipping_method'] = array();
-		}
-
-		foreach ( $form_data['shipping_method'] as $key => $methods ) {
-			if ( ! is_numeric( $key ) && ! array_key_exists( $key, $_POST['shipping_method'] ) ) {
-				$_POST['shipping_method'][ $key ] = $methods;
-			}
-		}
+		return;
 	}
 
 	/**
