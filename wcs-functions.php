@@ -9,23 +9,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-require_once( dirname( __FILE__ ) . '/includes/wcs-deprecated-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-compatibility-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-conditional-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-formatting-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-product-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-cart-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-order-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-time-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-user-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-helper-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-renewal-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-resubscribe-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-switch-functions.php' );
-require_once( dirname( __FILE__ ) . '/includes/wcs-limit-functions.php' );
+require_once dirname( __FILE__ ) . '/includes/wcs-deprecated-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-compatibility-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-conditional-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-formatting-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-product-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-cart-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-order-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-time-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-user-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-helper-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-renewal-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-resubscribe-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-switch-functions.php';
+require_once dirname( __FILE__ ) . '/includes/wcs-limit-functions.php';
 
 if ( is_admin() ) {
-	require_once( dirname( __FILE__ ) . '/includes/admin/wcs-admin-functions.php' );
+	require_once dirname( __FILE__ ) . '/includes/admin/wcs-admin-functions.php';
 }
 
 /**
@@ -247,7 +247,7 @@ function wcs_get_subscription_status_name( $status ) {
 
 	// if the sanitized status key is not in the list of filtered subscription names, return the
 	// original key, without the wc-
-	$status_name   = isset( $statuses[ $sanitized_status_key ] ) ? $statuses[ $sanitized_status_key ] : $status;
+	$status_name = isset( $statuses[ $sanitized_status_key ] ) ? $statuses[ $sanitized_status_key ] : $status;
 
 	return apply_filters( 'woocommerce_subscription_status_name', $status_name, $status );
 }
@@ -481,12 +481,15 @@ function wcs_get_subscriptions( $args ) {
 		case 'trial_end_date':
 		case 'end_date':
 			// We need to orderby post meta value: http://www.paulund.co.uk/order-meta-query
-			$date_type  = str_replace( '_date', '', $args['orderby'] );
-			$query_args = array_merge( $query_args, array(
-				'orderby'   => 'meta_value',
-				'meta_key'  => wcs_get_date_meta_key( $date_type ),
-				'meta_type' => 'DATETIME',
-			) );
+			$date_type                  = str_replace( '_date', '', $args['orderby'] );
+			$query_args                 = array_merge(
+				$query_args,
+				array(
+					'orderby'   => 'meta_value',
+					'meta_key'  => wcs_get_date_meta_key( $date_type ),
+					'meta_type' => 'DATETIME',
+				)
+			);
 			$query_args['meta_query'][] = array(
 				'key'     => wcs_get_date_meta_key( $date_type ),
 				'compare' => 'EXISTS',
@@ -569,11 +572,14 @@ function wcs_get_subscriptions( $args ) {
 function wcs_get_subscriptions_for_product( $product_ids, $fields = 'ids', $args = [] ) {
 	global $wpdb;
 
-	$args = wp_parse_args( $args, array(
-		'subscription_status' => 'any',
-		'limit'               => -1,
-		'offset'              => 0,
-	) );
+	$args = wp_parse_args(
+		$args,
+		array(
+			'subscription_status' => 'any',
+			'limit'               => -1,
+			'offset'              => 0,
+		)
+	);
 
 	// Allow for inputs of single status strings or an array of statuses.
 	$args['subscription_status'] = (array) $args['subscription_status'];
@@ -687,12 +693,14 @@ function wcs_can_item_be_removed( $item, $subscription ) {
 function wcs_get_order_items_product_id( $item_id ) {
 	global $wpdb;
 
-	$product_id = $wpdb->get_var( $wpdb->prepare(
-		"SELECT meta_value FROM {$wpdb->prefix}woocommerce_order_itemmeta
+	$product_id = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT meta_value FROM {$wpdb->prefix}woocommerce_order_itemmeta
 		 WHERE order_item_id = %d
 		 AND meta_key = '_product_id'",
-		$item_id
-	) );
+			$item_id
+		)
+	);
 
 	return $product_id;
 }
@@ -764,78 +772,8 @@ function wcs_subscription_search( $term ) {
 
 	$subscription_ids = array();
 
-	if ( ! wcs_is_woocommerce_pre( '3.0' ) ) {
-
-		$data_store = WC_Data_Store::load( 'subscription' );
-		$subscription_ids = $data_store->search_subscriptions( str_replace( 'Order #', '', wc_clean( $term ) ) );
-
-	} else {
-
-		$search_order_id = str_replace( 'Order #', '', $term );
-		if ( ! is_numeric( $search_order_id ) ) {
-			$search_order_id = 0;
-		}
-
-		$search_fields = array_map( 'wc_clean', apply_filters( 'woocommerce_shop_subscription_search_fields', array(
-			'_order_key',
-			'_billing_company',
-			'_billing_address_1',
-			'_billing_address_2',
-			'_billing_city',
-			'_billing_postcode',
-			'_billing_country',
-			'_billing_state',
-			'_billing_email',
-			'_billing_phone',
-			'_shipping_address_1',
-			'_shipping_address_2',
-			'_shipping_city',
-			'_shipping_postcode',
-			'_shipping_country',
-			'_shipping_state',
-		) ) );
-
-		$subscription_ids = array_unique( array_merge(
-			$wpdb->get_col(
-				$wpdb->prepare( "
-					SELECT p1.post_id
-					FROM {$wpdb->postmeta} p1
-					INNER JOIN {$wpdb->postmeta} p2 ON p1.post_id = p2.post_id
-					WHERE
-						( p1.meta_key = '_billing_first_name' AND p2.meta_key = '_billing_last_name' AND CONCAT(p1.meta_value, ' ', p2.meta_value) LIKE '%%%s%%' )
-					OR
-						( p1.meta_key = '_shipping_first_name' AND p2.meta_key = '_shipping_last_name' AND CONCAT(p1.meta_value, ' ', p2.meta_value) LIKE '%%%s%%' )
-					OR
-						( p1.meta_key IN ('" . implode( "','", esc_sql( $search_fields ) ) . "') AND p1.meta_value LIKE '%%%s%%' )
-					",
-					esc_attr( $term ), esc_attr( $term ), esc_attr( $term )
-				)
-			),
-			$wpdb->get_col(
-				$wpdb->prepare( "
-					SELECT order_id
-					FROM {$wpdb->prefix}woocommerce_order_items as order_items
-					WHERE order_item_name LIKE '%%%s%%'
-					",
-					esc_attr( $term )
-				)
-			),
-			$wpdb->get_col(
-				$wpdb->prepare( "
-					SELECT p1.ID
-					FROM {$wpdb->posts} p1
-					INNER JOIN {$wpdb->postmeta} p2 ON p1.ID = p2.post_id
-					INNER JOIN {$wpdb->users} u ON p2.meta_value = u.ID
-					WHERE u.user_email LIKE '%%%s%%'
-					AND p2.meta_key = '_customer_user'
-					AND p1.post_type = 'shop_subscription'
-					",
-					esc_attr( $term )
-				)
-			),
-			array( $search_order_id )
-		) );
-	}
+	$data_store       = WC_Data_Store::load( 'subscription' );
+	$subscription_ids = $data_store->search_subscriptions( str_replace( 'Order #', '', wc_clean( $term ) ) );
 
 	return $subscription_ids;
 }
