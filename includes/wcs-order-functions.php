@@ -655,9 +655,6 @@ function wcs_get_order_item_name( $order_item, $include = array() ) {
 		$attribute_strings = array();
 
 		foreach ( $order_item['item_meta'] as $meta_key => $meta_value ) {
-
-			$meta_value = $meta_value;
-
 			// Skip hidden core fields
 			if ( in_array( $meta_key, apply_filters( 'woocommerce_hidden_order_itemmeta', array(
 				'_qty',
