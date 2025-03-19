@@ -306,7 +306,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			}
 		}
 
-		$subscription_data_store = WC_Data_Store::load( 'subscription' );
+		$subscription_data_store = $subscription->get_data_store();
 		$current_metadata        = $this->get_related_order_metadata( $subscription, $relation_type );
 		$new_metadata            = array(
 			'key'   => $this->get_cache_meta_key( $relation_type ),
@@ -390,7 +390,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 				$metadata = $this->get_related_order_metadata( $subscription, $possible_relation_type );
 
 				if ( $metadata ) {
-					WC_Data_Store::load( 'subscription' )->delete_meta( $subscription, (object) [ 'id' => $metadata->meta_id ] );
+					$subscription->get_data_store()->delete_meta( $subscription, (object) [ 'id' => $metadata->meta_id ] );
 				}
 			}
 		}
@@ -659,7 +659,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	protected function get_related_order_metadata( WC_Subscription $subscription, $relation_type, $data_store = null ) {
 		$cache_meta_key = $this->get_cache_meta_key( $relation_type );
-		$data_store     = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
+		$data_store     = $data_store ?? $subscription->get_data_store();
 
 		foreach ( $this->get_subscription_meta( $subscription, $data_store ) as $meta ) {
 			if ( isset( $meta->meta_key ) && $cache_meta_key === $meta->meta_key ) {
@@ -704,7 +704,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	private function get_subscription_meta( WC_Subscription $subscription, $data_store ) {
 		$subscription_id     = $subscription->get_id();
-		$cache_key           = $this->get_batch_processing_cache_key( $subscription_id, $data_store );
+		$cache_key           = $this->get_batch_processing_cache_key( $subscription, $data_store );
 		$is_batch_processing = $this->is_batch_processing( $cache_key );
 
 		// If we are in batch processing mode, and there are cached results return the cached meta data.
@@ -751,7 +751,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$related_order_ids = [];
 
 		// Declare batch processing mode for this subscription.
-		$cache_key = $this->start_batch_processing_mode( $subscription_id );
+		$cache_key = $this->start_batch_processing_mode( $subscription );
 
 		foreach ( $related_order_types as $relation_type ) {
 			$related_order_ids[ $relation_type ] = $this->get_related_order_ids( $subscription, $relation_type );
@@ -765,11 +765,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	/**
 	 * Starts batch processing mode for a subscription.
 	 *
-	 * @param int $subscription_id The subscription ID to start batch processing mode for.
+	 * @param WC_Subscription $subscription The subscription to start batch processing mode for.
 	 * @return string The cache key for the subscription.
 	 */
-	private function start_batch_processing_mode( $subscription_id ) {
-		$cache_key = $this->get_batch_processing_cache_key( $subscription_id );
+	private function start_batch_processing_mode( $subscription ) {
+		$cache_key = $this->get_batch_processing_cache_key( $subscription );
 
 		self::$batch_processing_related_orders[ $cache_key ] = true;
 		return $cache_key;
@@ -802,13 +802,13 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 *
 	 * The cache key is a unique combination of the subscription ID and the data store class name.
 	 *
-	 * @param int         $subscription_id The subscription ID to get the cache key for.
-	 * @param bool|object $data_store      The data store which will be used to read the subscription meta. Defaults to the current subscription's data store.
+	 * @param WC_Subscription $subscription The subscription to get the cache key for.
+	 * @param bool|object     $data_store   The data store which will be used to read the subscription meta. Defaults to the current subscription's data store.
 	 *
 	 * @return string The cache key for the subscription.
 	 */
-	private function get_batch_processing_cache_key( $subscription_id, $data_store = false ) {
-		$data_store = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
-		return get_class( $data_store ) . '-' . $subscription_id;
+	private function get_batch_processing_cache_key( $subscription, $data_store = false ) {
+		$data_store = $data_store ?? $subscription->get_data_store();
+		return get_class( $data_store ) . '-' . $subscription->get_id();
 	}
 }
