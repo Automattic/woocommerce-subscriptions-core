@@ -96,14 +96,10 @@ class WC_Subscriptions_Renewal_Order {
 		$order_needed_payment = in_array( $orders_old_status, apply_filters( 'woocommerce_valid_order_statuses_for_payment', array( 'pending', 'on-hold', 'failed' ), $order ) );
 
 		if ( $order_completed && $order_needed_payment ) {
-			$current_time = current_time( 'timestamp', 1 );
-
 			if ( apply_filters( 'wcs_renewal_order_payment_update_date_created', false, $order, $subscriptions ) ) {
-				$order->set_date_created( $current_time );
+				$order->set_date_created( time() );
+				$order->save();
 			}
-
-			$order->set_date_paid( $current_time );
-			$order->save();
 		}
 
 		foreach ( $subscriptions as $subscription ) {
