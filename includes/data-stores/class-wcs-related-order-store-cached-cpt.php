@@ -807,8 +807,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 *
 	 * @return string The cache key for the subscription.
 	 */
-	private function get_batch_processing_cache_key( $subscription, $data_store = false ) {
-		$data_store = $data_store ?? $subscription->get_data_store();
+	private function get_batch_processing_cache_key( $subscription, $data_store = null ) {
+		// If no data store is provided, use the subscription object's data store or load the default data store if no subscription data store is found.
+		$data_store = $data_store ?? $subscription->get_data_store() ?? DataStore::load( 'subscriptions' );
 		return get_class( $data_store ) . '-' . $subscription->get_id();
 	}
 }
