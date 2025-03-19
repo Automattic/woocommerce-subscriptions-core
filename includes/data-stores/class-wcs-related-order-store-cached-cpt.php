@@ -809,7 +809,8 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	private function get_batch_processing_cache_key( $subscription, $data_store = null ) {
 		// If no data store is provided, use the subscription object's data store or load the default data store if no subscription data store is found.
-		$data_store = $data_store ?? $subscription->get_data_store() ?? WC_Data_Store::load( 'subscriptions' );
-		return get_class( $data_store ) . '-' . $subscription->get_id();
+		$data_store       = $data_store ?? $subscription->get_data_store() ?? WC_Data_Store::load( 'subscriptions' );
+		$data_store_class = is_a( $data_store, 'WC_Data_Store' ) ? $data_store->get_current_class_name() : '';
+		return $data_store_class . '-' . $subscription->get_id();
 	}
 }
