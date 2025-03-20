@@ -1688,12 +1688,12 @@ class WCS_Cart_Renewal {
 		foreach ( $cart->get_cart() as $cart_item ) {
 			$order = $this->get_order( $cart_item );
 
-			if ( ! $order || ! wcs_is_order( $order ) ) {
+			if ( ! $order ) {
 				continue;
 			}
 
 			// If the current user has permission to pay for the order, restore the order awaiting payment session arg.
-			if ( $this->validate_current_user( $order ) ) {
+			if ( wcs_is_order( $order ) && $this->validate_current_user( $order ) ) {
 				$this->set_order_awaiting_payment( $order );
 			}
 
