@@ -326,6 +326,12 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$return = $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
 		}
 
+		/**
+		 * Trigger update actions after modifying the subscription's related order cache metadata.
+		 *
+		 * This ensures that functions fired after a subscription update, such as webhooks and those in the DataSynchronizer,
+		 * which sync CPT post data to HPOS tables, are executed.
+		 */
 		do_action( 'woocommerce_update_order', $subscription->get_id(), $subscription );
 		do_action( 'woocommerce_update_subscription', $subscription->get_id(), $subscription );
 
