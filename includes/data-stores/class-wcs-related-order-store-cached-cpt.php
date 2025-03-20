@@ -321,10 +321,15 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		// If there is metadata for this key, update it, otherwise add it.
 		if ( $current_metadata ) {
 			$new_metadata['id'] = $current_metadata->meta_id;
-			return $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
+			$return             = $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
 		} else {
-			return $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
+			$return = $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
 		}
+
+		do_action( 'woocommerce_update_order', $subscription->get_id(), $subscription );
+		do_action( 'woocommerce_update_subscription', $subscription->get_id(), $subscription );
+
+		return $return;
 	}
 
 	/**
