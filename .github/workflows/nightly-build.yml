@@ -41,7 +41,7 @@ jobs:
 
       # Extract the latest changelog section
       # Pulls everything after the first version header like "= 8.1.0 - ... =" until the next "=" section header or end of file
-      - name: Extract latest changelog section (without heading, wrapped in code block)
+      - name: Extract latest changelog section (cleaned + wrapped in code block)
         id: changelog
         run: |
           version_line_found=0
@@ -56,7 +56,10 @@ jobs:
                 continue
               fi
             elif [[ $version_line_found -eq 1 ]]; then
-              echo "$line" >> $GITHUB_OUTPUT
+              # Trim whitespace-only lines
+              if [[ ! "$line" =~ ^[[:space:]]*$ ]]; then
+                echo "$line" >> $GITHUB_OUTPUT
+              fi
             fi
           done < changelog.txt
           echo '```' >> $GITHUB_OUTPUT
@@ -65,7 +68,7 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: Nightly
+          tag_name: nightly
           name: "Nightly Build"
           prerelease: true
           draft: false
