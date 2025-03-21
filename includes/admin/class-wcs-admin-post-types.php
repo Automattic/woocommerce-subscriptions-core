@@ -684,10 +684,10 @@ class WCS_Admin_Post_Types {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function get_date_column_content( $subscription, $column ) {
-		$date_type_map  = array( 'last_payment_date' => 'last_order_date_created' );
-		$date_type      = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
+		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
 
-		if ( $column === 'last_payment_date' ) {
+		if ( 'last_payment_date' === $column ) {
 			// Get last order date created from subscription metadata if it exists.
 			$last_order_date_created = $subscription->get_last_order_date_created();
 
