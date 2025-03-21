@@ -60,6 +60,7 @@ class WC_Subscription extends WC_Order {
 		'requires_manual_renewal' => true,
 		'cancelled_email_sent'    => false,
 		'trial_period'            => '',
+		'last_order_date_created' => null,
 
 		// Extra data that requires manual getting/setting because we don't define getters/setters for it
 		'schedule_trial_end'      => null,
@@ -908,6 +909,15 @@ class WC_Subscription extends WC_Order {
 		return $this->get_prop( 'cancelled_email_sent', $context );
 	}
 
+	/**
+	 * The subscription last order created date.
+	 *
+	 * @return string
+	 */
+	public function get_last_order_date_created( $context = 'view' ) {
+		return $this->get_prop( 'last_order_date_created', $context );
+	}
+
 	/*** Setters *****************************************************/
 
 	/**
@@ -1090,6 +1100,13 @@ class WC_Subscription extends WC_Order {
 	 */
 	public function set_cancelled_email_sent( $value ) {
 		$this->set_prop( 'cancelled_email_sent', $value );
+	}
+
+	/**
+	 * Set the subscription last order created date.
+	 */
+	public function set_last_order_date_created( $value ) {
+		$this->set_prop( 'last_order_date_created', $value );
 	}
 
 	/*** Date methods *****************************************************/

@@ -77,6 +77,8 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_query_args', array( __CLASS__, 'map_order_query_args_for_subscriptions' ) );
 
 		add_filter( 'woocommerce_orders_table_query_clauses', [ __CLASS__, 'filter_orders_query_by_parent_orders' ], 10, 2 );
+
+		add_action( 'woocommerce_before_delete_order', __CLASS__ . '::delete_order_update_subscription_last_order_date_created', 10, 2 );
 	}
 
 	/*
@@ -2394,6 +2396,28 @@ class WC_Subscriptions_Order {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata when deleting a child order.
+	 *
+	 * @param int      $id    The deleted order ID.
+	 * @param WC_Order $order The deleted order object.
+	 */
+	public static function delete_order_update_subscription_last_order_date_created( $id, $order ) {
+		if ( $order->get_created_via() !== 'subscription' ) {
+			return;
+		}
+
+		$subscription_ids = wcs_get_subscription_ids_for_order( $order );
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription            = wcs_get_subscription( $subscription_id );
+			$last_order_date_created = $subscription->get_time( 'last_order_date_created' );
+
+			$subscription->set_last_order_date_created( $last_order_date_created );
+			$subscription->save();
+		}
 	}
 
 	/**

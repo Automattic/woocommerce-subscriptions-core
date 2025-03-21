@@ -686,7 +686,23 @@ class WCS_Admin_Post_Types {
 	public static function get_date_column_content( $subscription, $column ) {
 		$date_type_map  = array( 'last_payment_date' => 'last_order_date_created' );
 		$date_type      = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
-		$date_timestamp = $subscription->get_time( $date_type );
+
+		if ( $column === 'last_payment_date' ) {
+			// Get last order date created from subscription metadata if it exists.
+			$last_order_date_created = $subscription->get_last_order_date_created();
+
+			if ( ! empty( $last_order_date_created ) ) {
+				$date_timestamp = $last_order_date_created;
+			} else {
+				// If not exists, get the last order date created from the orders and update the metadata.
+				$date_timestamp = $subscription->get_time( $date_type );
+
+				$subscription->set_last_order_date_created( $date_timestamp );
+				$subscription->save();
+			}
+		} else {
+			$date_timestamp = $subscription->get_time( $date_type );
+		}
 
 		if ( 0 === $date_timestamp ) {
 			return '-';
