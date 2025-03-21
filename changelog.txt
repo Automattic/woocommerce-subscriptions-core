@@ -13,6 +13,7 @@
 * Fix - Ensure the order_awaiting_payment session arg is restored when loading a renewal cart from the session to prevent duplicate orders.
 * Fix - Ensure custom placeholders (time_until_renewal, customers_first_name) are included in customer notification email previews.
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
+* Fix - Improve performance of the subscription listing page.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
 
 = 8.0.1 - 2025-02-13 =
