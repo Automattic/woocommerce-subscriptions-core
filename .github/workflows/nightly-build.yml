@@ -64,7 +64,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: Nightly
-          release_name: "Nightly Build"
+          name: "Nightly Build"
           prerelease: true
           draft: false
           body: ${{ steps.changelog.outputs.CHANGELOG }}
