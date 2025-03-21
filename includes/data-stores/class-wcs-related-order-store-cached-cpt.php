@@ -306,7 +306,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			}
 		}
 
-		$subscription_data_store = WC_Data_Store::load( 'subscription' );
+		$subscription_data_store = $subscription->get_data_store();
 		$current_metadata        = $this->get_related_order_metadata( $subscription, $relation_type );
 		$new_metadata            = array(
 			'key'   => $this->get_cache_meta_key( $relation_type ),
@@ -318,16 +318,24 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$this->update_modified_date_for_related_order_cache( $subscription, $related_order_ids, $current_metadata );
 		}
 
-		// Check if HPOS and data syncing is enabled then manually backfill the related orders cache values to WP Posts table.
-		$this->maybe_backfill_related_order_cache( $subscription, $relation_type, $new_metadata );
-
 		// If there is metadata for this key, update it, otherwise add it.
 		if ( $current_metadata ) {
 			$new_metadata['id'] = $current_metadata->meta_id;
-			return $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
+			$return             = $subscription_data_store->update_meta( $subscription, (object) $new_metadata );
 		} else {
-			return $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
+			$return = $subscription_data_store->add_meta( $subscription, (object) $new_metadata );
 		}
+
+		/**
+		 * Trigger update actions after modifying the subscription's related order cache metadata.
+		 *
+		 * This ensures that functions fired after a subscription update, such as webhooks and those in the DataSynchronizer,
+		 * which sync CPT post data to HPOS tables, are executed.
+		 */
+		do_action( 'woocommerce_update_order', $subscription->get_id(), $subscription );
+		do_action( 'woocommerce_update_subscription', $subscription->get_id(), $subscription );
+
+		return $return;
 	}
 
 	/**
@@ -344,8 +352,12 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 * @param WC_Subscription $subscription  The subscription object to backfill.
 	 * @param string          $relation_type The related order relationship type. Can be 'renewal', 'switch' or 'resubscribe'.
 	 * @param array           $metadata      The metadata to set update/add in the CPT data store. Should be an array with 'key' and 'value' keys.
+	 *
+	 * @deprecated 7.3.0 - Backfilling is already handled by the Order/Subscriptions Data Store.
 	 */
 	protected function maybe_backfill_related_order_cache( $subscription, $relation_type, $metadata ) {
+		wcs_deprecated_function( __METHOD__, '7.3.0' );
+
 		if ( ! wcs_is_custom_order_tables_usage_enabled() || ! wcs_is_custom_order_tables_data_sync_enabled() || empty( $metadata['key'] ) ) {
 			return;
 		}
@@ -389,7 +401,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 				$metadata = $this->get_related_order_metadata( $subscription, $possible_relation_type );
 
 				if ( $metadata ) {
-					WC_Data_Store::load( 'subscription' )->delete_meta( $subscription, (object) [ 'id' => $metadata->meta_id ] );
+					$subscription->get_data_store()->delete_meta( $subscription, (object) [ 'id' => $metadata->meta_id ] );
 				}
 			}
 		}
@@ -555,7 +567,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 			$ids   = wcs_get_orders_with_meta_query(
 				[
 					'limit'      => $limit,
-					'fields'     => 'ids',
+					'return'     => 'ids',
 					'orderby'    => 'ID',
 					'order'      => 'ASC',
 					'type'       => 'shop_subscription',
@@ -633,12 +645,11 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	public function update_items_cache( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		if ( $subscription ) {
-			foreach ( $this->get_relation_types() as $relation_type ) {
-				// Getting the related IDs also sets the cache when it's not already set
-				$this->get_related_order_ids( $subscription, $relation_type );
-			}
+		if ( ! $subscription ) {
+			return;
 		}
+
+		$this->get_related_order_ids_by_types( $subscription, $this->get_relation_types() );
 	}
 
 	/**
@@ -659,7 +670,7 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	protected function get_related_order_metadata( WC_Subscription $subscription, $relation_type, $data_store = null ) {
 		$cache_meta_key = $this->get_cache_meta_key( $relation_type );
-		$data_store     = empty( $data_store ) ? WC_Data_Store::load( 'subscription' ) : $data_store;
+		$data_store     = $data_store ?? $subscription->get_data_store();
 
 		foreach ( $this->get_subscription_meta( $subscription, $data_store ) as $meta ) {
 			if ( isset( $meta->meta_key ) && $cache_meta_key === $meta->meta_key ) {
@@ -704,11 +715,12 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 	 */
 	private function get_subscription_meta( WC_Subscription $subscription, $data_store ) {
 		$subscription_id     = $subscription->get_id();
-		$is_batch_processing = isset( self::$batch_processing_related_orders[ $subscription_id ] );
+		$cache_key           = $this->get_batch_processing_cache_key( $subscription, $data_store );
+		$is_batch_processing = $this->is_batch_processing( $cache_key );
 
-		// If we are in batch processing mode, return the cached meta data.
-		if ( $is_batch_processing && isset( self::$subscription_meta_cache[ $subscription_id ] ) ) {
-			return self::$subscription_meta_cache[ $subscription_id ];
+		// If we are in batch processing mode, and there are cached results return the cached meta data.
+		if ( $is_batch_processing && isset( self::$subscription_meta_cache[ $cache_key ] ) ) {
+			return self::$subscription_meta_cache[ $cache_key ];
 		}
 
 		/**
@@ -724,9 +736,9 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$subscription_meta            = $data_store->read_meta( $subscription );
 		self::$override_ignored_props = false;
 
-		// If we are in batch processing mode, cache the meta data.
+		// If we are in batch processing mode, cache the meta data so it can be returned for subsequent calls.
 		if ( $is_batch_processing ) {
-			self::$subscription_meta_cache[ $subscription_id ] = $subscription_meta;
+			self::$subscription_meta_cache[ $cache_key ] = $subscription_meta;
 		}
 
 		return $subscription_meta;
@@ -750,16 +762,66 @@ class WCS_Related_Order_Store_Cached_CPT extends WCS_Related_Order_Store_CPT imp
 		$related_order_ids = [];
 
 		// Declare batch processing mode for this subscription.
-		self::$batch_processing_related_orders[ $subscription_id ] = true;
+		$cache_key = $this->start_batch_processing_mode( $subscription );
 
 		foreach ( $related_order_types as $relation_type ) {
 			$related_order_ids[ $relation_type ] = $this->get_related_order_ids( $subscription, $relation_type );
 		}
 
-		// Unset the batch processing mode for this subscription.
-		unset( self::$batch_processing_related_orders[ $subscription_id ] );
-		unset( self::$subscription_meta_cache[ $subscription_id ] );
+		$this->stop_batch_processing_mode( $cache_key );
 
 		return $related_order_ids;
+	}
+
+	/**
+	 * Starts batch processing mode for a subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription to start batch processing mode for.
+	 * @return string The cache key for the subscription.
+	 */
+	private function start_batch_processing_mode( $subscription ) {
+		$cache_key = $this->get_batch_processing_cache_key( $subscription );
+
+		self::$batch_processing_related_orders[ $cache_key ] = true;
+		return $cache_key;
+	}
+
+	/**
+	 * Stops batch processing mode for a subscription.
+	 *
+	 * Destroys the cache and removes the cache key.
+	 *
+	 * @param string $cache_key The batch processing cache key.
+	 */
+	private function stop_batch_processing_mode( $cache_key ) {
+		unset( self::$batch_processing_related_orders[ $cache_key ] );
+		unset( self::$subscription_meta_cache[ $cache_key ] );
+	}
+
+	/**
+	 * Checks if batch processing mode is active for a subscription.
+	 *
+	 * @param string $cache_key The batch processing cache key.
+	 * @return bool True if batch processing mode is active, false otherwise.
+	 */
+	private function is_batch_processing( $cache_key ) {
+		return isset( self::$batch_processing_related_orders[ $cache_key ] );
+	}
+
+	/**
+	 * Gets the batch processing cache key for a subscription.
+	 *
+	 * The cache key is a unique combination of the subscription ID and the data store class name.
+	 *
+	 * @param WC_Subscription $subscription The subscription to get the cache key for.
+	 * @param bool|object     $data_store   The data store which will be used to read the subscription meta. Defaults to the current subscription's data store.
+	 *
+	 * @return string The cache key for the subscription.
+	 */
+	private function get_batch_processing_cache_key( $subscription, $data_store = null ) {
+		// If no data store is provided, use the subscription object's data store or load the default data store if no subscription data store is found.
+		$data_store       = $data_store ?? $subscription->get_data_store() ?? WC_Data_Store::load( 'subscriptions' );
+		$data_store_class = is_a( $data_store, 'WC_Data_Store' ) ? $data_store->get_current_class_name() : '';
+		return $data_store_class . '-' . $subscription->get_id();
 	}
 }
