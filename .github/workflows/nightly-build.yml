@@ -41,23 +41,25 @@ jobs:
 
       # Extract the latest changelog section
       # Pulls everything after the first version header like "= 8.1.0 - ... =" until the next "=" section header or end of file
-      - name: Extract latest changelog section
+      - name: Extract latest changelog section (without heading, wrapped in code block)
         id: changelog
         run: |
           version_line_found=0
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
             if [[ $line == =\ *\ = ]]; then
               if [[ $version_line_found -eq 1 ]]; then
                 break
               else
                 version_line_found=1
-                echo "$line" >> $GITHUB_OUTPUT
+                continue
               fi
             elif [[ $version_line_found -eq 1 ]]; then
               echo "$line" >> $GITHUB_OUTPUT
             fi
           done < changelog.txt
+          echo '```' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
