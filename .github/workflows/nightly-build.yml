@@ -6,6 +6,9 @@ on:
   schedule:
     # Every day at 10:00 UTC
     - cron: '0 10 * * *'
+  pull_request:
+    branches:
+      - add/nightly-build-workflow
 
 jobs:
   build:
