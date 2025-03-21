@@ -1,0 +1,49 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # Every day at 10:00 UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Plugin and Upload Nightly
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'  # Caches npm dependencies for faster builds
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Plugin
+        run: npm run build
+
+      - name: Verify Generated ZIP
+        run: ls -lah woocommerce-subscriptions-core.zip
+
+      - name: Delete Previous Nightly Release Assets
+        uses: dev-drprasad/delete-older-releases@v0.3.3
+        with:
+          keep_latest: 1
+          delete_tag_pattern: Nightly
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: Nightly
+          release_name: "Nightly Build"
+          prerelease: true
+          draft: false
+          files: woocommerce-subscriptions-core.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
