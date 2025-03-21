@@ -8,7 +8,7 @@ on:
     - cron: '0 10 * * *'
   pull_request:
     branches:
-      - add/nightly-build-workflow
+      - trunk
 
 jobs:
   build:
