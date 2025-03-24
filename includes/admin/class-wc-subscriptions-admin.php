@@ -1592,7 +1592,7 @@ class WC_Subscriptions_Admin {
 
 			echo '<div class="updated dismiss-subscriptions-search"><p>';
 			// translators: placeholders are opening link tag, ID of sub, and closing link tag
-			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wcs_get_edit_post_link( $subscription ) ) . '">', esc_html( $subscription->get_order_number() ), '</a>' );
+			printf( esc_html__( 'Showing orders for %1$sSubscription %2$s%3$s', 'woocommerce-subscriptions' ), '<a href="' . esc_url( wcs_get_edit_post_link( $subscription_id ) ) . '">', esc_html( $subscription->get_order_number() ), '</a>' );
 			echo '</p>';
 			printf(
 				'<a href="%1$s" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></a>',
