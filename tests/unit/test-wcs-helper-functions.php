@@ -147,4 +147,21 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 
 		$this->assertFalse( wcs_compare_order_billing_shipping_address( $order ) );
 	}
+
+	/**
+	 * Test @see wcs_prefix_order_status() to make sure it returns the correct prefixed order status for a specific input.
+	 */
+	public function test_wcs_prefix_order_status() {
+		// Basic prefixing.
+		$this->assertEquals( 'wc-pending', wcs_prefix_order_status( 'pending' ) );
+		$this->assertEquals( 'wc-processing', wcs_prefix_order_status( 'processing' ) );
+
+		// Custom prefix.
+		$this->assertEquals( '_completed', wcs_prefix_order_status( 'completed', '_' ) );
+		$this->assertEquals( '_active', wcs_prefix_order_status( 'active', '_' ) );
+
+		// Already prefixed.
+		$this->assertEquals( 'wc-pending', wcs_prefix_order_status( 'wc-pending' ) );
+		$this->assertEquals( '_completed', wcs_prefix_order_status( '_completed', '_' ) );
+	}
 }
