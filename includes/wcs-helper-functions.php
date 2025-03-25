@@ -354,7 +354,7 @@ function wcs_compare_order_billing_shipping_address( $order ) {
  * Prefixes an order status with "wc-" if it is not already prefixed.
  *
  * @param string $order_status The order status
- * @param string $prefix       The order status prefix.
+ * @param string $prefix       The order status prefix. Optional. Default is "wc-".
  *
  * @return string The order status prefixed with "wc-".
  */
