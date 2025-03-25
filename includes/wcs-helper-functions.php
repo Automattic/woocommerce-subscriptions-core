@@ -170,7 +170,7 @@ function wcs_get_rounding_precision() {
  * @return string
  */
 function wcs_maybe_prefix_key( $key, $prefix = '_' ) {
-	return ( substr( $key, 0, strlen( $prefix ) ) != $prefix ) ? $prefix . $key : $key;
+	return ( substr( $key, 0, strlen( $prefix ) ) !== $prefix ) ? $prefix . $key : $key;
 }
 
 /**
@@ -348,4 +348,16 @@ function wcs_compare_order_billing_shipping_address( $order ) {
 	$addresses_are_equal = $shipping_address == $billing_address;
 
 	return $addresses_are_equal;
+}
+
+/**
+ * Prefixes an order status with "wc-" if it is not already prefixed.
+ *
+ * @param string $order_status The order status
+ * @param string $prefix       The order status prefix.
+ *
+ * @return string The order status prefixed with "wc-".
+ */
+function wcs_prefix_order_status( $order_status, $prefix = 'wc-' ) {
+	return wcs_maybe_prefix_key( $order_status, $prefix );
 }
