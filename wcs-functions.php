@@ -950,3 +950,163 @@ function wcs_is_large_site() {
 
 	return apply_filters( 'wcs_is_large_site', $is_large_site );
 }
+
+/**
+ * Check if a user has already used a trial for a specific product
+ *
+ * @param int $user_id The user ID to check
+ * @param int $product_id The product ID to check
+ * @return bool True if the user has already used a trial for this product
+ */
+function wcs_user_has_used_trial_for_product( $user_id, $product_id ) {
+	$used_trials = get_user_meta( $user_id, '_wcs_trial_used_for_products', true );
+
+	if ( empty( $used_trials ) ) {
+		return false;
+	}
+
+	// Convert to array if it's not already
+	if ( ! is_array( $used_trials ) ) {
+		$used_trials = array( $used_trials );
+	}
+
+	return in_array( $product_id, $used_trials );
+}
+
+/**
+ * Record that a user has used a trial for a specific product
+ *
+ * @param int $user_id The user ID
+ * @param int $product_id The product ID
+ * @return bool True if the record was updated
+ */
+function wcs_record_trial_usage_for_product( $user_id, $product_id ) {
+	$used_trials = get_user_meta( $user_id, '_wcs_trial_used_for_products', true );
+
+	if ( empty( $used_trials ) ) {
+		$used_trials = array();
+	} elseif ( ! is_array( $used_trials ) ) {
+		$used_trials = array( $used_trials );
+	}
+
+	// Only add if not already recorded
+	if ( ! in_array( $product_id, $used_trials ) ) {
+		$used_trials[] = $product_id;
+		update_user_meta( $user_id, '_wcs_trial_used_for_products', $used_trials );
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Check if one-time trials are enabled for a product
+ *
+ * @return bool True if one-time trials are enabled
+ */
+function wcs_is_one_time_trial_enabled() {
+	return 'yes' === get_option( 'woocommerce_subscriptions_one_time_trials', 'no' );
+}
+
+/**
+ * Hook into subscription creation to check and apply one-time trial restrictions
+ *
+ * @param WC_Subscription $subscription The subscription object
+ */
+function wcs_check_and_apply_one_time_trial_restriction( $subscription, $order ) {
+	// Only process if the subscription has a trial
+	if ( ! $subscription->get_trial_period() ) {
+		return;
+	}
+
+	$items = $subscription->get_items();
+	$user_id = $order->get_user_id();
+
+	error_log( 'checking out user id: ' . $user_id );
+
+	foreach ( $items as $item ) {
+		$product_id = $item->get_product_id();
+		$variation_id = $item->get_variation_id();
+
+		// Use variation ID if this is a variable product
+		$check_product_id = $variation_id ? $variation_id : $product_id;
+
+		// Check if one-time trials are enabled for this product
+		if ( wcs_is_one_time_trial_enabled( $check_product_id ) ) {
+			// Check if user has already used a trial for this product
+			if ( wcs_user_has_used_trial_for_product( $user_id, $check_product_id ) ) {
+				// Remove trial by setting next payment date to now
+				$subscription->set_date( 'trial_end', current_time( 'mysql' ) );
+				$subscription->set_date( 'next_payment', current_time( 'mysql' ) );
+				$subscription->save();
+
+				// Add note to subscription
+				$subscription->add_order_note(
+					__( 'Trial period removed because customer has already used a trial for this product.', 'woocommerce-subscriptions' )
+				);
+
+				// No need to check other items
+				break;
+			} else {
+				// Record that this user is using a trial for this product
+				wcs_record_trial_usage_for_product( $user_id, $check_product_id );
+			}
+		}
+	}
+}
+add_action( 'woocommerce_checkout_subscription_created', 'wcs_check_and_apply_one_time_trial_restriction', 10, 2 );
+
+/**
+ * Check cart items for trial eligibility and add notices if needed
+ */
+function wcs_check_cart_items_trial_eligibility() {
+	// Only check if one-time trials are enabled globally
+	if ( 'yes' !== get_option( 'woocommerce_subscriptions_one_time_trials', 'no' ) ) {
+		return;
+	}
+
+	// Must be logged in
+	if ( ! is_user_logged_in() ) {
+		return;
+	}
+
+	$user_id = get_current_user_id();
+	$notices_added = false;
+
+	foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+		$product = $cart_item['data'];
+
+		// Skip if not a subscription or doesn't have a trial
+		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ||
+			 ! WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+			continue;
+		}
+
+		$product_id = $product->get_id();
+
+		// Check if one-time trials are enabled for this product
+		if ( wcs_is_one_time_trial_enabled( $product_id ) ) {
+			// Check if user has already used a trial for this product
+			if ( wcs_user_has_used_trial_for_product( $user_id, $product_id ) ) {
+
+				// THIS IS WRONG.
+				// This is persisting the trial length to the Product itself, and not only to the line item.
+				wcs_set_objects_property( WC()->cart->cart_contents[ $cart_item_key ]['data'], 'subscription_trial_length', 0, 'save' );
+				WC()->cart->calculate_totals();
+
+				wc_add_notice(
+					sprintf(
+						__( 'You have already used a free trial for "%s". You will be charged for this subscription immediately.', 'woocommerce-subscriptions' ),
+						$product->get_name()
+					),
+					'notice'
+				);
+				$notices_added = true;
+			}
+		}
+	}
+
+	return $notices_added;
+}
+add_action( 'woocommerce_before_checkout_form', 'wcs_check_cart_items_trial_eligibility' );
+add_action( 'woocommerce_before_cart', 'wcs_check_cart_items_trial_eligibility' );

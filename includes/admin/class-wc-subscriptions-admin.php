@@ -1248,6 +1248,27 @@ class WC_Subscriptions_Admin {
 					'type' => 'sectionend',
 					'id'   => self::$option_prefix . '_miscellaneous',
 				),
+
+				array(
+					'name'     => __( 'Trial Restrictions', 'woocommerce-subscriptions' ),
+					'type'     => 'title',
+					'desc'     => __( 'Control how free trials can be used by customers.', 'woocommerce-subscriptions' ),
+					'id'       => 'subscription_trial_restrictions',
+				),
+
+				array(
+					'name'     => __( 'One-Time Trials', 'woocommerce-subscriptions' ),
+					'desc'     => __( 'Limit customers to using a free trial only once per product', 'woocommerce-subscriptions' ),
+					'id'       => 'woocommerce_subscriptions_one_time_trials',
+					'type'     => 'checkbox',
+					'default'  => 'no',
+					'desc_tip' => __( 'When enabled, customers can only use a free trial for a specific product once, even if they cancel and resubscribe later.', 'woocommerce-subscriptions' ),
+				),
+
+				array(
+					'type'     => 'sectionend',
+					'id'       => 'subscription_trial_restrictions',
+				),
 			)
 		);
 
