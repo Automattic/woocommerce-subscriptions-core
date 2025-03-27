@@ -68,7 +68,7 @@ function wcs_get_edit_post_link( $post_id ) {
 		return '';
 	}
 
-	return apply_filters( 'get_edit_post_link', $object->get_edit_order_url(), $post_id, '' );
+	return apply_filters( 'get_edit_post_link', $object->get_edit_order_url(), $object->get_id(), '' );
 }
 
 /**
