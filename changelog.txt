@@ -1,7 +1,7 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
 = 8.2.0 - 2025-xx-xx =
-* Dev - Introduced a `wcs_prefix_order_status()` helper function to prefix order statuses for database storage.
+* Dev - Update wcs_maybe_prefix_key() and wcs_maybe_unprefix_key() to support an array of keys.
 
 = 8.1.0 - 2025-03-24 =
 * Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
