@@ -162,26 +162,36 @@ function wcs_get_rounding_precision() {
 }
 
 /**
- * Add a prefix to a string if it doesn't already have it
+ * Add a prefix to a string or array of strings if it doesn't already have it
  *
- * @param string
- * @param string
+ * @param string|array $key    The key or array of keys to add the prefix to.
+ * @param string       $prefix The prefix to add.
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
- * @return string
+ *
+ * @return string|array The key or array of keys with the prefix added.
  */
 function wcs_maybe_prefix_key( $key, $prefix = '_' ) {
+	if ( is_array( $key ) ) {
+		return array_map( __FUNCTION__, $key, array_fill( 0, count( $key ), $prefix ) );
+	}
+
 	return ( substr( $key, 0, strlen( $prefix ) ) !== $prefix ) ? $prefix . $key : $key;
 }
 
 /**
- * Remove a prefix from a string if has it
+ * Remove a prefix from a string or array of strings if it has it.
  *
- * @param string $key
- * @param string $prefix
+ * @param string|array $key    The key or array of keys to remove the prefix from.
+ * @param string       $prefix The prefix to remove.
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
- * @return string
+ *
+ * @return string|array The key or array of keys with the prefix removed.
  */
 function wcs_maybe_unprefix_key( $key, $prefix = '_' ) {
+	if ( is_array( $key ) ) {
+		return array_map( __FUNCTION__, $key, array_fill( 0, count( $key ), $prefix ) );
+	}
+
 	return ( substr( $key, 0, strlen( $prefix ) ) === $prefix ) ? substr( $key, strlen( $prefix ) ) : $key;
 }
 
@@ -348,16 +358,4 @@ function wcs_compare_order_billing_shipping_address( $order ) {
 	$addresses_are_equal = $shipping_address == $billing_address;
 
 	return $addresses_are_equal;
-}
-
-/**
- * Prefixes an order status with "wc-" if it is not already prefixed.
- *
- * @param string $order_status The order status
- * @param string $prefix       The order status prefix. Optional. Default is "wc-".
- *
- * @return string The order status prefixed with "wc-".
- */
-function wcs_prefix_order_status( $order_status, $prefix = 'wc-' ) {
-	return wcs_maybe_prefix_key( $order_status, $prefix );
 }

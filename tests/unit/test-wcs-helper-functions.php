@@ -149,19 +149,23 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test @see wcs_prefix_order_status() to make sure it returns the correct prefixed order status for a specific input.
+	 * Test @see wcs_maybe_prefix_key() to make sure it returns the correct prefixed key.
 	 */
-	public function test_wcs_prefix_order_status() {
+	public function test_wcs_maybe_prefix_key() {
 		// Basic prefixing.
-		$this->assertEquals( 'wc-pending', wcs_prefix_order_status( 'pending' ) );
-		$this->assertEquals( 'wc-processing', wcs_prefix_order_status( 'processing' ) );
+		$this->assertEquals( '_sale_price', wcs_maybe_prefix_key( 'sale_price' ) );
+		$this->assertEquals( 'wc-pending', wcs_maybe_prefix_key( 'pending', 'wc-' ) );
 
-		// Custom prefix.
-		$this->assertEquals( '_completed', wcs_prefix_order_status( 'completed', '_' ) );
-		$this->assertEquals( '_active', wcs_prefix_order_status( 'active', '_' ) );
+		// Array of keys.
+		$this->assertEquals( [ 'wc-completed', 'wc-active' ], wcs_maybe_prefix_key( [ 'completed', 'active' ], 'wc-' ) );
+		$this->assertEquals( [ '_sale_price', '_subscription_period' ], wcs_maybe_prefix_key( [ 'sale_price', 'subscription_period' ] ) );
 
 		// Already prefixed.
-		$this->assertEquals( 'wc-pending', wcs_prefix_order_status( 'wc-pending' ) );
-		$this->assertEquals( '_completed', wcs_prefix_order_status( '_completed', '_' ) );
+		$this->assertEquals( 'wc-pending', wcs_maybe_prefix_key( 'wc-pending', 'wc-' ) );
+		$this->assertEquals( '_completed', wcs_maybe_prefix_key( '_completed' ) );
+		$this->assertEquals( [ '_completed', '_active' ], wcs_maybe_prefix_key( [ '_completed', 'active' ] ) );
+
+		// Empty array.
+		$this->assertEquals( [], wcs_maybe_prefix_key( [] ) );
 	}
 }
