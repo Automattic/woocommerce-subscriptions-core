@@ -23,6 +23,9 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 			array( 'subscription_renewal', '_subscription_renewal', null ),
 			array( 'key', '_foo_key', '_foo_' ),
 			array( 'foo_key', 'foo_key', null ),
+			array( [ 'foo_key', 'foo_key' ], [ '_foo_key', '_foo_key' ], null ),
+			array( [ 'active', 'processing' ], [ 'wc-active', 'wc-processing' ], 'wc-' ),
+			array( [ 'sale_price', 'wc-processing' ], [ '_sale_price', 'wc-processing' ], null ),
 		);
 	}
 
@@ -149,7 +152,7 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test @see wcs_maybe_prefix_key() to make sure it returns the correct prefixed key.
+	 * Test @see wcs_maybe_prefix_key() to make sure it returns the correct prefixed keys.
 	 */
 	public function test_wcs_maybe_prefix_key() {
 		// Basic prefixing.
