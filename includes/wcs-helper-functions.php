@@ -61,14 +61,14 @@ function wcs_date_input( $timestamp = 0, $args = array() ) {
  * @param int $post_id
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
  */
-function wcs_get_edit_post_link( $post_id ) {
-	$object = wc_get_order( $post_id ); // works for both WC Order and WC Subscription objects.
+function wcs_get_edit_post_link( $order ) {
+	$order = is_a( $order, 'WC_Abstract_Order' ) ? $order : wc_get_order( $order );
 
-	if ( ! $object || ! in_array( $object->get_type(), array( 'shop_order', 'shop_subscription' ), true ) ) {
+	if ( ! $order || ! in_array( $order->get_type(), array( 'shop_order', 'shop_subscription' ), true ) ) {
 		return '';
 	}
 
-	return apply_filters( 'get_edit_post_link', $object->get_edit_order_url(), $object->get_id(), '' );
+	return apply_filters( 'get_edit_post_link', $order->get_edit_order_url(), $order->get_id(), '' );
 }
 
 /**
