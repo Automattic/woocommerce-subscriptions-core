@@ -824,9 +824,16 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Deals with cases where we're filtering for status
+	 * Deals with cases where we're querying by status.
+	 *
+	 * Status can be specified in two different ways. Traditionally, via the
+	 * 'subscription_status' argument, but 'status' can also be used directly
+	 * since 7.3.0.
+	 *
+	 * @testWith ["subscription_status"]
+	 *           ["status"]
 	 */
-	public function test_2_wcs_get_subscriptions() {
+	public function test_2_wcs_get_subscriptions( string $status_key ) {
 
 		$subscription_1 = WCS_Helper_Subscription::create_subscription(
 			array(
@@ -877,7 +884,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		);
 
 		// Check for on-hold
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'on-hold' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'on-hold' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -892,7 +899,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Pending
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'pending' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'pending' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 2, count( $subscriptions ) );
@@ -907,7 +914,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Switched
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'switched' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'switched' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -922,7 +929,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Any
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'any' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'any' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 8, count( $subscriptions ) );
@@ -937,14 +944,14 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Trash
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'trash' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'trash' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEmpty( $subscriptions );
 		unset( $subscriptions );
 
 		// Active
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'active' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'active' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -959,7 +966,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Cancelled
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'cancelled' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'cancelled' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -974,7 +981,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Expired
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'expired' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'expired' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -989,7 +996,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// Pending Cancellation
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'pending-cancel' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'pending-cancel' ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -1006,7 +1013,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		$is_hpos_enabled = wcs_is_custom_order_tables_usage_enabled();
 
 		// An invalid status
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => 'rubbish' ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => 'rubbish' ) );
 
 		if ( $is_hpos_enabled ) {
 			// No subscriptions should match the invalid status.
@@ -1029,7 +1036,7 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 		unset( $subscriptions );
 
 		// An invalid status is ignored and does not apply as a clause to the query, while the valid status still applies.
-		$subscriptions = wcs_get_subscriptions( array( 'subscription_status' => [ 'rubbish', 'active' ] ) );
+		$subscriptions = wcs_get_subscriptions( array( $status_key => [ 'rubbish', 'active' ] ) );
 
 		$this->assertIsArray( $subscriptions );
 		$this->assertEquals( 1, count( $subscriptions ) );
@@ -1115,6 +1122,52 @@ class WCS_Functions_Test extends WP_UnitTestCase {
 			$subscription_1->get_id() => $subscription_1,
 		);
 		$this->assertEquals( $subscriptions, $correct_order );
+	}
+
+	/**
+	 * Since 7.3.0, the number of queries accepted by wcs_get_subscriptions() has broadened,
+	 * and arbitrary arguments can be provided (chiefly to open up access to the features of
+	 * WooCommerce's own order queries).
+	 *
+	 * @return void
+	 */
+	public function test_wcs_get_subscriptions_wc_order_query_compat() {
+		$old_subscription = WCS_Helper_Subscription::create_subscription(
+			array(
+				'status'      => 'pending',
+				'start_date'  => '2024-12-31 00:00:00',
+				'customer_id' => wp_create_user( 'withnail', 'x', 'withnail@actorforhire.web' ),
+			)
+		);
+
+		$new_subscription = WCS_Helper_Subscription::create_subscription(
+			array(
+				'status'      => 'pending',
+				'start_date'  => '2025-12-31 00:00:00',
+				'customer_id' => wp_create_user( 'marwood', 'x', 'marwood@actorforhire.web' ),
+			)
+		);
+
+		$old_subscription->set_date_created( '2024-12-31 00:00:00' );
+		$new_subscription->set_date_created( '2025-12-31 00:00:00' );
+		$old_subscription->save();
+		$new_subscription->save();
+
+		$old_subscriptions = wcs_get_subscriptions( array( 'date_created' => '<=2025-06-01' ) );
+		$this->assertCount( 1, $old_subscriptions, '`WC_Order_Query` args such as `date_created` can be used when querying for subscriptions.' );
+		$this->assertEquals( $old_subscription->get_id(), current( $old_subscriptions )->get_id(), 'The correct subscription is returned.' );
+
+		// Watch for and capture the query arguments passed to WC_Order_Query.
+		$query_args        = array();
+		$query_arg_watcher = function ( $query, $args ) use ( &$query_args ) {
+			$query_args = $args;
+			return $query;
+		};
+
+		add_filter( 'woocommerce_order_query', $query_arg_watcher, 10, 2 );
+		wcs_get_subscriptions( array( 'foo_bar' => 'baz' ) );
+		$this->assertArrayHasKey( 'foo_bar', $query_args, 'When querying subscriptions, and additional or arbitrary arguments are also passed to `WC_Order_Query`.' );
+		remove_filter( 'woocommerce_order_query', $query_arg_watcher );
 	}
 
 	/**
