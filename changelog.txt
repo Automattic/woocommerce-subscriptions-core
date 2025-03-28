@@ -1,5 +1,8 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 8.2.0 - 20xx-xx-xx =
+* Fix - Prevent sending renewal reminders for orders with a 0 total.
+
 = 8.1.0 - 2025-03-24 =
 * Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
 * Update - Make it possible to dispatch the Cancelled Subscription email more than once (when initially set to pending-cancellation, and again when it reaches final cancellation).
@@ -17,7 +20,6 @@
 * Fix - Prevent empty strings being saved in related orders cache ID meta when backfilling order data to the WP Posts table.
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
-* Fix - Prevent sending renewal reminders for orders with a 0 total.
 
 = 8.0.1 - 2025-02-13 =
 * Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
