@@ -26,10 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</label>
 
 		<span class="wrap">
-			<input type="text" class="wc_input_price wc_input_subscription_price" name="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_regular_price( $variation_product ) ) ); ?>" placeholder="<?php
-				// translators: %s the formatted example price value.
-				echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '9.90' ) );
-			?>">
+			<input type="text" class="wc_input_price wc_input_subscription_price" name="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_regular_price( $variation_product ) ) ); ?>" placeholder="<?php echo esc_attr_x( 'e.g.', 'example price', 'woocommerce-subscriptions' ); ?> <?php echo esc_attr( wc_format_localized_price( '9.90' ) ); ?>">
 
 			<label for="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wcs_hidden_label"><?php esc_html_e( 'Billing interval:', 'woocommerce-subscriptions' ); ?></label>
 			<select name="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wc_input_subscription_period_interval wc-enhanced-select">
@@ -65,10 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php printf( esc_html__( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?>
 			<?php echo wcs_help_tip( _x( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions', 'woocommerce-subscriptions' ) ); ?>
 		</label>
-		<input type="text" class="wc_input_price wc_input_subscription_intial_price wc_input_subscription_initial_price" name="variable_subscription_sign_up_fee[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_sign_up_fee( $variation_product ) ) ); ?>" placeholder="<?php
-			// translators: %s the formatted example price value.
-			echo sprintf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), wc_format_localized_price( '9.90' ) );
-		?>">
+		<input type="text" class="wc_input_price wc_input_subscription_intial_price wc_input_subscription_initial_price" name="variable_subscription_sign_up_fee[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_sign_up_fee( $variation_product ) ) ); ?>" placeholder="<?php echo esc_attr_x( 'e.g.', 'example price', 'woocommerce-subscriptions' ); ?> <?php echo esc_attr( wc_format_localized_price( '9.90' ) ); ?>">
 	</p>
 	<p class="form-row multiple_fields form-row-last show_if_variable-subscription">
 		<label for="variable_subscription_trial_length[<?php echo esc_attr( $loop ); ?>]">
