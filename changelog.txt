@@ -3,6 +3,7 @@
 = 8.2.0 - 2025-xx-xx =
 * Update - Increase the number of args accepted by wcs_get_subscriptions(), to bring about parity with wc_get_orders().
 * Dev - Update wcs_maybe_prefix_key() and wcs_maybe_unprefix_key() to support an array of keys.
+* Fix - Prevent sending renewal reminders for orders with a 0 total.
 
 = 8.1.0 - 2025-03-24 =
 * Update - Improved subscription search performance for WP Post stores by removing unnecessary _order_key and _billing_email meta queries.
