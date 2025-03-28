@@ -35,7 +35,7 @@ jobs:
         uses: dev-drprasad/delete-older-releases@v0.3.3
         with:
           keep_latest: 1
-          delete_tag_pattern: Nightly
+          delete_tag_pattern: nightly
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
