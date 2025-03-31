@@ -23,6 +23,9 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 			array( 'subscription_renewal', '_subscription_renewal', null ),
 			array( 'key', '_foo_key', '_foo_' ),
 			array( 'foo_key', 'foo_key', null ),
+			array( [ 'foo_key', 'foo_key' ], [ '_foo_key', '_foo_key' ], null ),
+			array( [ 'active', 'processing' ], [ 'wc-active', 'wc-processing' ], 'wc-' ),
+			array( [ 'sale_price', 'wc-processing' ], [ '_sale_price', 'wc-processing' ], null ),
 		);
 	}
 
@@ -146,5 +149,26 @@ class WCS_Helper_Functions_Test extends WP_UnitTestCase {
 		$order->set_shipping_address_1( $order->get_billing_address_1() . ' different' );
 
 		$this->assertFalse( wcs_compare_order_billing_shipping_address( $order ) );
+	}
+
+	/**
+	 * Test @see wcs_maybe_prefix_key() to make sure it returns the correct prefixed keys.
+	 */
+	public function test_wcs_maybe_prefix_key() {
+		// Basic prefixing.
+		$this->assertEquals( '_sale_price', wcs_maybe_prefix_key( 'sale_price' ) );
+		$this->assertEquals( 'wc-pending', wcs_maybe_prefix_key( 'pending', 'wc-' ) );
+
+		// Array of keys.
+		$this->assertEquals( [ 'wc-completed', 'wc-active' ], wcs_maybe_prefix_key( [ 'completed', 'active' ], 'wc-' ) );
+		$this->assertEquals( [ '_sale_price', '_subscription_period' ], wcs_maybe_prefix_key( [ 'sale_price', 'subscription_period' ] ) );
+
+		// Already prefixed.
+		$this->assertEquals( 'wc-pending', wcs_maybe_prefix_key( 'wc-pending', 'wc-' ) );
+		$this->assertEquals( '_completed', wcs_maybe_prefix_key( '_completed' ) );
+		$this->assertEquals( [ '_completed', '_active' ], wcs_maybe_prefix_key( [ '_completed', 'active' ] ) );
+
+		// Empty array.
+		$this->assertEquals( [], wcs_maybe_prefix_key( [] ) );
 	}
 }
