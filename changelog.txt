@@ -4,6 +4,7 @@
 * Update - Increase the number of args accepted by wcs_get_subscriptions(), to bring about parity with wc_get_orders().
 * Dev - Update wcs_maybe_prefix_key() and wcs_maybe_unprefix_key() to support an array of keys.
 * Fix - Prevent sending renewal reminders for orders with a 0 total.
+* Fix - Ensure the second parameter passed to the 'get_edit_post_link' filter is an integer.
 
 = 8.1.1 - 2025-03-30 =
 * Update - Display the subscriptions parent order icon in the WooCommerce Orders list table by default
