@@ -56,19 +56,24 @@ function wcs_date_input( $timestamp = 0, $args = array() ) {
 }
 
 /**
- * Get the edit post link without checking if the user can edit that post or not.
+ * Get the admin edit link for an order.
  *
- * @param int $post_id
+ * Note: this function does not check if the user has permission to edit the order.
+ *
  * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+ * @since 7.4.0 - Added official support for WC_Order objects as the first parameter.
+ *
+ * @param int|WC_Order $order The order ID or WC_Order object.
+ * @return string The edit order URL or an empty string if the order is not found or is not a valid order type.
  */
-function wcs_get_edit_post_link( $post_id ) {
-	$object = wc_get_order( $post_id ); // works for both WC Order and WC Subscription objects.
+function wcs_get_edit_post_link( $order ) {
+	$order = is_a( $order, 'WC_Abstract_Order' ) ? $order : wc_get_order( $order );
 
-	if ( ! $object || ! in_array( $object->get_type(), array( 'shop_order', 'shop_subscription' ), true ) ) {
+	if ( ! $order || ! in_array( $order->get_type(), array( 'shop_order', 'shop_subscription' ), true ) ) {
 		return '';
 	}
 
-	return apply_filters( 'get_edit_post_link', $object->get_edit_order_url(), $post_id, '' );
+	return apply_filters( 'get_edit_post_link', $order->get_edit_order_url(), $order->get_id(), '' );
 }
 
 /**
