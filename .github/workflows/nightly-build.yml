@@ -1,0 +1,78 @@
+name: Nightly Build
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    # Every day at 10:00 UTC
+    - cron: '0 10 * * *'
+
+jobs:
+  build:
+    name: Build Plugin and Upload Nightly
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'  # Caches npm dependencies for faster builds
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Plugin
+        run: npm run build
+
+      - name: Verify Generated ZIP
+        run: ls -lah woocommerce-subscriptions-core.zip
+
+      - name: Delete Previous Nightly Release Assets
+        uses: dev-drprasad/delete-older-releases@v0.3.3
+        with:
+          keep_latest: 1
+          delete_tag_pattern: nightly
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract the latest changelog section
+      # Pulls everything after the first version header like "= 8.1.0 - ... =" until the next "=" section header or end of file
+      - name: Extract latest changelog section (cleaned + wrapped in code block)
+        id: changelog
+        run: |
+          version_line_found=0
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+            if [[ $line == =\ *\ = ]]; then
+              if [[ $version_line_found -eq 1 ]]; then
+                break
+              else
+                version_line_found=1
+                continue
+              fi
+            elif [[ $version_line_found -eq 1 ]]; then
+              # Trim whitespace-only lines
+              if [[ ! "$line" =~ ^[[:space:]]*$ ]]; then
+                echo "$line" >> $GITHUB_OUTPUT
+              fi
+            fi
+          done < changelog.txt
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: "Nightly Build"
+          prerelease: true
+          draft: false
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          files: woocommerce-subscriptions-core.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
