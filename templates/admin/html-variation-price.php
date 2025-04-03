@@ -26,7 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</label>
 
 		<span class="wrap">
-			<input type="text" class="wc_input_price wc_input_subscription_price" name="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_regular_price( $variation_product ) ) ); ?>" placeholder="<?php echo esc_attr_x( 'e.g.', 'example price', 'woocommerce-subscriptions' ); ?> <?php echo esc_attr( wc_format_localized_price( '9.90' ) ); ?>">
+			<?php // Translators: %s: formatted example price value. ?>
+			<input type="text" class="wc_input_price wc_input_subscription_price" name="variable_subscription_price[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_regular_price( $variation_product ) ) ); ?>" placeholder="<?php printf( esc_attr_x( 'e.g. %s', 'example price', 'woocommerce-subscriptions' ), esc_attr( wc_format_localized_price( '9.90' ) ) ); ?>">
 
 			<label for="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wcs_hidden_label"><?php esc_html_e( 'Billing interval:', 'woocommerce-subscriptions' ); ?></label>
 			<select name="variable_subscription_period_interval[<?php echo esc_attr( $loop ); ?>]" class="wc_input_subscription_period_interval wc-enhanced-select">
