@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			// translators: placeholder is a currency symbol / code
 			printf( esc_html__( 'Subscription price (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) );
 			?>
-			<?php echo wcs_help_tip( _x( 'Choose the subscription price, billing interval and period.', 'woocommerce-subscriptions' ) ); ?>
+			<?php echo wcs_help_tip( __( 'Choose the subscription price, billing interval and period.', 'woocommerce-subscriptions' ) ); ?>
 		</label>
 
 		<span class="wrap">
@@ -60,7 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="form-row form-row-first form-field show_if_variable-subscription sign-up-fee-cell">
 		<label for="variable_subscription_sign_up_fee[<?php echo esc_attr( $loop ); ?>]">
 			<?php printf( esc_html__( 'Sign-up fee (%s)', 'woocommerce-subscriptions' ), esc_html( get_woocommerce_currency_symbol() ) ); ?>
-			<?php echo wcs_help_tip( _x( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions', 'woocommerce-subscriptions' ) ); ?>
+			<?php echo wcs_help_tip( __( 'Optionally include an amount to be charged at the outset of the subscription. The sign-up fee will be charged immediately, even if the product has a free trial or the payment dates are synced.', 'woocommerce-subscriptions' ) ); ?>
 		</label>
 		<input type="text" class="wc_input_price wc_input_subscription_intial_price wc_input_subscription_initial_price" name="variable_subscription_sign_up_fee[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_sign_up_fee( $variation_product ) ) ); ?>" placeholder="<?php echo esc_attr_x( 'e.g.', 'example price', 'woocommerce-subscriptions' ); ?> <?php echo esc_attr( wc_format_localized_price( '9.90' ) ); ?>">
 	</p>
