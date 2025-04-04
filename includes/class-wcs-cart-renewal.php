@@ -239,14 +239,20 @@ class WCS_Cart_Renewal {
 		if ( is_a( $order_id, 'WC_Abstract_Order' ) ) {
 			$order    = $order_id;
 			$order_id = $order->get_id();
+		} elseif ( ! empty( $order_id ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		// Only ever set the order awaiting payment to 0 or an Order ID - not a subscription.
+		if ( $order && ! wcs_is_order( $order ) ) {
+			return;
 		}
 
 		WC()->session->set( 'order_awaiting_payment', $order_id );
 		WC()->session->set( 'store_api_draft_order', $order_id );
 
 		if ( $order_id ) {
-			// To avoid needing to load the order object, pass it if available, otherwise pass the order ID.
-			$this->set_cart_hash( $order ?? $order_id );
+			$this->set_cart_hash( $order );
 		}
 	}
 
@@ -1668,7 +1674,7 @@ class WCS_Cart_Renewal {
 			}
 
 			// If the current user has permission to pay for the order, restore the order awaiting payment session arg.
-			if ( $this->validate_current_user( $order ) ) {
+			if ( wcs_is_order( $order ) && $this->validate_current_user( $order ) ) {
 				$this->set_order_awaiting_payment( $order );
 			}
 
