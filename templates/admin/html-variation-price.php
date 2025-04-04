@@ -45,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</span>
 
 	</p>
-	<p class="form-row form-row-last show_if_variable-subscription _subscription_length_field" style="display: none">
+	<p class="form-row form-row-last form-field show_if_variable-subscription _subscription_length_field" style="display: none">
 		<label for="variable_subscription_length[<?php echo esc_attr( $loop ); ?>]">
 			<?php esc_html_e( 'Stop renewing after', 'woocommerce-subscriptions' ); ?>
 			<?php echo wcs_help_tip( _x( 'Automatically stop renewing the subscription after this length of time. This length is in addition to any free trial or amount of time provided before a synchronised first renewal date.', 'Subscription Length dropdown\'s description in pricing fields', 'woocommerce-subscriptions' ) ); ?>
@@ -65,7 +65,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</label>
 		<input type="text" class="wc_input_price wc_input_subscription_intial_price wc_input_subscription_initial_price" name="variable_subscription_sign_up_fee[<?php echo esc_attr( $loop ); ?>]" value="<?php echo esc_attr( wc_format_localized_price( WC_Subscriptions_Product::get_sign_up_fee( $variation_product ) ) ); ?>" placeholder="<?php echo esc_attr_x( 'e.g.', 'example price', 'woocommerce-subscriptions' ); ?> <?php echo esc_attr( wc_format_localized_price( '9.90' ) ); ?>">
 	</p>
-	<p class="form-row multiple_fields form-row-last show_if_variable-subscription">
+	<p class="form-row multiple_fields form-field form-row-last show_if_variable-subscription">
 		<label for="variable_subscription_trial_length[<?php echo esc_attr( $loop ); ?>]">
 		<?php esc_html_e( 'Free trial', 'woocommerce-subscriptions' ); ?>
 			<?php // translators: placeholder is trial period validation message if passed an invalid value (e.g. "Trial period can not exceed 4 weeks") ?>
