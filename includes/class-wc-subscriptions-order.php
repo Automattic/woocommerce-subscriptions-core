@@ -78,7 +78,17 @@ class WC_Subscriptions_Order {
 
 		add_filter( 'woocommerce_orders_table_query_clauses', [ __CLASS__, 'filter_orders_query_by_parent_orders' ], 10, 2 );
 
-		add_action( 'woocommerce_before_delete_order', __CLASS__ . '::delete_order_update_subscription_last_order_date_created', 10, 2 );
+		add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'delete_order_update_subscription_last_order_date_created' ], 10, 2 );
+
+		$cache_manager = new WCS_Object_Data_Cache_Manager(
+			'subscription',
+			[
+				'parent_id',
+			]
+		);
+		$cache_manager->init();
+
+		add_action( 'wcs_update_post_meta_caches', [ __CLASS__, 'update_subscription_last_order_date_parent_id_changes' ], 10, 5 );
 	}
 
 	/*
@@ -2417,6 +2427,31 @@ class WC_Subscriptions_Order {
 
 			$subscription->set_last_order_date_created( $last_order_date_created );
 			$subscription->save();
+		}
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata when manually updating parent id.
+	 *
+	 * @param string $type The type of update to check. Only 'add' or 'delete' should be used.
+	 * @param int $object_id The object the meta is being changed on.
+	 * @param string $meta_key The object meta key being changed.
+	 * @param mixed $meta_value The meta value.
+	 * @param mixed $prev_value The previous value stored in the database. Optional.
+	 */
+	public static function update_subscription_last_order_date_parent_id_changes( $type, $object_id, $key, $new_value, $previous_value ) {
+		if ( 'parent_id' === $key ) {
+			$previous_subscription            = wcs_get_subscription( $previous_value );
+			$previous_last_order_date_created = $previous_subscription->get_time( 'last_order_date_created' );
+
+			$new_subscription            = wcs_get_subscription( $new_value );
+			$new_last_order_date_created = $new_subscription->get_time( 'last_order_date_created' );
+
+			$new_subscription->set_last_order_date_created( $previous_last_order_date_created );
+			$new_subscription->save();
+
+			$previous_subscription->set_last_order_date_created( $new_last_order_date_created );
+			$previous_subscription->save();
 		}
 	}
 
