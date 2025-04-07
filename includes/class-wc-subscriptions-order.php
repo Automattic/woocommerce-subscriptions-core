@@ -2423,7 +2423,7 @@ class WC_Subscriptions_Order {
 
 		foreach ( $subscription_ids as $subscription_id ) {
 			$subscription            = wcs_get_subscription( $subscription_id );
-			$last_order_date_created = $subscription->get_time( 'last_order_date_created' );
+			$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt', [ 'trash' ] );
 
 			$subscription->set_last_order_date_created( $last_order_date_created );
 			$subscription->save();
