@@ -688,18 +688,7 @@ class WCS_Admin_Post_Types {
 		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
 
 		if ( 'last_payment_date' === $column ) {
-			// Get last order date created from subscription metadata if it exists.
-			$last_order_date_created = $subscription->get_last_order_date_created();
-
-			if ( ! empty( $last_order_date_created ) ) {
-				$date_timestamp = $last_order_date_created;
-			} else {
-				// If not exists, get the last order date created from the orders and update the metadata.
-				$date_timestamp = $subscription->get_time( $date_type );
-
-				$subscription->set_last_order_date_created( $date_timestamp );
-				$subscription->save();
-			}
+			$date_timestamp = self::get_last_payment_date( $subscription );
 		} else {
 			$date_timestamp = $subscription->get_time( $date_type );
 		}
@@ -1848,6 +1837,26 @@ class WCS_Admin_Post_Types {
 		$pieces['orderby'] = "COALESCE(lp.last_payment, parent_order.date_created_gmt, 0) {$query_order}";
 
 		return $pieces;
+	}
+
+	/**
+	 * Get the last payment date for a subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription object.
+	 * @return int The last payment date timestamp.
+	 */
+	private static function get_last_payment_date( $subscription ) {
+		$last_order_date_created = $subscription->get_last_order_date_created();
+
+		if ( ! empty( $last_order_date_created ) ) {
+			return $last_order_date_created;
+		}
+
+		$date_timestamp = $subscription->get_time( 'last_order_date_created' );
+		$subscription->set_last_order_date_created( $date_timestamp );
+		$subscription->save();
+
+		return $date_timestamp;
 	}
 
 	/**
