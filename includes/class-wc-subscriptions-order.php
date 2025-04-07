@@ -2440,12 +2440,16 @@ class WC_Subscriptions_Order {
 	 * @param mixed $prev_value The previous value stored in the database. Optional.
 	 */
 	public static function update_subscription_last_order_date_parent_id_changes( $type, $object_id, $key, $new_value, $previous_value ) {
-		if ( 'parent_id' === $key ) {
-			$previous_subscription            = wcs_get_subscription( $previous_value );
-			$previous_last_order_date_created = $previous_subscription->get_time( 'last_order_date_created' );
+		if ( 'parent_id' === $key && ! empty( $previous_value ) && ! empty( $new_value ) ) {
+			$previous_subscription = wcs_get_subscription( $previous_value );
+			$new_subscription      = wcs_get_subscription( $new_value );
 
-			$new_subscription            = wcs_get_subscription( $new_value );
-			$new_last_order_date_created = $new_subscription->get_time( 'last_order_date_created' );
+			if ( ! $previous_subscription || ! $new_subscription ) {
+				return;
+			}
+
+			$previous_last_order_date_created = $previous_subscription->get_time( 'last_order_date_created' );
+			$new_last_order_date_created      = $new_subscription->get_time( 'last_order_date_created' );
 
 			$new_subscription->set_last_order_date_created( $previous_last_order_date_created );
 			$new_subscription->save();
