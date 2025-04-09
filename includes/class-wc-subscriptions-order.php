@@ -2427,7 +2427,7 @@ class WC_Subscriptions_Order {
 	}
 
 	/**
-	 * Update subscription cached last_order_date_created metadata when deleting a child order.
+	 * Update subscription cached last_order_date_created metadata when adding a child order.
 	 *
 	 * @param WC_Order $order         The order to link with the subscription.
 	 * @param WC_Order $subscription  The order or subscription to link the order to.
