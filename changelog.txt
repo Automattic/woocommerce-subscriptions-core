@@ -28,6 +28,7 @@
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
 * Fix - Improve performance of the subscription listing page.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
+* Add - Hooks to add more columns to the Related Orders table on admin
 
 = 8.0.1 - 2025-02-13 =
 * Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
