@@ -935,8 +935,12 @@ class WC_Subscriptions_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
 	 */
 	public static function get_related_orders_template( $subscription ) {
+        // phpcs:disable 
+		$page  = (int) ( $_GET['related_orders_page'] ?? 1 );
+		$limit = (int) ( $_GET['related_orders_limit'] ?? 10 );
 
-		$subscription_orders = $subscription->get_related_orders();
+		$related_orders      = $subscription->get_paginated_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ), $page, $limit);
+		$subscription_orders = $related_orders['orders'];
 
 		if ( 0 !== count( $subscription_orders ) ) {
 			wc_get_template(
@@ -944,6 +948,8 @@ class WC_Subscriptions_Order {
 				array(
 					'subscription_orders' => $subscription_orders,
 					'subscription'        => $subscription,
+					'page'                => $page,
+					'max_num_pages'       => $related_orders['max_num_pages'],
 				),
 				'',
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )

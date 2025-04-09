@@ -90,3 +90,22 @@
 	font-size: 1.4em;
 	text-align: center;
 }
+
+.woocommerce-subscriptions-related-orders-pagination-links {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin-bottom: 1em;
+}
+
+.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a {
+	display: inline-block;
+}
+
+.rtl .woocommerce-subscriptions-related-orders-pagination-links {
+	flex-direction: row-reverse;
+}
+
+.rtl .woocommerce-subscriptions-related-orders-pagination-links .pagination-links {
+	direction: rtl;
+}

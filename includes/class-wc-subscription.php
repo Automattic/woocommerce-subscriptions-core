@@ -2142,6 +2142,62 @@ class WC_Subscription extends WC_Order {
 	}
 
 	/**
+	 * Offers a means of fetching paginated sets of related orders.
+	 *
+	 * @since 7.4.0
+	 *
+	 * @param string       $return_fields The columns to return, either 'all' or 'ids'
+	 * @param array|string $order_types   Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Custom types possible via the 'woocommerce_subscription_related_orders' filter. Defaults to array( 'parent', 'renewal', 'switch' ).
+	 * @param int          $page          Optional. Can be used to specify which page of results is desired.
+	 * @param int          $limit         Optional. Can be used to specify how many results are desired per page. Defaults to -1, which is treated as meaning 'unlimited'.
+	 *
+	 * @return array {
+	 *     array: orders,
+	 *     int:   total,
+	 *     int:   max_num_pages
+	 * }
+	 */
+	public function get_paginated_related_orders( string $return_fields = 'ids', $order_types = array( 'parent', 'renewal', 'switch' ), int $page = 1, int $limit = 10 ): array {
+		$order_types    = ! is_array( $order_types ) ? (array) $order_types : $order_types;
+		$related_orders = [];
+
+		if ( ! in_array( $return_fields, array( 'all', 'ids' ), true ) ) {
+			wc_doing_it_wrong( __METHOD__, 'The $return_fields parameter must be either "all" or "ids".', '7.4.0' );
+			$return_fields = 'ids';
+		}
+
+		if ( $page < 1 ) {
+			wc_doing_it_wrong( __METHOD__, 'The $page parameter must be a positive, non-zero integer.', '7.4.0' );
+			$page = 1;
+		}
+
+		if ( $limit < -1 ) {
+			wc_doing_it_wrong( __METHOD__, 'The $limit parameter must be an integer, and must have a value of -1 or higher.', '7.4.0' );
+			$limit = 10;
+		}
+
+		$order_ids     = array_unique( $this->get_related_order_ids( $order_types, 'flat' ) );
+		$total         = count( $order_ids );
+		$max_num_pages = (int) ceil( $total / $limit );
+		rsort( $order_ids );
+
+		if ( $limit >= 0 && $page > 0 ) {
+			$offset    = ( $page - 1 ) * $limit;
+			$order_ids = array_slice( $order_ids, $offset, $limit );
+		}
+
+		foreach ( $order_ids as $id ) {
+			$related_orders[ $id ] = 'all' === $return_fields ? wc_get_order( $id ) : $id;
+		}
+
+		return array(
+			'orders'        => $related_orders,
+			'total'         => $total,
+			'max_num_pages' => $max_num_pages,
+		);
+	}
+
+	/**
 	 * Get the related order IDs for a subscription based on an order type.
 	 *
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0

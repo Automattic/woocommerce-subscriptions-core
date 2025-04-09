@@ -1,10 +1,14 @@
 <?php
 /**
- * Related Orders table on the View Subscription page
+ * Related Orders table on the View Subscription page.
  *
- * @author   Prospress
  * @category WooCommerce Subscriptions/Templates
- * @version  7.3.0 - Migrated from WooCommerce Subscriptions v2.6.2
+ * @version  7.4.0
+ *
+ * @var int             $max_num_pages
+ * @var int             $page
+ * @var WC_Subscription $subscription
+ * @var int[]           $subscription_orders
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<h2><?php esc_html_e( 'Related orders', 'woocommerce-subscriptions' ); ?></h2>
 </header>
 
-<table class="shop_table shop_table_responsive my_account_orders woocommerce-orders-table woocommerce-MyAccount-orders woocommerce-orders-table--orders">
+<table id="woocommerce-subscriptions-related-orders-table" class="shop_table shop_table_responsive my_account_orders woocommerce-orders-table woocommerce-MyAccount-orders woocommerce-orders-table--orders">
 
 	<thead>
 		<tr>
@@ -98,5 +102,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endforeach; ?>
 	</tbody>
 </table>
+
+<div class="woocommerce-subscriptions-related-orders-pagination-links woocommerce-pagination">
+	<?php
+	$prev_page = max( 1, $page - 1 );
+	$next_page = min( $max_num_pages, $page + 1 );
+
+	$first = '?related_orders_page=1#woocommerce-subscriptions-related-orders-table';
+	$prev  = '?related_orders_page=' . $prev_page . '#woocommerce-subscriptions-related-orders-table';
+	$next  = '?related_orders_page=' . $next_page . '#woocommerce-subscriptions-related-orders-table';
+	$last  = '?related_orders_page=' . $max_num_pages . '#woocommerce-subscriptions-related-orders-table';
+
+	$base_classes  = 'woocommerce-button woocommerce-Button woocommerce-Button--first button wp-element-button';
+	$first_classes = $base_classes . ' woocommerce-button--first' . ( 1 === $page ? ' disabled' : '' );
+	$prev_classes  = $base_classes . ' woocommerce-button--prev' . ( 1 === $page ? ' disabled' : '' );
+	$next_classes  = $base_classes . ' woocommerce-button--next' . ( $page === $max_num_pages ? ' disabled' : '' );
+	$last_classes  = $base_classes . ' woocommerce-button--last' . ( $page === $max_num_pages ? ' disabled' : '' );
+	?>
+	<div class="pagination-links">
+		<a class="<?php echo esc_attr( $first_classes ); ?>" href="<?php echo esc_attr( $first ); ?>"><?php echo esc_html_x( 'First', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
+		<a class="<?php echo esc_attr( $prev_classes ); ?>" href="<?php echo esc_attr( $prev ); ?>"><?php echo esc_html_x( 'Previous', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
+	</div>
+
+	<div class="pagination-links">
+		<a class="<?php echo esc_attr( $next_classes ); ?>" href="<?php echo esc_attr( $next ); ?>"><?php echo esc_html_x( 'Next', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
+		<a class="<?php echo esc_attr( $last_classes ); ?>" href="<?php echo esc_attr( $last ); ?>"><?php echo esc_html_x( 'Last', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
+	</div>
+</div>
 
 <?php do_action( 'woocommerce_subscription_details_after_subscription_related_orders_table', $subscription ); ?>
