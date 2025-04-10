@@ -2151,13 +2151,13 @@ class WC_Subscription extends WC_Order {
 	 * @param int          $page          Optional. Can be used to specify which page of results is desired.
 	 * @param int          $limit         Optional. Can be used to specify how many results are desired per page. Defaults to -1, which is treated as meaning 'unlimited'.
 	 *
-	 * @return array {
+	 * @return object {
 	 *     array: orders,
 	 *     int:   total,
 	 *     int:   max_num_pages
 	 * }
 	 */
-	public function get_paginated_related_orders( string $return_fields = 'ids', $order_types = array( 'parent', 'renewal', 'switch' ), int $page = 1, int $limit = 10 ): array {
+	public function get_paginated_related_orders( string $return_fields = 'ids', $order_types = array( 'parent', 'renewal', 'switch' ), int $page = 1, int $limit = 10 ): object {
 		$order_types    = ! is_array( $order_types ) ? (array) $order_types : $order_types;
 		$related_orders = [];
 
@@ -2178,7 +2178,7 @@ class WC_Subscription extends WC_Order {
 
 		$order_ids     = array_unique( $this->get_related_order_ids( $order_types, 'flat' ) );
 		$total         = count( $order_ids );
-		$max_num_pages = (int) ceil( $total / $limit );
+		$max_num_pages = 0 === $limit ? 0 : (int) ceil( $total / $limit );
 		rsort( $order_ids );
 
 		if ( $limit >= 0 && $page > 0 ) {
@@ -2190,7 +2190,7 @@ class WC_Subscription extends WC_Order {
 			$related_orders[ $id ] = 'all' === $return_fields ? wc_get_order( $id ) : $id;
 		}
 
-		return array(
+		return (object) array(
 			'orders'        => $related_orders,
 			'total'         => $total,
 			'max_num_pages' => $max_num_pages,
