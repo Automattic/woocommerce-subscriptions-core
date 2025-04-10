@@ -945,7 +945,7 @@ class WC_Subscriptions_Order {
 		$limit = (int) ( $_GET['related_orders_limit'] ?? 10 );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitiz ed
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$related_orders      = $subscription->get_paginated_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ), $page, $limit );
 		$subscription_orders = $related_orders->orders;
