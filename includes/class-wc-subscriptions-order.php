@@ -932,14 +932,22 @@ class WC_Subscriptions_Order {
 	/**
 	 * Loads the related orders table on the view subscription page
 	 *
-	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 * @since 1.0.0 Migrated from WooCommerce Subscriptions v2.0.
+	 * @since 7.4.0 Updated to support pagination of the related orders list.
+	 *
+	 * @param WC_Subscription $subscription The subscription whose related orders we are interested in.
 	 */
 	public static function get_related_orders_template( $subscription ) {
-        // phpcs:disable 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$page  = (int) ( $_GET['related_orders_page'] ?? 1 );
 		$limit = (int) ( $_GET['related_orders_limit'] ?? 10 );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitiz ed
 
-		$related_orders      = $subscription->get_paginated_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ), $page, $limit);
+		$related_orders      = $subscription->get_paginated_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ), $page, $limit );
 		$subscription_orders = $related_orders['orders'];
 
 		if ( 0 !== count( $subscription_orders ) ) {
