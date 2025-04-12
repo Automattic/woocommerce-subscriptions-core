@@ -2445,10 +2445,7 @@ class WC_Subscriptions_Order {
 	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
 	 */
 	public static function delete_relation_update_order_related_subscriptions_last_order_date_created( $order, $subscription, $relation_type ) {
-		$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt' );
-
-		$subscription->set_last_order_date_created( $last_order_date_created );
-		$subscription->save();
+		self::update_subscription_last_order_date_created( $subscription );
 
 		self::update_order_related_subscriptions_last_order_date_created( $order );
 	}
@@ -2463,11 +2460,9 @@ class WC_Subscriptions_Order {
 		$subscription_ids = wcs_get_subscription_ids_for_order( $order );
 
 		foreach ( $subscription_ids as $subscription_id ) {
-			$subscription            = wcs_get_subscription( $subscription_id );
-			$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt', $exclude_statuses );
+			$subscription = wcs_get_subscription( $subscription_id );
 
-			$subscription->set_last_order_date_created( $last_order_date_created );
-			$subscription->save();
+			self::update_subscription_last_order_date_created( $subscription, $exclude_statuses );
 		}
 	}
 
@@ -2476,31 +2471,31 @@ class WC_Subscriptions_Order {
 	 *
 	 * @param string $type The type of update to check. Only 'add' or 'delete' should be used.
 	 * @param int $object_id The object the meta is being changed on.
-	 * @param string $meta_key The object meta key being changed.
-	 * @param mixed $meta_value The meta value.
-	 * @param mixed $prev_value The previous value stored in the database. Optional.
+	 * @param string $key The object meta key being changed.
+	 * @param mixed $new_value The meta value.
+	 * @param mixed $previous_value The previous value stored in the database. Optional.
 	 */
 	public static function update_subscription_last_order_date_parent_id_changes( $type, $object_id, $key, $new_value, $previous_value ) {
-		if ( 'parent_id' !== $key || empty( $previous_value ) || empty( $new_value ) ) {
+		if ( 'parent_id' !== $key || empty( $new_value ) ) {
 			return;
 		}
 
-		$previous_subscription = wcs_get_subscription( $previous_value );
-		$new_subscription      = wcs_get_subscription( $new_value );
+		$subscription = wcs_get_subscription( $object_id );
 
-		if ( ! $previous_subscription || ! $new_subscription ) {
-			return;
-		}
+		self::update_subscription_last_order_date_created( $subscription );
+	}
 
-		// Switch last order date on both subscriptions.
-		$previous_last_order_date_created = $previous_subscription->get_time( 'last_order_date_created' );
-		$new_last_order_date_created      = $new_subscription->get_time( 'last_order_date_created' );
+	/**
+	 * Update subscription cached last_order_date_created metadata.
+	 *
+	 * @param WC_Subscription $subscription The subscription object.
+	 * @param array           $exclude_statuses The order statuses to exclude.
+	 */
+	private static function update_subscription_last_order_date_created( $subscription, $exclude_statuses = [] ) {
+		$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt' );
 
-		$new_subscription->set_last_order_date_created( $previous_last_order_date_created );
-		$new_subscription->save();
-
-		$previous_subscription->set_last_order_date_created( $new_last_order_date_created );
-		$previous_subscription->save();
+		$subscription->set_last_order_date_created( $last_order_date_created );
+		$subscription->save();
 	}
 
 	/**
