@@ -2144,7 +2144,7 @@ class WC_Subscription extends WC_Order {
 	/**
 	 * Offers a means of fetching paginated sets of related orders.
 	 *
-	 * @since 7.4.0
+	 * @since 7.5.0
 	 *
 	 * @param string       $return_fields The columns to return, either 'all' or 'ids'
 	 * @param array|string $order_types   Can include 'any', 'parent', 'renewal', 'resubscribe' and/or 'switch'. Custom types possible via the 'woocommerce_subscription_related_orders' filter. Defaults to array( 'parent', 'renewal', 'switch' ).
@@ -2162,17 +2162,17 @@ class WC_Subscription extends WC_Order {
 		$related_orders = [];
 
 		if ( ! in_array( $return_fields, array( 'all', 'ids' ), true ) ) {
-			wc_doing_it_wrong( __METHOD__, 'The $return_fields parameter must be either "all" or "ids".', '7.4.0' );
+			wc_doing_it_wrong( __METHOD__, 'The $return_fields parameter must be either "all" or "ids".', '7.5.0' );
 			$return_fields = 'ids';
 		}
 
 		if ( $page < 1 ) {
-			wc_doing_it_wrong( __METHOD__, 'The $page parameter must be a positive, non-zero integer.', '7.4.0' );
+			wc_doing_it_wrong( __METHOD__, 'The $page parameter must be a positive, non-zero integer.', '7.5.0' );
 			$page = 1;
 		}
 
 		if ( $limit < -1 ) {
-			wc_doing_it_wrong( __METHOD__, 'The $limit parameter must be an integer, and must have a value of -1 or higher.', '7.4.0' );
+			wc_doing_it_wrong( __METHOD__, 'The $limit parameter must be an integer, and must have a value of -1 or higher.', '7.5.0' );
 			$limit = 10;
 		}
 

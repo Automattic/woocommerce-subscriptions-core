@@ -933,7 +933,7 @@ class WC_Subscriptions_Order {
 	 * Loads the related orders table on the view subscription page
 	 *
 	 * @since 1.0.0 Migrated from WooCommerce Subscriptions v2.0.
-	 * @since 7.4.0 Updated to support pagination of the related orders list.
+	 * @since 7.5.0 Updated to support pagination of the related orders list.
 	 *
 	 * @param WC_Subscription $subscription The subscription whose related orders we are interested in.
 	 */
