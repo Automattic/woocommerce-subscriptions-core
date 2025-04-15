@@ -1414,7 +1414,7 @@ class WCS_Cart_Renewal {
 
 		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
 		if ( $order_discount !== $total_coupon_discount && $order_discount > $total_coupon_discount ) {
-			// If there is a manually applied discount, we need to add a pseudo coupon for the difference.
+			// If there is a manually applied discount, we need to add a coupon for the difference.
 			$coupons[] = $this->create_manual_discount_coupon( $order_discount - $total_coupon_discount );
 		}
 
