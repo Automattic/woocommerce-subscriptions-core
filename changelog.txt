@@ -1,5 +1,9 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
+= 8.3.0 - 2025-xx-xx =
+* Fix - Manual discounts on pay for order flow
+
+
 = 8.2.0 - 2025-04-14 =
 * Update - Increase the number of args accepted by wcs_get_subscriptions(), to bring about parity with wc_get_orders().
 * Dev - Update wcs_maybe_prefix_key() and wcs_maybe_unprefix_key() to support an array of keys.
