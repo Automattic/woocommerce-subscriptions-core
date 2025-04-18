@@ -60,6 +60,7 @@ class WC_Subscription extends WC_Order {
 		'requires_manual_renewal' => true,
 		'cancelled_email_sent'    => false,
 		'trial_period'            => '',
+		'last_order_date_created' => null,
 
 		// Extra data that requires manual getting/setting because we don't define getters/setters for it
 		'schedule_trial_end'      => null,
@@ -908,6 +909,15 @@ class WC_Subscription extends WC_Order {
 		return $this->get_prop( 'cancelled_email_sent', $context );
 	}
 
+	/**
+	 * The subscription last order created date.
+	 *
+	 * @return string
+	 */
+	public function get_last_order_date_created( $context = 'view' ) {
+		return $this->get_prop( 'last_order_date_created', $context );
+	}
+
 	/*** Setters *****************************************************/
 
 	/**
@@ -1092,6 +1102,13 @@ class WC_Subscription extends WC_Order {
 		$this->set_prop( 'cancelled_email_sent', $value );
 	}
 
+	/**
+	 * Set the subscription last order created date.
+	 */
+	public function set_last_order_date_created( $value ) {
+		$this->set_prop( 'last_order_date_created', $value );
+	}
+
 	/*** Date methods *****************************************************/
 
 	/**
@@ -1099,8 +1116,9 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created' or 'end'
 	 * @param string $timezone The timezone of the $datetime param, either 'gmt' or 'site'. Default 'gmt'.
+	 * @param array $exclude_statuses An array of subscription statuses to exclude from the date calculation.
 	 */
-	public function get_date( $date_type, $timezone = 'gmt' ) {
+	public function get_date( $date_type, $timezone = 'gmt', $exclude_statuses = array() ) {
 
 		$date_type = wcs_normalise_date_type_key( $date_type, true );
 
@@ -1122,13 +1140,13 @@ class WC_Subscription extends WC_Order {
 					$date = $this->get_date_completed();
 					break;
 				case 'last_order_date_created':
-					$date = $this->get_related_orders_date( 'date_created', 'last' );
+					$date = $this->get_related_orders_date( 'date_created', 'last', $exclude_statuses );
 					break;
 				case 'last_order_date_paid':
-					$date = $this->get_related_orders_date( 'date_paid', 'last' );
+					$date = $this->get_related_orders_date( 'date_paid', 'last', $exclude_statuses );
 					break;
 				case 'last_order_date_completed':
-					$date = $this->get_related_orders_date( 'date_completed', 'last' );
+					$date = $this->get_related_orders_date( 'date_completed', 'last', $exclude_statuses );
 					break;
 				default:
 					$date = $this->get_date_prop( $date_type );
@@ -1246,14 +1264,15 @@ class WC_Subscription extends WC_Order {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.0
 	 * @param string $date_type Any valid WC 3.0 date property, including 'date_paid', 'date_completed', 'date_created', or 'date_modified'
 	 * @param string $order_type The type of orders to return, can be 'last', 'parent', 'switch', 'renewal' or 'any'. Default 'any'. Use 'last' to only check the last order.
+	 * @param array  $exclude_statuses An array of subscription statuses to exclude from the date calculation.
 	 * @return WC_DateTime|NULL object if the date is set or null if there is no date.
 	 */
-	protected function get_related_orders_date( $date_type, $order_type = 'any' ) {
+	protected function get_related_orders_date( $date_type, $order_type = 'any', $exclude_statuses = array() ) {
 
 		$date = null;
 
 		if ( 'last' === $order_type ) {
-			$last_order = $this->get_last_order( 'all' );
+			$last_order = $this->get_last_order( 'all', [ 'parent', 'renewal' ], $exclude_statuses );
 			$date       = ( ! $last_order ) ? null : wcs_get_objects_property( $last_order, $date_type );
 		} else {
 			// Loop over orders until we find a valid date of this type or run out of related orders
@@ -1353,10 +1372,11 @@ class WC_Subscription extends WC_Order {
 	 *
 	 * @param string $date_type 'date_created', 'trial_end', 'next_payment', 'last_order_date_created', 'end' or 'end_of_prepaid_term'
 	 * @param string $timezone The timezone of the $datetime param. Default 'gmt'.
+	 * @param array $exclude_statuses An array of subscription statuses to exclude from the date calculation.
 	 */
-	public function get_time( $date_type, $timezone = 'gmt' ) {
+	public function get_time( $date_type, $timezone = 'gmt', $exclude_statuses = array() ) {
 
-		$datetime = $this->get_date( $date_type, $timezone );
+		$datetime = $this->get_date( $date_type, $timezone, $exclude_statuses );
 		$datetime = wcs_date_to_time( $datetime );
 
 		return $datetime;

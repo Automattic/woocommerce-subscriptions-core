@@ -277,6 +277,10 @@ function wcs_create_order_from_subscription( $subscription, $type ) {
 			throw new Exception( sprintf( __( 'There was an error fetching the new order (%1$s) for subscription %2$d.', 'woocommerce-subscriptions' ), $type, $subscription->get_id() ) );
 		}
 
+		// Update the subscription last_order_date_created on every time a child order is created.
+		$subscription->set_last_order_date_created( $new_order->get_date_created()->getTimestamp() );
+		$subscription->save();
+
 		/**
 		 * Filters the new order created from the subscription.
 		 *
