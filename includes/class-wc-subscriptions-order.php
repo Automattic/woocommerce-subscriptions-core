@@ -2492,7 +2492,7 @@ class WC_Subscriptions_Order {
 	 * @param array           $exclude_statuses The order statuses to exclude.
 	 */
 	private static function update_subscription_last_order_date_created( $subscription, $exclude_statuses = [] ) {
-		$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt' );
+		$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt', $exclude_statuses );
 
 		$subscription->set_last_order_date_created( $last_order_date_created );
 		$subscription->save();
