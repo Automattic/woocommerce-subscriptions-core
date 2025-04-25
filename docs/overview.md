@@ -22,7 +22,7 @@ The codebase follows a modular, object-oriented architecture that integrates wit
 
 - `WC_Subscription` - Core class that represents a subscription
 - `WC_Subscriptions_Order` - Manages the relationship between orders and subscriptions
-- Data is stored in the `wp_posts` table as a custom `shop_subscription` post type with meta data in `wp_postmeta`
+- Data storage is controlled by WooCommerce [High Performance Order Storage](https://woocommerce.com/document/high-performance-order-storage/)
 
 ### 2. Product Types
 
@@ -92,7 +92,7 @@ Status changes trigger actions that update dates, send emails, etc.
 Customers can:
 - Cancel subscriptions
 - Change payment methods
-- Update subscription items (if allowed)
+- Modify subscription parameters (if allowed)
 - Pause/resume subscriptions (if enabled)
 
 ## Integration with WooCommerce
@@ -134,7 +134,7 @@ Customers can:
 
 The plugin provides numerous action and filter hooks for extending its functionality. Some important ones include:
 
-- `woocommerce_subscription_status_updated`
-- `woocommerce_subscription_payment_complete`
-- `woocommerce_subscription_renewal_payment_failed`
-- `woocommerce_subscription_date_updated`
+- `woocommerce_subscription_status_*` triggered during subscription status transitions
+- `woocommerce_subscription_payment_complete` or `woocommerce_subscription_renewal_payment_complete` triggered when payment for order is completed
+- `woocommerce_subscription_payment_failed` or `woocommerce_subscription_renewal_payment_failed` triggered when payment for order failed
+- `woocommerce_subscription_date_updated` triggered when one of the subscription dates is updated
