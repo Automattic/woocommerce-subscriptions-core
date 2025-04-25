@@ -941,13 +941,12 @@ class WC_Subscriptions_Order {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$page  = (int) ( $_GET['related_orders_page'] ?? 1 );
-		$limit = (int) ( $_GET['related_orders_limit'] ?? 10 );
+		$page = (int) ( $_GET['related_orders_page'] ?? 1 );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		$related_orders      = $subscription->get_paginated_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ), $page, $limit );
+		$related_orders      = $subscription->get_paginated_related_orders( 'ids', array( 'parent', 'renewal', 'switch' ), $page, 10 );
 		$subscription_orders = $related_orders->orders;
 
 		if ( 0 !== count( $subscription_orders ) ) {
