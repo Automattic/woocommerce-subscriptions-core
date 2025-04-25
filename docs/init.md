@@ -1,6 +1,6 @@
 # WooCommerce Subscriptions Core Initialization Sequence
 
-This document explains how WooCommerce Subscriptions Core is loaded and initialized under different contexts including admin pages, customer-facing pages, Action Scheduler events, REST API requests, and AJAX calls.
+This document explains how WooCommerce Subscriptions Core is loaded and initialized.
 
 ## Core Initialization Flow
 
@@ -15,7 +15,7 @@ Regardless of the context, WooCommerce Subscriptions Core follows this base init
 
 ### Key Components Initialized
 
-During the `init()` method, the following core components are initialized:
+During the `WC_Subscriptions_Core_Plugin::init()` method all core components are initialized:
 
 ```php
 // Key classes initialized immediately
@@ -46,6 +46,8 @@ add_action('after_setup_theme', array('WC_Subscriptions_Upgrader', 'init'), 11);
 add_action('init', array('WC_PayPal_Standard_Subscriptions', 'init'), 11);
 ```
 
+Some classess need to be initialized after all other plugins are loaded, this is handled by hooking `WC_Subscriptions_Core_Plugin::init_version_dependant_classes()` to `plugins_loaded` action.
+
 ### Hooks Registration
 
 The `init_hooks()` method sets up the following key hooks:
@@ -59,125 +61,16 @@ The `init_hooks()` method sets up the following key hooks:
 
 ## Context-Specific Initialization
 
-### Admin Pages
+Core plugin doesn't have custom logic for it and relies on WordPress and WooCommerce logic here.
+So some hooks might be skipped by WordPress or WooCommerce in various context (Admin, Store front end, REST_API or WP_Ajax).
 
-When WooCommerce Subscriptions Core is loaded in the WordPress admin:
+However, WooCommerce Subscriptions Core provides global helper functions which allow to execute code within certain context only:
 
-1. The core initialization flow runs first
-2. `WC_Subscriptions_Admin::init()` is called, which:
-   - Loads admin-specific scripts and styles
-   - Registers admin menus and settings
-   - Sets up meta boxes for subscription editing
-   - Configures admin notices
-
-3. Version-dependent admin classes are initialized via `init_version_dependant_classes()`:
-   ```php
-   new WCS_Admin_Post_Types();
-   new WCS_Admin_Meta_Boxes();
-   // ... other admin-specific components
-   ```
-
-4. Admin-specific hooks are registered for:
-   - Order management screens
-   - Product management screens
-   - Payment gateway configuration
-   - Reporting and analytics
-
-### Customer-Facing Pages
-
-For front-end pages visible to customers:
-
-1. The core initialization flow runs
-2. Front-end specific components are initialized:
-   - `WC_Subscriptions_Cart` - manages subscription products in the cart
-   - `WC_Subscriptions_Checkout` - handles checkout flow for subscriptions
-   - `WC_Subscriptions_Frontend_Scripts` - loads necessary JS/CSS
-
-3. No admin-specific components are loaded, which keeps front-end pages lean
-4. `WCS_Template_Loader` manages template overrides and customizations
-
-### Action Scheduler Events
-
-When an Action Scheduler event runs for subscriptions:
-
-1. WordPress core loads and the request is identified as a `cron` request (Action Scheduler uses WP Cron)
-2. The core initialization flow runs, but admin UI components are not loaded
-3. `WCS_Action_Scheduler` (initialized during core initialization) processes the scheduled event:
-   - Retrieves the correct subscription by ID from the action arguments
-   - Performs the scheduled action (payment processing, trial end, etc.)
-   - Updates subscription dates and statuses as appropriate
-
-4. The subscription status may change based on the event, which then triggers:
-   - Email notifications
-   - Payment processing
-   - Status changes and associated actions
-
-### REST API Requests
-
-For REST API requests related to subscriptions:
-
-1. WordPress identifies the request as a REST API request via `WC()->is_rest_api_request()`
-2. The core initialization flow runs
-3. WC Subscriptions checks if it's a REST API request using `wcs_is_rest_api_request()`
-4. Admin UI components are not loaded to keep the request lightweight
-5. Data handling remains consistent with standard requests, but presentation layers are skipped
-
-### AJAX Requests
-
-For AJAX requests related to subscriptions:
-
-1. WordPress identifies the request as an AJAX request via `wp_doing_ajax()`
-2. The core initialization flow runs
-3. WC Subscriptions checks if it's an AJAX request using `wcs_doing_ajax()`
-4. Depending on the specific AJAX action:
-   - Admin-specific components may be loaded for admin AJAX requests
-   - Front-end components for customer AJAX requests
-   - The response is typically JSON formatted data rather than rendered HTML
-
-## Key Differences Between Contexts
-
-| Context | Admin UI Components | Frontend Components | Template Loading | Performance Considerations |
-|---------|--------------------|--------------------|-----------------|---------------------------|
-| Admin Pages | ✅ All loaded | ❌ Not loaded | ✅ Admin templates only | Loads more components for full functionality |
-| Customer Pages | ❌ Not loaded | ✅ All loaded | ✅ Frontend templates | Focuses on cart, checkout, and my-account functionality |
-| Action Scheduler | ❌ Not loaded | ❌ Not loaded | ❌ Not needed | Lightweight, focuses on data processing only |
-| REST API | ❌ Not loaded | ⚠️ Partial loading | ❌ Not needed | Data-focused, returns structured data |
-| AJAX | ⚠️ Context-dependent | ⚠️ Context-dependent | ❌ Not needed | Minimal loading for fast responses |
-
-## Initialization Detection Functions
-
-WC Subscriptions provides helper functions to determine the current request context:
-
-```php
-// Check if current request is AJAX
-wcs_doing_ajax()
-
-// Check if current request is wp-cron (includes Action Scheduler)
-wcs_doing_cron()
-
-// Check if current request is REST API
-wcs_is_rest_api_request()
-
-// Check if current request is frontend (not admin, not AJAX, not cron, not REST)
-wcs_is_frontend_request()
-```
-
-## Performance Considerations
-
-- Admin pages load the most components and have the highest overhead
-- Action Scheduler events are optimized for performance with minimal component loading
-- REST API and AJAX requests are designed to be lightweight for responsiveness
-- Frontend pages load only what's needed for customer interactions
-
-## Common Issues and Troubleshooting
-
-1. **Action Scheduler Events Not Running**: Check if cron is working correctly on your server and that the action is properly scheduled in the Action Scheduler tables.
-
-2. **Admin vs Frontend Loading Conflicts**: If you're building a custom integration, be aware that some components aren't available in all contexts.
-
-3. **REST API Authentication**: REST API requests require proper authentication; errors often occur due to permission issues rather than initialization problems.
-
-4. **AJAX Nonce Verification**: AJAX requests include nonce verification that can fail if the user session expires.
+- `wcs_is_rest_api_request()`
+- `wcs_is_checkout_blocks_api_request()`
+- `wcs_doing_cron()`
+- `wcs_doing_ajax()`
+- `wcs_is_frontend_request()`
 
 ## Extending the Initialization Process
 
@@ -186,16 +79,3 @@ To extend WooCommerce Subscriptions initialization, you can:
 1. Hook into the appropriate WordPress or WooCommerce action hooks
 2. Use the plugin-specific filters provided by WC Subscriptions
 3. Implement your initialization logic in the correct context (admin, frontend, etc.)
-
-Example:
-
-```php
-// Add custom admin initialization
-add_action('woocommerce_subscriptions_initialized', function() {
-    if (is_admin() && !wcs_doing_ajax()) {
-        // Admin-specific initialization
-    } elseif (wcs_is_frontend_request()) {
-        // Frontend-specific initialization
-    }
-});
-``` 
