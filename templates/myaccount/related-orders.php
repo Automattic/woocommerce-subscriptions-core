@@ -108,26 +108,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 	$prev_page = max( 1, $page - 1 );
 	$next_page = min( $max_num_pages, $page + 1 );
 
-	$first = '?related_orders_page=1#woocommerce-subscriptions-related-orders-table';
-	$prev  = '?related_orders_page=' . $prev_page . '#woocommerce-subscriptions-related-orders-table';
-	$next  = '?related_orders_page=' . $next_page . '#woocommerce-subscriptions-related-orders-table';
-	$last  = '?related_orders_page=' . $max_num_pages . '#woocommerce-subscriptions-related-orders-table';
+	$page_link = static function( int $page, string $type, string $label, bool $enabled = true ): string {
+		$base_classes = 'button woocommerce-button wp-element-button';
+		$classes      = esc_attr( $base_classes . ' woocommerce-button--' . $type . ( $enabled ? '' : ' disabled' ) );
+		$url          = esc_url( add_query_arg( 'related_orders_page', $page, '#woocommerce-subscriptions-related-orders-table' ) );
 
-	$base_classes  = 'woocommerce-button woocommerce-Button woocommerce-Button--first button wp-element-button';
-	$first_classes = $base_classes . ' woocommerce-button--first' . ( 1 === $page ? ' disabled' : '' );
-	$prev_classes  = $base_classes . ' woocommerce-button--prev' . ( 1 === $page ? ' disabled' : '' );
-	$next_classes  = $base_classes . ' woocommerce-button--next' . ( $page === $max_num_pages ? ' disabled' : '' );
-	$last_classes  = $base_classes . ' woocommerce-button--last' . ( $page === $max_num_pages ? ' disabled' : '' );
+		return "<a href='$url' class='$classes'>$label</a>";
+	};
+
+    // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Our helper function takes care of escaping.
 	?>
 	<div class="pagination-links">
-		<a class="<?php echo esc_attr( $first_classes ); ?>" href="<?php echo esc_attr( $first ); ?>"><?php echo esc_html_x( 'First', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
-		<a class="<?php echo esc_attr( $prev_classes ); ?>" href="<?php echo esc_attr( $prev ); ?>"><?php echo esc_html_x( 'Previous', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
+		<?php echo $page_link( 1, 'first', _x( 'First', 'Related orders pagination', 'woocommerce-subscriptions' ), 1 !== $page ); ?>
+		<?php echo $page_link( $prev_page, 'prev', _x( 'Previous', 'Related orders pagination', 'woocommerce-subscriptions' ), 1 !== $page ); ?>
 	</div>
 
 	<div class="pagination-links">
-		<a class="<?php echo esc_attr( $next_classes ); ?>" href="<?php echo esc_attr( $next ); ?>"><?php echo esc_html_x( 'Next', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
-		<a class="<?php echo esc_attr( $last_classes ); ?>" href="<?php echo esc_attr( $last ); ?>"><?php echo esc_html_x( 'Last', 'Related orders pagination', 'woocommerce-subscriptions' ); ?></a>
+		<?php echo $page_link( $next_page, 'next', _x( 'Next', 'Related orders pagination', 'woocommerce-subscriptions' ), $page < $max_num_pages ); ?>
+		<?php echo $page_link( $max_num_pages, 'last', _x( 'Last', 'Related orders pagination', 'woocommerce-subscriptions' ), $page < $max_num_pages ); ?>
 	</div>
+	<?php // phpcs:enable ?>
 </div>
 
 <?php do_action( 'woocommerce_subscription_details_after_subscription_related_orders_table', $subscription ); ?>
