@@ -37,27 +37,6 @@ The simplest form of subscription product - a single item with fixed subscriptio
 - **Extends**: `WC_Product_Simple`
 - **Product Type**: `subscription`
 
-### Example Usage
-
-```php
-// Create a simple subscription product
-$product = new WC_Product_Subscription();
-
-// Set subscription-specific properties
-$product->set_props(array(
-    'name'                      => 'Monthly Coffee Subscription',
-    'regular_price'             => 19.99,
-    'subscription_price'        => 19.99, // Same as regular_price
-    'subscription_period'       => 'month',
-    'subscription_period_interval' => 1,
-    'subscription_length'       => 12, // 12 month subscription
-    'subscription_sign_up_fee'  => 5.00,
-    'subscription_trial_length' => 0,
-));
-
-$product->save();
-```
-
 ### Unique Characteristics
 
 - All orders created with this product will generate a subscription
@@ -73,22 +52,6 @@ A subscription product that offers multiple variations, each potentially with di
 - **Class Name**: `WC_Product_Variable_Subscription`
 - **Extends**: `WC_Product_Variable`
 - **Product Type**: `variable-subscription`
-
-### Example Usage
-
-```php
-// Create a variable subscription product
-$product = new WC_Product_Variable_Subscription();
-
-$product->set_props(array(
-    'name' => 'Coffee Subscription (Multiple Options)',
-    'subscription_one_time_shipping' => 'yes',
-));
-
-$product->save();
-
-// Then create variations for this product with different subscription terms
-```
 
 ### Unique Characteristics
 
@@ -107,26 +70,6 @@ An individual variation within a variable subscription product.
 - **Class Name**: `WC_Product_Subscription_Variation`
 - **Extends**: `WC_Product_Variation`
 - **Product Type**: `subscription_variation`
-
-### Example Usage
-
-```php
-// Create a subscription variation for a variable subscription product
-$variation = new WC_Product_Subscription_Variation();
-
-$variation->set_props(array(
-    'parent_id'                 => $variable_product_id,
-    'regular_price'             => 29.99,
-    'subscription_price'        => 29.99,
-    'subscription_period'       => 'month',
-    'subscription_period_interval' => 3, // Quarterly
-    'subscription_length'       => 4, // 4 payments (1 year)
-    'subscription_sign_up_fee'  => 0,
-    'attributes'                => array('size' => 'large', 'grind' => 'whole-bean'),
-));
-
-$variation->save();
-```
 
 ### Unique Characteristics
 
@@ -149,15 +92,6 @@ $sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee($product);
 ```
 
 ## Advanced Configuration
-
-### Synchronized Renewals
-
-Subscriptions can be configured to renew on specific days of the week, month, or year, regardless of the purchase date.
-
-```php
-// Set a product to renew on the 1st of every month
-update_post_meta($product_id, '_subscription_payment_sync_date', 1);
-```
 
 ### Free Trials
 
@@ -202,9 +136,9 @@ The actual payment amounts for subscriptions follow these rules:
 
 Subscription products extend core WooCommerce functionality with:
 
-1. Custom product types registered via `WC_Subscriptions_Core_Plugin::register_order_types()`
+1. Custom product types registered by registerig WP terms in `WC_Subscriptions_Core_Plugin::activate_plugin()`
 2. Custom data stores for handling subscription-specific data
-3. Extended admin UI for setting subscription parameters
+3. Extended admin UI for setting subscription parameters in `WC_Subscriptions_Admin` class
 4. Special cart and checkout processes for handling subscription creation
 
 ## Product Display
@@ -217,23 +151,6 @@ The product display includes subscription-specific information:
 - Subscription length (e.g., "for 12 months")
 
 ## Common Development Tasks
-
-### Creating a Subscription Product Programmatically
-
-```php
-$product = new WC_Product_Subscription();
-$product->set_props(array(
-    'name'                       => 'Monthly Service',
-    'regular_price'              => 29.99,
-    'subscription_price'         => 29.99,
-    'subscription_period'        => 'month',
-    'subscription_period_interval' => 1,
-    'subscription_length'        => 0, // Ongoing
-    'subscription_trial_length'  => 14,
-    'subscription_trial_period'  => 'day',
-));
-$product->save();
-```
 
 ### Checking if a Product is a Subscription
 
