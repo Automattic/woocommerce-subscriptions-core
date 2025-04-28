@@ -9,7 +9,9 @@
 	"main": "Gruntfile.js",
 	"config": {
 		"translate": true,
-		"version_replace_paths": ["includes/"]
+		"version_replace_paths": [
+			"includes/"
+		]
 	},
 	"repository": {
 		"type": "git",
@@ -39,6 +41,8 @@
 		"start": "wp-scripts start assets/src/js/index.js",
 		"test:unit": "wp-scripts test-unit-js",
 		"test:php": "./vendor/bin/phpunit",
+		"test:php-coverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit",
+		"test:php-check-coverage": "./vendor/bin/coverage-check ./coverage/clover.xml 50 --only-percentage",
 		"makepot": "wp i18n make-pot . languages/woocommerce-subscriptions.pot",
 		"prearchive": "rm -rf woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core.zip",
 		"postarchive": "unzip woocommerce-subscriptions-core.zip -d woocommerce-subscriptions-core && rm woocommerce-subscriptions-core.zip && zip -r woocommerce-subscriptions-core.zip woocommerce-subscriptions-core && rm -rf woocommerce-subscriptions-core"

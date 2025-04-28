@@ -13,4 +13,27 @@
 		</testsuite>
 	</testsuites>
 
+	<coverage processUncoveredFiles="false">
+		<include>
+			<directory suffix=".php">includes/</directory>
+			<file>wcs-functions.php</file>
+			<file>woocommerce-subscriptions-core.php</file>
+		</include>
+
+		<exclude>
+			<directory suffix=".php">includes/admin/debug-tools</directory>
+			<directory suffix=".php">includes/admin/meta-boxes/views/</directory>
+			<directory suffix=".php">includes/deprecated</directory>
+			<directory suffix=".php">includes/gateways/paypal/includes/deprecated</directory>
+			<directory suffix=".php">includes/gateways/paypal/includes/templates</directory>
+			<directory suffix=".php">includes/interfaces/</directory>
+			<directory suffix=".php">includes/legacy/</directory>
+			<directory suffix=".php">includes/upgrades/templates/</directory>
+		</exclude>
+
+		<report>
+			<clover outputFile="coverage/clover.xml" />
+			<html outputDirectory="coverage" />
+		</report>
+	</coverage>
 </phpunit>
