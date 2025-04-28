@@ -18,10 +18,26 @@ $ bin/install-wp-tests.sh <db-name> <db-user> <db-password> [db-host]
 
 Tip: try using `127.0.0.1` for the DB host if the default `localhost` isn't working.
 
-3. Run the tests from the plugin root directory using
+## Running tests
+
+Run the tests from the plugin root directory using
 
 ```
-$ ./vendor/bin/phpunit
+$ npm run test:php
+```
+
+For running tests with PHP code coverage report. Note you'll need to have [XDebug](https://xdebug.org/docs/install) installed and configured.
+
+```
+$ npm run test:php-coverage
+```
+
+Report files will be created in `coverage/` folder. Open index.html for inspecting HTML report.
+
+For getting overal coverage stats:
+
+```
+npm run test:php-check-coverage
 ```
 
 ### Tips
@@ -34,6 +50,6 @@ If you have MySQL installed via a socket (like with Local), your install command
 bin/install-wp-tests.sh <db-name> <db-user> <db-password> "localhost:/Users/{username}/Library/ApplicationSupport/Local/run/Qm1DpkUyd/mysql/mysqld.sock"
 ```
 
-You can find the socket location in your Local database settings. 
+You can find the socket location in your Local database settings.
 
 <img width="500" alt="Screenshot 2024-04-12 at 10 29 07 am" src="https://github.com/Automattic/woocommerce-subscriptions-core/assets/8490476/fbd62f4e-de0f-4c20-b44c-c10365a1343f">
