@@ -17,7 +17,6 @@
 		<include>
 			<directory suffix=".php">includes/</directory>
 			<file>wcs-functions.php</file>
-			<file>woocommerce-subscriptions-core.php</file>
 		</include>
 
 		<exclude>
