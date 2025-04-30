@@ -96,10 +96,19 @@
 	flex-direction: row;
 	justify-content: space-between;
 	margin-bottom: 1em;
+	width: 100%;
 }
 
 .woocommerce-subscriptions-related-orders-pagination-links .pagination-links a {
 	display: inline-block;
+}
+
+.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a.disabled {
+	visibility: hidden;
+}
+
+.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a .symbol {
+	display: none;
 }
 
 .rtl .woocommerce-subscriptions-related-orders-pagination-links {
@@ -108,4 +117,18 @@
 
 .rtl .woocommerce-subscriptions-related-orders-pagination-links .pagination-links {
 	direction: rtl;
+}
+
+@media (max-width: 30em) {
+	.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a {
+		padding: 0.5em 1em;
+	}
+
+	.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a .label {
+		display: none;
+	}
+
+	.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a .symbol {
+		display: inherit;
+	}
 }
