@@ -24,11 +24,12 @@ $page_link = static function( int $page, string $type, string $label, string $al
 	$base_classes = 'button woocommerce-button wp-element-button';
 	$classes      = esc_attr( $base_classes . ' woocommerce-button--' . $type . ( $enabled ? '' : ' disabled' ) );
 	$url          = esc_url( add_query_arg( 'related_orders_page', $page, '#woocommerce-subscriptions-related-orders-table' ) );
+	$href         = $enabled ? "href='$url'" : '';
 	$label        = esc_html( $label );
 	$aria_label   = esc_attr( $label );
 	$alt_symbol   = esc_html( $alt_symbol );
 
-	return "<a href='$url' class='$classes' aria-label='$aria_label'><span class='label'>$label</span><span class='symbol'>$alt_symbol</span></a>";
+	return "<a $href class='$classes' aria-label='$aria_label'><span class='label'>$label</span><span class='symbol'>$alt_symbol</span></a>";
 };
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Our helper function takes care of escaping.

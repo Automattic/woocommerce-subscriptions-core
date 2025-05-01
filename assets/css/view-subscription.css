@@ -103,8 +103,9 @@
 	display: inline-block;
 }
 
-.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a.disabled {
-	visibility: hidden;
+.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a.disabled:hover {
+	cursor: default;
+	text-decoration: none;
 }
 
 .woocommerce-subscriptions-related-orders-pagination-links .pagination-links a .symbol {
@@ -119,7 +120,7 @@
 	direction: rtl;
 }
 
-@media (max-width: 30em) {
+@media ( max-width: 30em ) {
 	.woocommerce-subscriptions-related-orders-pagination-links .pagination-links a {
 		padding: 0.5em 1em;
 	}
