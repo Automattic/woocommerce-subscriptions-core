@@ -226,6 +226,11 @@ class WC_Subscriptions_Core_Plugin {
 		if ( class_exists( 'WC_Abstract_Privacy' ) ) {
 			new WCS_Privacy();
 		}
+
+		// Loads Subscriptions support for the WooCommerce Navigation feature. This feature was removed in WC 9.3.
+		if ( wcs_is_woocommerce_pre( '9.3' ) ) {
+			add_action( 'init', array( 'WCS_WC_Admin_Manager', 'init' ), 11 );
+		}
 	}
 
 	/**
