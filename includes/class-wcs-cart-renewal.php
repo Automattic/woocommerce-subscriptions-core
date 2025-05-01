@@ -782,10 +782,10 @@ class WCS_Cart_Renewal {
 				if ( $coupon_code == $code ) {
 					// Some coupon properties are overridden specifically for renewals
 					$renewal_coupon_overrides = array(
-						'id'                  => true,
-						'usage_limit'         => '',
-						'usage_count'         => '',
-						'date_expires'        => '',
+						'id'           => true,
+						'usage_limit'  => '',
+						'usage_count'  => '',
+						'date_expires' => '',
 					);
 
 					$data = array_merge( $coupon_properties, $renewal_coupon_overrides );
