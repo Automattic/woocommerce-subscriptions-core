@@ -7,8 +7,6 @@
  *
  * @var int $max_num_pages
  * @var int $page
- * @var WC_Subscription $subscription
- * @var int[] $subscription_orders
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
