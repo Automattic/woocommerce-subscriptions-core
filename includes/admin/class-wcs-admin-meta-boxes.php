@@ -347,8 +347,11 @@ class WCS_Admin_Meta_Boxes {
 	 *
 	 * @param array $available_emails
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.0
+	 *
+	 * @deprecated
 	 */
 	public static function remove_order_email_actions( $email_actions ) {
+		wcs_deprecated_function( __METHOD__, '8.3.0', 'WCS_Admin_Meta_Boxes::remove_order_email_actions' );
 		global $theorder;
 
 		if ( wcs_is_subscription( $theorder ) ) {
