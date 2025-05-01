@@ -85,8 +85,9 @@ class WC_Subscriptions_Addresses_Test extends WP_UnitTestCase {
 		WC_Subscriptions_Addresses::maybe_add_edit_address_checkbox();
 		$output = ob_get_clean();
 		
-		// Assert that the output contains the checkbox
+		// Assert that the output contains the checkbox, checked by default
 		$this->assertStringContainsString('<input type="checkbox" name="update_all_subscriptions_addresses"', $output);
+		$this->assertStringContainsString('checked=\'checked\'', $output);
 		$this->assertStringContainsString('Update the Shipping Address used for <strong>all</strong> future renewals of my active subscriptions', $output);
 		
 		// Clean up
@@ -110,8 +111,9 @@ class WC_Subscriptions_Addresses_Test extends WP_UnitTestCase {
 		WC_Subscriptions_Addresses::maybe_add_edit_address_checkbox();
 		$output = ob_get_clean();
 		
-		// Assert that the output contains the checkbox
+		// Assert that the output contains the checkbox, checked by default
         $this->assertStringContainsString('<input type="checkbox" name="update_all_subscriptions_addresses"', $output);
+		$this->assertStringContainsString('checked=\'checked\'', $output);
 		$this->assertStringContainsString('Update the Billing Address used for <strong>all</strong> future renewals of my active subscriptions', $output);
 		
 		// Clean up

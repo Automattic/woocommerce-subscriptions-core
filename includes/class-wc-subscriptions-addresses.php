@@ -123,7 +123,7 @@ class WC_Subscriptions_Addresses {
 						'type'    => 'checkbox',
 						'class'   => array( 'form-row-wide' ),
 						'label'   => $label,
-						'default' => apply_filters( 'wcs_update_all_subscriptions_addresses_checked', false ),
+						'default' => apply_filters( 'wcs_update_all_subscriptions_addresses_checked', true ),
 					)
 				);
 			}
