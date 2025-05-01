@@ -144,7 +144,7 @@ class WCS_Cart_Renewal {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.2.11
 	 */
 	public function attach_dependant_callbacks() {
-		add_action( 'woocommerce_checkout_create_order_line_item', array( &$this, 'add_order_line_item_meta' ), 10, 3 );
+		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'add_order_line_item_meta' ), 10, 3 );
 	}
 
 	/**
