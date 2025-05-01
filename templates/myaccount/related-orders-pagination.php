@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Pagination controls in support of the related orders list found on the My Account > View Subscription page.
  *
