@@ -135,7 +135,7 @@ class WC_Subscriptions_Admin {
 		add_action( 'woocommerce_payment_gateways_settings', __CLASS__ . '::add_recurring_payment_gateway_information', 10, 1 );
 
 		// Change text for when order items cannot be edited
-		wcs_add_woocommerce_dependent_action( 'woocommerce_admin_order_totals_after_total', array( __CLASS__, 'maybe_attach_gettext_callback' ), '4.0.0', '>' );
+		add_action( 'woocommerce_admin_order_totals_after_total', array( __CLASS__, 'maybe_attach_gettext_callback' ) );
 
 		// Unhook gettext callback to prevent extra call impact
 		add_action( 'woocommerce_order_item_add_action_buttons', __CLASS__ . '::maybe_unattach_gettext_callback', 10, 1 );
