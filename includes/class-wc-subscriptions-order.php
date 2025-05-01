@@ -968,13 +968,14 @@ class WC_Subscriptions_Order {
 	 * Introduced to support pagination of the related orders list (within the My Account > View Subscription
 	 * screen).
 	 *
+     * @since 7.5.0 Updated to support pagination of the related orders list.
+     *
 	 * @param WC_Subscription $subscription        The subscription whose related orders we are interested in.
 	 * @param int[]|null      $subscription_orders IDs of the related orders.
 	 * @param int|null        $page                The current page number.
 	 * @param int|null        $max_num_pages       The maximum number of pages in the set.
 	 *
-	 * @since 7.5.0 Updated to support pagination of the related orders list.
-	 *
+	 * @return void
 	 */
 	public static function get_related_orders_pagination_template( WC_Subscription $subscription, ?array $subscription_orders = null, ?int $page = null, ?int $max_num_pages = null ) {
 		if ( null === $page || null === $max_num_pages ) {
