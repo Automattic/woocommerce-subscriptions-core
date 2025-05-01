@@ -38,6 +38,7 @@ class WC_Subscriptions_Data_Copier {
 		'_suspension_count',
 		'_requires_manual_renewal',
 		'_cancelled_email_sent',
+		'_last_order_date_created',
 		'_trial_period',
 		'_created_via',
 		'_order_stock_reduced',

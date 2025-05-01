@@ -103,6 +103,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 			$order->add_meta_data( $related_order_meta_key, $subscription_id, false );
 			$order->save();
 		}
+
+		do_action( 'wcs_orders_add_relation', $order, $subscription, $relation_type );
 	}
 
 	/**
@@ -124,6 +126,8 @@ class WCS_Related_Order_Store_CPT extends WCS_Related_Order_Store {
 		}
 
 		$order->save();
+
+		do_action( 'wcs_orders_delete_relation', $order, $subscription, $relation_type );
 	}
 
 	/**

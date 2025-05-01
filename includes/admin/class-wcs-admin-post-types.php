@@ -684,9 +684,14 @@ class WCS_Admin_Post_Types {
 	 * @since 1.0.0 - Migrated from WooCommerce Subscriptions v2.3.0
 	 */
 	public static function get_date_column_content( $subscription, $column ) {
-		$date_type_map  = array( 'last_payment_date' => 'last_order_date_created' );
-		$date_type      = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
-		$date_timestamp = $subscription->get_time( $date_type );
+		$date_type_map = array( 'last_payment_date' => 'last_order_date_created' );
+		$date_type     = array_key_exists( $column, $date_type_map ) ? $date_type_map[ $column ] : $column;
+
+		if ( 'last_payment_date' === $column ) {
+			$date_timestamp = self::get_last_payment_date( $subscription );
+		} else {
+			$date_timestamp = $subscription->get_time( $date_type );
+		}
 
 		if ( 0 === $date_timestamp ) {
 			return '-';
@@ -1832,6 +1837,26 @@ class WCS_Admin_Post_Types {
 		$pieces['orderby'] = "COALESCE(lp.last_payment, parent_order.date_created_gmt, 0) {$query_order}";
 
 		return $pieces;
+	}
+
+	/**
+	 * Get the last payment date for a subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription object.
+	 * @return int The last payment date timestamp.
+	 */
+	private static function get_last_payment_date( $subscription ) {
+		$last_order_date_created = $subscription->get_last_order_date_created();
+
+		if ( ! empty( $last_order_date_created ) ) {
+			return $last_order_date_created;
+		}
+
+		$date_timestamp = $subscription->get_time( 'last_order_date_created' );
+		$subscription->set_last_order_date_created( $date_timestamp );
+		$subscription->save();
+
+		return $date_timestamp;
 	}
 
 	/**

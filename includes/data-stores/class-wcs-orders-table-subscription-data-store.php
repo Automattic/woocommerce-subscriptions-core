@@ -41,6 +41,7 @@ class WCS_Orders_Table_Subscription_Data_Store extends \Automattic\WooCommerce\I
 		'_cancelled_email_sent'     => 'cancelled_email_sent',
 		'_requires_manual_renewal'  => 'requires_manual_renewal',
 		'_trial_period'             => 'trial_period',
+		'_last_order_date_created'  => 'last_order_date_created',
 
 		'_schedule_trial_end'       => 'schedule_trial_end',
 		'_schedule_next_payment'    => 'schedule_next_payment',

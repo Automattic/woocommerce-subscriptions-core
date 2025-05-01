@@ -77,6 +77,22 @@ class WC_Subscriptions_Order {
 		add_filter( 'woocommerce_order_query_args', array( __CLASS__, 'map_order_query_args_for_subscriptions' ) );
 
 		add_filter( 'woocommerce_orders_table_query_clauses', [ __CLASS__, 'filter_orders_query_by_parent_orders' ], 10, 2 );
+
+		add_action( 'woocommerce_before_delete_order', [ __CLASS__, 'delete_order_update_order_related_subscriptions_last_order_date_created' ], 10, 2 );
+
+		$cache_manager = new WCS_Object_Data_Cache_Manager(
+			'subscription',
+			[
+				'parent_id',
+			]
+		);
+		$cache_manager->init();
+
+		add_action( 'wcs_update_post_meta_caches', [ __CLASS__, 'update_subscription_last_order_date_parent_id_changes' ], 10, 5 );
+
+		add_action( 'wcs_orders_add_relation', [ __CLASS__, 'add_relation_update_order_related_subscriptions_last_order_date_created' ], 10, 3 );
+
+		add_action( 'wcs_orders_delete_relation', [ __CLASS__, 'delete_relation_update_order_related_subscriptions_last_order_date_created' ], 10, 3 );
 	}
 
 	/*
@@ -2394,6 +2410,92 @@ class WC_Subscriptions_Order {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata when deleting a child order.
+	 *
+	 * @param int      $id    The deleted order ID.
+	 * @param WC_Order $order The deleted order object.
+	 */
+	public static function delete_order_update_order_related_subscriptions_last_order_date_created( $id, $order ) {
+		if ( $order->get_created_via() !== 'subscription' ) {
+			return;
+		}
+
+		self::update_order_related_subscriptions_last_order_date_created( $order, [ 'trash' ] );
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata when adding a child order.
+	 *
+	 * @param WC_Order $order         The order to link with the subscription.
+	 * @param WC_Order $subscription  The order or subscription to link the order to.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 */
+	public static function add_relation_update_order_related_subscriptions_last_order_date_created( $order, $subscription, $relation_type ) {
+		self::update_order_related_subscriptions_last_order_date_created( $order );
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata when deleting a child order relation.
+	 *
+	 * @param WC_Order $order         An order that may be linked with subscriptions.
+	 * @param WC_Order $subscription  A subscription or order to unlink the order with, if a relation exists.
+	 * @param string   $relation_type The relationship between the subscription and the order. Must be 'renewal', 'switch' or 'resubscribe' unless custom relationships are implemented.
+	 */
+	public static function delete_relation_update_order_related_subscriptions_last_order_date_created( $order, $subscription, $relation_type ) {
+		self::update_subscription_last_order_date_created( $subscription );
+
+		self::update_order_related_subscriptions_last_order_date_created( $order );
+	}
+
+	/**
+	 * Update all subscription cached last_order_date_created metadata related to the order.
+	 *
+	 * @param WC_Order $order The order object.
+	 * @param array    $exclude_statuses The order statuses to exclude.
+	 */
+	private static function update_order_related_subscriptions_last_order_date_created( $order, $exclude_statuses = [] ) {
+		$subscription_ids = wcs_get_subscription_ids_for_order( $order );
+
+		foreach ( $subscription_ids as $subscription_id ) {
+			$subscription = wcs_get_subscription( $subscription_id );
+
+			self::update_subscription_last_order_date_created( $subscription, $exclude_statuses );
+		}
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata when manually updating parent id.
+	 *
+	 * @param string $type The type of update to check. Only 'add' or 'delete' should be used.
+	 * @param int $object_id The object the meta is being changed on.
+	 * @param string $key The object meta key being changed.
+	 * @param mixed $new_value The meta value.
+	 * @param mixed $previous_value The previous value stored in the database. Optional.
+	 */
+	public static function update_subscription_last_order_date_parent_id_changes( $type, $object_id, $key, $new_value, $previous_value ) {
+		if ( 'parent_id' !== $key || empty( $new_value ) ) {
+			return;
+		}
+
+		$subscription = wcs_get_subscription( $object_id );
+
+		self::update_subscription_last_order_date_created( $subscription );
+	}
+
+	/**
+	 * Update subscription cached last_order_date_created metadata.
+	 *
+	 * @param WC_Subscription $subscription The subscription object.
+	 * @param array           $exclude_statuses The order statuses to exclude.
+	 */
+	private static function update_subscription_last_order_date_created( $subscription, $exclude_statuses = [] ) {
+		$last_order_date_created = $subscription->get_time( 'last_order_date_created', 'gmt', $exclude_statuses );
+
+		$subscription->set_last_order_date_created( $last_order_date_created );
+		$subscription->save();
 	}
 
 	/**

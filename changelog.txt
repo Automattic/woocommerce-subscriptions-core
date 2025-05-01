@@ -1,6 +1,9 @@
 *** WooCommerce Subscriptions Core Changelog ***
 
-= 8.2.0 - 2025-xx-xx =
+= 8.3.0 - 2025-xx-xx =
+* Dev - Removed support for WC version <= 4.4.
+
+= 8.2.0 - 2025-04-14 =
 * Update - Increase the number of args accepted by wcs_get_subscriptions(), to bring about parity with wc_get_orders().
 * Dev - Update wcs_maybe_prefix_key() and wcs_maybe_unprefix_key() to support an array of keys.
 * Fix - Prevent sending renewal reminders for orders with a 0 total.
@@ -26,8 +29,9 @@
 * Fix - For stores with HPOS + compatibility mode enabled, using the bulk delete related orders cache tool was not correctly deleting the meta from the WP Posts table.
 * Fix - Prevent empty strings being saved in related orders cache ID meta when backfilling order data to the WP Posts table.
 * Fix - Correctly load product names with HTML on the cart and checkout shipping rates.
+* Fix - Improve performance of the subscription listing page.
 * Dev - Fix Node version mismatch between package.json and .nvmrc (both are now set to v16.17.1).
-* Dev - Removed support for WC version <= 4.4.
+* Add - Hooks to add more columns to the Related Orders table on admin
 
 = 8.0.1 - 2025-02-13 =
 * Fix - Revert a change released in 7.2.0 which triggered the "woocommerce_cart_item_name" filter with the wrong number of parameters.
