@@ -104,38 +104,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 </table>
 
 <?php
-$prev_page = max( 1, $page - 1 );
-$next_page = min( $max_num_pages, $page + 1 );
-
-$page_link = static function( int $page, string $type, string $label, string $alt_symbol, bool $enabled = true ): string {
-	$base_classes = 'button woocommerce-button wp-element-button';
-	$classes      = esc_attr( $base_classes . ' woocommerce-button--' . $type . ( $enabled ? '' : ' disabled' ) );
-	$url          = esc_url( add_query_arg( 'related_orders_page', $page, '#woocommerce-subscriptions-related-orders-table' ) );
-	$label        = esc_html( $label );
-	$aria_label   = esc_attr( $label );
-	$alt_symbol   = esc_html( $alt_symbol );
-
-	return "<a href='$url' class='$classes' aria-label='$aria_label'><span class='label'>$label</span><span class='symbol'>$alt_symbol</span></a>";
-};
-
-if ( $max_num_pages > 1 || ( 1 === $max_num_pages && 1 !== $page ) ) :
-
-	// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Our helper function takes care of escaping.
-	?>
-		<div class="woocommerce-subscriptions-related-orders-pagination-links woocommerce-pagination">
-			<div class="pagination-links">
-				<?php echo $page_link( 1, 'first', _x( 'First', 'Related orders pagination', 'woocommerce-subscriptions' ), '«', 1 !== $page ); ?>
-				<?php echo $page_link( $prev_page, 'prev', _x( 'Previous', 'Related orders pagination', 'woocommerce-subscriptions' ), '‹', 1 !== $page ); ?>
-			</div>
-
-			<div class="pagination-links">
-				<?php echo $page_link( $next_page, 'next', _x( 'Next', 'Related orders pagination', 'woocommerce-subscriptions' ), '›', $page < $max_num_pages ); ?>
-				<?php echo $page_link( $max_num_pages, 'last', _x( 'Last', 'Related orders pagination', 'woocommerce-subscriptions' ), '»', $page < $max_num_pages ); ?>
-			</div>
-		</div>
-	<?php
-	// phpcs:enable
-endif;
-
-do_action( 'woocommerce_subscription_details_after_subscription_related_orders_table', $subscription );
+/**
+ * Allows additional content to be added following the related orders table.
+ *
+ * @since 2.0.0 Hook added.
+ * @since 7.5.0 Additional params $subscription_orders, $page and $max_num_pages added.
+ *
+ * @param WC_Subscription $subscription
+ * @param int[]           $subscription_orders
+ * @param int             $page
+ * @param int             $max_num_pages
+ */
+do_action( 'woocommerce_subscription_details_after_subscription_related_orders_table', $subscription, $subscription_orders, $page, $max_num_pages );
 ?>

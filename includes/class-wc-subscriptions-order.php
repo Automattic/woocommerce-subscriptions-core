@@ -61,7 +61,8 @@ class WC_Subscriptions_Order {
 
 		add_action( 'woocommerce_order_details_after_order_table', __CLASS__ . '::add_subscriptions_to_view_order_templates', 10, 1 );
 
-		add_action( 'woocommerce_subscription_details_after_subscription_table', __CLASS__ . '::get_related_orders_template', 10, 1 );
+		add_action( 'woocommerce_subscription_details_after_subscription_table', __CLASS__ . '::get_related_orders_template' );
+		add_action( 'woocommerce_subscription_details_after_subscription_related_orders_table', __CLASS__ . '::get_related_orders_pagination_template', 5, 4 );
 
 		add_filter( 'woocommerce_my_account_my_orders_actions', __CLASS__ . '::maybe_remove_pay_action', 10, 2 );
 
@@ -933,7 +934,6 @@ class WC_Subscriptions_Order {
 	 * Loads the related orders table on the view subscription page
 	 *
 	 * @since 1.0.0 Migrated from WooCommerce Subscriptions v2.0.
-	 * @since 7.5.0 Updated to support pagination of the related orders list.
 	 *
 	 * @param WC_Subscription $subscription The subscription whose related orders we are interested in.
 	 */
@@ -962,6 +962,34 @@ class WC_Subscriptions_Order {
 				WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
 			);
 		}
+	}
+
+	/**
+	 * Introduced to support pagination of the related orders list (within the My Account > View Subscription
+	 * screen).
+	 *
+	 * @param WC_Subscription $subscription        The subscription whose related orders we are interested in.
+	 * @param int[]|null      $subscription_orders IDs of the related orders.
+	 * @param int|null        $page                The current page number.
+	 * @param int|null        $max_num_pages       The maximum number of pages in the set.
+	 *
+	 * @since 7.5.0 Updated to support pagination of the related orders list.
+	 *
+	 */
+	public static function get_related_orders_pagination_template( WC_Subscription $subscription, ?array $subscription_orders = null, ?int $page = null, ?int $max_num_pages = null ) {
+		if ( null === $page || null === $max_num_pages ) {
+			return;
+		}
+
+		wc_get_template(
+			'myaccount/related-orders-pagination.php',
+			array(
+				'page'          => $page,
+				'max_num_pages' => $max_num_pages,
+			),
+			'',
+			WC_Subscriptions_Core_Plugin::instance()->get_subscriptions_core_directory( 'templates/' )
+		);
 	}
 
 	/**
