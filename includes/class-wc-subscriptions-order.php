@@ -968,8 +968,8 @@ class WC_Subscriptions_Order {
 	 * Introduced to support pagination of the related orders list (within the My Account > View Subscription
 	 * screen).
 	 *
-     * @since 7.5.0 Updated to support pagination of the related orders list.
-     *
+	 * @since 7.5.0 Updated to support pagination of the related orders list.
+	 *
 	 * @param WC_Subscription $subscription        The subscription whose related orders we are interested in.
 	 * @param int[]|null      $subscription_orders IDs of the related orders.
 	 * @param int|null        $page                The current page number.
