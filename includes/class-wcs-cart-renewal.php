@@ -1407,26 +1407,15 @@ class WCS_Cart_Renewal {
 			$total_coupon_discount += floatval( array_sum( wc_list_pluck( $coupon_items, 'get_discount_tax' ) ) );
 		}
 
-		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
-		$order_has_manual_discount = $order_discount !== $total_coupon_discount;
-
 		// Get all coupon line items as coupon objects.
 		if ( ! empty( $coupon_items ) ) {
 			$coupons = $this->get_line_item_coupons( $coupon_items );
 		}
 
-		if ( $order_has_manual_discount ) {
-			// Remove any coupon line items which don't grant free shipping.
-			foreach ( $coupons as $index => $coupon ) {
-				if ( ! $coupon->get_free_shipping() ) {
-					unset( $coupons[ $index ] );
-				}
-
-				// We're going to apply a coupon for the full order discount so make sure free shipping coupons don't apply any discount.
-				$coupon->set_amount( 0 );
-			}
-
-			$coupons[] = $this->get_pseudo_coupon( $order_discount );
+		// If the order total discount is different from the discount applied from coupons we have a manually applied discount.
+		if ( $order_discount !== $total_coupon_discount && $order_discount > $total_coupon_discount ) {
+			// If there is a manually applied discount, we need to add a coupon for the difference.
+			$coupons[] = $this->create_manual_discount_coupon( $order_discount - $total_coupon_discount );
 		}
 
 		foreach ( $coupons as $coupon ) {
@@ -1453,7 +1442,7 @@ class WCS_Cart_Renewal {
 					continue;
 				}
 
-				$coupon = $this->get_pseudo_coupon( $coupon_item->get_discount() );
+				$coupon = $this->create_manual_discount_coupon( $coupon_item->get_discount() );
 				$coupon->set_code( $coupon_item->get_code() );
 			} elseif ( 'subscription_renewal' === $this->cart_item_key ) {
 				$coupon_type = $coupon->get_discount_type();
@@ -1471,12 +1460,12 @@ class WCS_Cart_Renewal {
 	}
 
 	/**
-	 * Apply a pseudo coupon to the cart for a specific discount amount.
+	 * Apply a coupon to the cart for a specific discount amount.
 	 *
 	 * @param float $discount The discount amount.
 	 * @return WC_Coupon
 	 */
-	protected function get_pseudo_coupon( $discount ) {
+	protected function create_manual_discount_coupon( $discount ) {
 		$cart_types = array(
 			'subscription_initial_payment' => 'initial',
 			'subscription_renewal'         => 'renewal',
@@ -1486,9 +1475,7 @@ class WCS_Cart_Renewal {
 
 		// Generate a unique coupon code from the cart type.
 		$coupon = new WC_Coupon( "discount_{$cart_type}" );
-
-		// Apply our cart style pseudo coupon type and the set the amount.
-		$coupon->set_discount_type( "{$cart_type}_cart" );
+		$coupon->set_discount_type( 'fixed_cart' );
 		$coupon->set_amount( $discount );
 
 		return $coupon;
