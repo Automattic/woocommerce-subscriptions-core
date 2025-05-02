@@ -23,7 +23,7 @@ class WCS_Email_New_Renewal_Order extends WC_Email_New_Order {
 		$this->description    = __( 'New renewal order emails are sent when a subscription renewal payment is processed.', 'woocommerce-subscriptions' );
 
 		$this->heading        = __( 'New subscription renewal order', 'woocommerce-subscriptions' );
-		$this->subject        = __( '[{blogname}] New subscription renewal order ({order_number}) - {order_date}', 'woocommerce-subscriptions' );
+		$this->subject        = __( '[{site_title}] New subscription renewal order ({order_number}) - {order_date}', 'woocommerce-subscriptions' );
 
 		$this->template_html  = 'emails/admin-new-renewal-order.php';
 		$this->template_plain = 'emails/plain/admin-new-renewal-order.php';

@@ -33,7 +33,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 		$this->customer_email = true;
 
 		$this->heading        = __( 'Your subscription change is complete', 'woocommerce-subscriptions' );
-		$this->subject        = __( 'Your {blogname} subscription change from {order_date} is complete', 'woocommerce-subscriptions' );
+		$this->subject        = __( 'Your {site_title} subscription change from {order_date} is complete', 'woocommerce-subscriptions' );
 
 		$this->template_html  = 'emails/customer-completed-switch-order.php';
 		$this->template_plain = 'emails/plain/customer-completed-switch-order.php';
@@ -187,7 +187,7 @@ class WCS_Email_Completed_Switch_Order extends WC_Email_Customer_Completed_Order
 
 		} elseif ( 'subject_downloadable' === $key ) {
 			wcs_deprecated_argument( __CLASS__ . '::$' . $key, '5.6.0', 'The subject_downloadable property used for emails with downloadable files was removed in WooCommerce 3.1. Use the subject property instead.' );
-			return $this->get_option( 'subject_downloadable', __( 'Your {blogname} subscription change from {order_date} is complete - download your files', 'woocommerce-subscriptions' ) );
+			return $this->get_option( 'subject_downloadable', __( 'Your {site_title} subscription change from {order_date} is complete - download your files', 'woocommerce-subscriptions' ) );
 
 		} else {
 			return;

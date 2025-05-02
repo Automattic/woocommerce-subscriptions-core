@@ -27,8 +27,8 @@ class WCS_Email_On_Hold_Subscription extends WC_Email {
 		$this->description = __( 'Suspended Subscription emails are sent when a customer manually suspends their subscription.', 'woocommerce-subscriptions' );
 
 		$this->heading     = __( 'Subscription Suspended', 'woocommerce-subscriptions' );
-		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
-		$this->subject     = sprintf( _x( '[%s] Subscription Suspended', 'default email subject for suspended emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
+		// translators: placeholder is {site_title}, a variable that will be substituted when email is sent out
+		$this->subject     = sprintf( _x( '[%s] Subscription Suspended', 'default email subject for suspended emails sent to the admin', 'woocommerce-subscriptions' ), '{site_title}' );
 
 		$this->template_html  = 'emails/on-hold-subscription.php';
 		$this->template_plain = 'emails/plain/on-hold-subscription.php';

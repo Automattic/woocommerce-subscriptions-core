@@ -27,8 +27,8 @@ class WCS_Email_Expired_Subscription extends WC_Email {
 		$this->description = __( 'Expired Subscription emails are sent when a customer\'s subscription expires.', 'woocommerce-subscriptions' );
 
 		$this->heading     = __( 'Subscription Expired', 'woocommerce-subscriptions' );
-		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
-		$this->subject     = sprintf( _x( '[%s] Subscription Expired', 'default email subject for expired emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
+		// translators: placeholder is {site_title}, a variable that will be substituted when email is sent out
+		$this->subject     = sprintf( _x( '[%s] Subscription Expired', 'default email subject for expired emails sent to the admin', 'woocommerce-subscriptions' ), '{site_title}' );
 
 		$this->template_html  = 'emails/expired-subscription.php';
 		$this->template_plain = 'emails/plain/expired-subscription.php';

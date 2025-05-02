@@ -27,8 +27,8 @@ class WCS_Email_Cancelled_Subscription extends WC_Email {
 		$this->description = __( 'Cancelled Subscription emails are sent when a customer\'s subscription is cancelled (either by a store manager, or the customer).', 'woocommerce-subscriptions' );
 
 		$this->heading     = __( 'Subscription Cancelled', 'woocommerce-subscriptions' );
-		// translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
-		$this->subject     = sprintf( _x( '[%s] Subscription Cancelled', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{blogname}' );
+		// translators: placeholder is {site_title}, a variable that will be substituted when email is sent out
+		$this->subject     = sprintf( _x( '[%s] Subscription Cancelled', 'default email subject for cancelled emails sent to the admin', 'woocommerce-subscriptions' ), '{site_title}' );
 
 		$this->template_html  = 'emails/cancelled-subscription.php';
 		$this->template_plain = 'emails/plain/cancelled-subscription.php';

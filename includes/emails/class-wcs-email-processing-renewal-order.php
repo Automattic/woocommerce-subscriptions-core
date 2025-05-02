@@ -26,7 +26,7 @@ class WCS_Email_Processing_Renewal_Order extends WC_Email_Customer_Processing_Or
 		$this->customer_email = true;
 
 		$this->heading        = __( 'Thank you for your order', 'woocommerce-subscriptions' );
-		$this->subject        = __( 'Your {blogname} renewal order receipt from {order_date}', 'woocommerce-subscriptions' );
+		$this->subject        = __( 'Your {site_title} renewal order receipt from {order_date}', 'woocommerce-subscriptions' );
 
 		$this->template_html  = 'emails/customer-processing-renewal-order.php';
 		$this->template_plain = 'emails/plain/customer-processing-renewal-order.php';

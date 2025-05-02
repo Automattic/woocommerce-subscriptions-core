@@ -28,7 +28,7 @@ class WCS_Email_New_Switch_Order extends WC_Email_New_Order {
 		$this->description    = __( 'Subscription switched emails are sent when a customer switches a subscription.', 'woocommerce-subscriptions' );
 
 		$this->heading        = __( 'Subscription Switched', 'woocommerce-subscriptions' );
-		$this->subject        = __( '[{blogname}] Subscription Switched ({order_number}) - {order_date}', 'woocommerce-subscriptions' );
+		$this->subject        = __( '[{site_title}] Subscription Switched ({order_number}) - {order_date}', 'woocommerce-subscriptions' );
 
 		$this->template_html  = 'emails/admin-new-switch-order.php';
 		$this->template_plain = 'emails/plain/admin-new-switch-order.php';

@@ -27,8 +27,8 @@ class WCS_Email_Completed_Renewal_Order extends WC_Email_Customer_Completed_Orde
 		$this->customer_email = true;
 
 		$this->heading        = _x( 'Your renewal order is complete', 'Default email heading for email to customer on completed renewal order', 'woocommerce-subscriptions' );
-		// translators: $1: {blogname}, $2: {order_date}, variables that will be substituted when email is sent out
-		$this->subject        = sprintf( _x( 'Your %1$s renewal order from %2$s is complete', 'Default email subject for email to customer on completed renewal order', 'woocommerce-subscriptions' ), '{blogname}', '{order_date}' );
+		// translators: $1: {site_title}, $2: {order_date}, variables that will be substituted when email is sent out
+		$this->subject        = sprintf( _x( 'Your %1$s renewal order from %2$s is complete', 'Default email subject for email to customer on completed renewal order', 'woocommerce-subscriptions' ), '{site_title}', '{order_date}' );
 
 		$this->template_html  = 'emails/customer-completed-renewal-order.php';
 		$this->template_plain = 'emails/plain/customer-completed-renewal-order.php';
@@ -178,8 +178,8 @@ class WCS_Email_Completed_Renewal_Order extends WC_Email_Customer_Completed_Orde
 
 		} elseif ( 'subject_downloadable' === $key ) {
 			wcs_deprecated_argument( __CLASS__ . '::$' . $key, '5.6.0', 'The subject_downloadabl property used for emails with downloadable files was removed in WooCommerce 3.1. Use the subject property instead.' );
-			// translators: $1: {blogname}, $2: {order_date}, variables will be substituted when email is sent out
-			return $this->get_option( 'subject_downloadable', sprintf( _x( 'Your %1$s subscription renewal order from %2$s is complete - download your files', 'Default email subject for email with downloadable files in it', 'woocommerce-subscriptions' ), '{blogname}', '{order_date}' ) );
+			// translators: $1: {site_title}, $2: {order_date}, variables will be substituted when email is sent out
+			return $this->get_option( 'subject_downloadable', sprintf( _x( 'Your %1$s subscription renewal order from %2$s is complete - download your files', 'Default email subject for email with downloadable files in it', 'woocommerce-subscriptions' ), '{site_title}', '{order_date}' ) );
 
 		} else {
 			return;

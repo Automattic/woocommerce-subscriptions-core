@@ -4038,7 +4038,7 @@ msgstr ""
 msgid "Subscription Cancelled"
 msgstr ""
 
-#. translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
+#. translators: placeholder is {site_title}, a variable that will be substituted when email is sent out
 #: includes/emails/class-wcs-email-cancelled-subscription.php:31
 msgctxt "default email subject for cancelled emails sent to the admin"
 msgid "[%s] Subscription Cancelled"
@@ -4146,7 +4146,7 @@ msgctxt "Default email heading for email to customer on completed renewal order"
 msgid "Your renewal order is complete"
 msgstr ""
 
-#. translators: $1: {blogname}, $2: {order_date}, variables that will be substituted when email is sent out
+#. translators: $1: {site_title}, $2: {order_date}, variables that will be substituted when email is sent out
 #: includes/emails/class-wcs-email-completed-renewal-order.php:31
 msgctxt "Default email subject for email to customer on completed renewal order"
 msgid "Your %1$s renewal order from %2$s is complete"
@@ -4157,7 +4157,7 @@ msgctxt "Default email heading for email with downloadable files in it"
 msgid "Your subscription renewal order is complete - download your files"
 msgstr ""
 
-#. translators: $1: {blogname}, $2: {order_date}, variables will be substituted when email is sent out
+#. translators: $1: {site_title}, $2: {order_date}, variables will be substituted when email is sent out
 #: includes/emails/class-wcs-email-completed-renewal-order.php:40
 msgctxt "Default email subject for email with downloadable files in it"
 msgid "Your %1$s subscription renewal order from %2$s is complete - download your files"
@@ -4176,7 +4176,7 @@ msgid "Your subscription change is complete"
 msgstr ""
 
 #: includes/emails/class-wcs-email-completed-switch-order.php:31
-msgid "Your {blogname} subscription change from {order_date} is complete"
+msgid "Your {site_title} subscription change from {order_date} is complete"
 msgstr ""
 
 #: includes/emails/class-wcs-email-completed-switch-order.php:38
@@ -4184,7 +4184,7 @@ msgid "Your subscription change is complete - download your files"
 msgstr ""
 
 #: includes/emails/class-wcs-email-completed-switch-order.php:39
-msgid "Your {blogname} subscription change from {order_date} is complete - download your files"
+msgid "Your {site_title} subscription change from {order_date} is complete - download your files"
 msgstr ""
 
 #: includes/emails/class-wcs-email-customer-on-hold-renewal-order.php:23
@@ -4196,7 +4196,7 @@ msgid "This is an order notification sent to customers containing order details 
 msgstr ""
 
 #: includes/emails/class-wcs-email-customer-on-hold-renewal-order.php:25
-msgid "Your {blogname} renewal order has been received!"
+msgid "Your {site_title} renewal order has been received!"
 msgstr ""
 
 #: includes/emails/class-wcs-email-customer-on-hold-renewal-order.php:26
@@ -4247,7 +4247,7 @@ msgstr ""
 msgid "Subscription Expired"
 msgstr ""
 
-#. translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
+#. translators: placeholder is {site_title}, a variable that will be substituted when email is sent out
 #: includes/emails/class-wcs-email-expired-subscription.php:31
 msgctxt "default email subject for expired emails sent to the admin"
 msgid "[%s] Subscription Expired"
@@ -4277,7 +4277,7 @@ msgid "New subscription renewal order"
 msgstr ""
 
 #: includes/emails/class-wcs-email-new-renewal-order.php:26
-msgid "[{blogname}] New subscription renewal order ({order_number}) - {order_date}"
+msgid "[{site_title}] New subscription renewal order ({order_number}) - {order_date}"
 msgstr ""
 
 #: includes/emails/class-wcs-email-new-switch-order.php:22
@@ -4290,7 +4290,7 @@ msgid "Subscription switched emails are sent when a customer switches a subscrip
 msgstr ""
 
 #: includes/emails/class-wcs-email-new-switch-order.php:26
-msgid "[{blogname}] Subscription Switched ({order_number}) - {order_date}"
+msgid "[{site_title}] Subscription Switched ({order_number}) - {order_date}"
 msgstr ""
 
 #: includes/emails/class-wcs-email-on-hold-subscription.php:26
@@ -4305,7 +4305,7 @@ msgstr ""
 msgid "Subscription Suspended"
 msgstr ""
 
-#. translators: placeholder is {blogname}, a variable that will be substituted when email is sent out
+#. translators: placeholder is {site_title}, a variable that will be substituted when email is sent out
 #: includes/emails/class-wcs-email-on-hold-subscription.php:31
 msgctxt "default email subject for suspended emails sent to the admin"
 msgid "[%s] Subscription Suspended"
@@ -4340,7 +4340,7 @@ msgid "Thank you for your order"
 msgstr ""
 
 #: includes/emails/class-wcs-email-processing-renewal-order.php:29
-msgid "Your {blogname} renewal order receipt from {order_date}"
+msgid "Your {site_title} renewal order receipt from {order_date}"
 msgstr ""
 
 #. translators: 1-2: opening/closing tags - link to documentation.
