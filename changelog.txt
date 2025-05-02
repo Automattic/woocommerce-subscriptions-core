@@ -2,6 +2,7 @@
 
 = 8.3.0 - 2025-xx-xx =
 * Fix - Manual discounts on pay for order flow
+* Fix - Replace blogname with site_title in email templates
 
 
 = 8.2.0 - 2025-04-14 =
