@@ -7,31 +7,6 @@ assignees: ''
 
 ---
 
-## Description
-<!-- 
- A clear and concise description of what the new feature or improvement is. 
- Include images or screenshots to clarify the context.
- What are you trying to do – what's the wider flow?
- -->
+## This repository has been archived
 
-### Testing instructions
-<!-- If applicable, a list of instructions that will aid in confirming that the new feature or improvement is working as expected. -->
-
-1. Go to '…'
-2. Click on '…'
-3. Scroll down to '…'
-4. Observe expected behaviour
-
-
-## Product impact
-<!-- What product(s) is this feature intended for? -->
-
-- [ ] Does this feature affect WooCommerce Subscriptions? yes/no/tbc, add issue ref
-- [ ] Does this feature affect WooCommerce Payments? yes/no/tbc, add issue ref
-
-## Dev notes
-<!-- If applicable, additional technical or implementation details that will help when developing this feature or improvement. -->
-
-## Additional context
-<!-- Any additional context or details you think might be helpful. -->
-<!-- Ticket numbers/links, P2s, project threads, etc. -->
+For more information, please read [this announcement](https://developer.woocommerce.com/2025/05/06/developer-advisory-subscriptions-core-code-moving-into-woocommerce-subscriptions-plugin/). If you wish to report a problem or need assistance, [please go here](https://woocommerce.com/my-account/contact-support/?select=woocommerce-subscriptions&_gl=1*17whw5n*_ga*MTU0OTc4MTk1My4xNzMyNTY2ODUy*_ga_GCSNWJNHCT*czE3NDc4NDU1MDgkbzExNSRnMSR0MTc0Nzg0NTUyMSRqMCRsMCRoMA..#contact-us).

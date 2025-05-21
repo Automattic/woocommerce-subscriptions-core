@@ -7,37 +7,7 @@ assignees: ''
 
 ---
 
-## Describe the bug
-<!-- A clear and concise description of what the bug is. Please be as descriptive as possible, and include screenshots to illustrate. -->
+## This repository has been archived
 
-## To Reproduce
-<!-- Describe the steps to reproduce the behavior. -->
+For more information, please read [this announcement](https://developer.woocommerce.com/2025/05/06/developer-advisory-subscriptions-core-code-moving-into-woocommerce-subscriptions-plugin/). If you wish to report a problem or need assistance, [please go here](https://woocommerce.com/my-account/contact-support/?select=woocommerce-subscriptions&_gl=1*17whw5n*_ga*MTU0OTc4MTk1My4xNzMyNTY2ODUy*_ga_GCSNWJNHCT*czE3NDc4NDU1MDgkbzExNSRnMSR0MTc0Nzg0NTUyMSRqMCRsMCRoMA..#contact-us).
 
-1. Go to '…'
-2. Click on '…'
-3. Scroll down to …'
-4. See error
-
-### Expected behavior
-<!-- A clear and concise description of what you expected to happen. -->
-
-### Actual behavior
-<!-- A clear and concise description of what actually happens. -->
-
-## Product impact
-<!-- What products does this issue affect? -->
-
-- [ ] Does this issue affect WooCommerce Subscriptions? yes/no/tbc, add issue ref
-- [ ] Does this issue affect WooCommerce Payments? yes/no/tbc, add issue ref
-
-## Additional context
-<!-- Any additional context or details you think might be helpful. -->
-<!-- Ticket numbers/links, plugin versions, system statuses etc. -->
-
-<!-- Collapse lengthy logs or status reports with a <details> tag -->
-<!--
-<details>
-```
-```
-</details>
--->
